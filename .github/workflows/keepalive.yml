@@ -1,0 +1,15 @@
+name: keepalive
+# Supabase 무료 프로젝트가 정지되지 않도록 3일마다 가볍게 DB를 한 번 읽습니다.
+on:
+  schedule:
+    - cron: "0 3 */3 * *"
+  workflow_dispatch:
+permissions: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcXR5aG1nZGZ6eml5bWZjbG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4OTg1MzMsImV4cCI6MjEwOTQ3NDUzM30.fMmKix0TBw_LLaXrPVapMpKj6DciSVVUKX1XvBFtfaM"
+          curl --fail --silent --show-error "https://noqtyhmgdfzziymfclnx.supabase.co/rest/v1/items?select=id&limit=1" -H "apikey: $KEY" -H "Authorization: Bearer $KEY"
