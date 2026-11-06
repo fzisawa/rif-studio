@@ -32,3 +32,9 @@ textarea{padding:14px;border-radius:12px;border:1px solid #7775;background:trans
 .row{display:grid;grid-template-columns:96px 1fr auto auto;gap:14px;align-items:center;border-top:1px solid #7773;padding:10px 0}
 .row img{width:96px;aspect-ratio:16/9;object-fit:cover;border-radius:8px}.row a{color:var(--mut);font-size:13px}
 #panel label{display:grid;gap:6px;font-size:14px;color:var(--mut)}
+:root{--petal:#fff;--pstroke:#d8a9b8;--twig:#7a5a48}@media(prefers-color-scheme:light){:root{--twig:#6b4a38}}
+.art svg{width:100%;max-width:460px;display:block;margin:0 auto 16px}
+.pt{fill:var(--petal);stroke:var(--pstroke);stroke-width:1}.tw{stroke:var(--twig);stroke-width:3.5;stroke-linecap:round}.st{stroke:#6f8f5a;stroke-width:1.5}
+.intro p{margin-bottom:1em}.intro .en{color:var(--mut);font-size:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:2em 0}
+.card{display:grid;gap:2px;padding:16px;border:1px solid #7775;border-radius:14px;text-decoration:none;color:var(--fg)}.card span{color:var(--mut);font-size:13px}.card:hover{border-color:var(--ac)}
