@@ -52,3 +52,4 @@ h1+ul{margin-top:1.2em}
 .ti{display:grid;gap:8px;min-width:0}.ti b{font-weight:600;overflow-wrap:anywhere}
 .bar{display:block;height:4px;border-radius:2px;background:#7773;cursor:pointer;overflow:hidden}.bar u{display:block;height:100%;width:0;background:var(--ac);text-decoration:none}
 .du{color:var(--mut);font-size:13px;font-variant-numeric:tabular-nums}.tracks li.on .ti b,.tracks li.on .du{color:var(--ac)}
+footer{position:relative}.adm{position:absolute;left:5vw;bottom:18px;display:block;padding:10px;margin:-10px;line-height:0;opacity:.3;transition:opacity .2s}.adm:hover,.adm:focus-visible{opacity:.9}.adm svg{width:16px;height:16px}
