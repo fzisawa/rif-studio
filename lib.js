@@ -23,10 +23,13 @@ const yt=it=>{const b=el("button",{className:"yt",type:"button",ariaLabel:"영�
   b.onclick=()=>b.replaceWith(el("iframe",{allow:"autoplay; encrypted-media; picture-in-picture",allowFullscreen:true,src:"https://www.youtube-nocookie.com/embed/"+it.url+"?autoplay=1"}));return b};
 const zoom=i=>{i.style.cursor="zoom-in";i.onclick=()=>{const o=el("div",{className:"lb"},[el("img",{src:i.src,alt:i.alt})]);o.onclick=()=>o.remove();document.addEventListener("keydown",function k(e){if(e.key==="Escape"){o.remove();document.removeEventListener("keydown",k)}});document.body.append(o)};return i};
 const media=it=>it.kind==="youtube"?yt(it):it.kind==="audio"?el("audio",{controls:true,preload:"none",src:it.url}):zoom(el("img",{loading:"lazy",alt:it.caption||"",src:it.url}));
-function addForm(getPage,done,extra=[]){
-  const yt=el("input",{placeholder:"유튜브 링크 붙여넣기"}),file=el("input",{type:"file",accept:"image/*,.mp3,.wav,audio/mpeg,audio/wav"}),cap=el("input",{placeholder:"설명 또는 곡 제목 (선택)"}),sec=el("input",{placeholder:"분류 (선택, 예: Premium / Cover)"}),prev=el("div"),msg=el("p",{className:"note"}),btn=el("button",{className:"btn",textContent:"추가"});
+const CATS={woljae:["Bust","Waist-up","Full figure","Miscellaneous"],charmbung:["Premium","Cover","Stem","Vocal"]};
+function addForm(getPage,done,extra=[],getSec){
+  const yt=el("input",{placeholder:"유튜브 링크 붙여넣기"}),file=el("input",{type:"file",accept:"image/*,.mp3,.wav,audio/mpeg,audio/wav"}),cap=el("input",{placeholder:"설명 또는 곡 제목 (선택)"}),sec=el("select",{ariaLabel:"분류"}),prev=el("div"),msg=el("p",{className:"note"}),btn=el("button",{className:"btn",textContent:"추가"});
+  const fill=()=>{const c=CATS[getPage()]||[],cur=getSec?getSec():sec.value;
+    sec.replaceChildren(...c.map(n=>el("option",{value:n,textContent:"분류 · "+n})));sec.hidden=!c.length;sec.value=c.includes(cur)?cur:(c[0]||"")};
   yt.oninput=()=>{const v=ytid(yt.value);prev.replaceChildren(...(v?[el("iframe",{src:"https://www.youtube-nocookie.com/embed/"+v})]:[]))};
   btn.onclick=async()=>{msg.textContent=file.files[0]&&file.files[0].size>5e6?"올리는 중… 큰 파일은 1분 넘게 걸릴 수 있어요":"올리는 중…";btn.disabled=true;
-    try{await addItem(getPage(),file.files[0],yt.value,cap.value.trim(),sec.value.trim());yt.value=file.value=cap.value="";prev.replaceChildren();msg.textContent="";done()}
+    try{const s=sec.hidden?"":sec.value;await addItem(getPage(),file.files[0],yt.value,cap.value.trim(),s);yt.value=file.value=cap.value="";prev.replaceChildren();msg.textContent="";done(s)}
     catch(e){msg.textContent="실패: "+e.message}btn.disabled=false};
-  return el("div",{id:"panel"},[...extra,yt,file,cap,sec,prev,btn,msg])}
+  const panel=el("div",{id:"panel"},[...extra,yt,file,cap,sec,prev,btn,msg]);panel.fill=fill;fill();return panel}

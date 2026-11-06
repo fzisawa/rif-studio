@@ -1,6 +1,7 @@
 const $=i=>document.getElementById(i),L={rif:"RIF",charmbung:"Charmbung",woljae:"Woljae",contact:"Contact"};
 const sel=el("select",{},Object.entries(L).map(([v,t])=>el("option",{value:v,textContent:t+" 페이지"})));
 const form=addForm(()=>sel.value,render,[el("label",{textContent:"올릴 페이지"},[sel])]);$("mount").append(form);
+sel.onchange=()=>form.fill();
 const thumb=it=>it.kind==="youtube"?"https://img.youtube.com/vi/"+it.url+"/mqdefault.jpg":it.url;
 async function render(){
   const adm=await isAdmin();$("login").hidden=adm;$("app").hidden=!adm;if(!adm)return;

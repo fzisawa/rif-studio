@@ -14,4 +14,5 @@
   a.ontimeupdate=()=>{if(cur&&a.duration){cur.querySelector(".bar u").style.width=(a.currentTime/a.duration*100)+"%";cur.querySelector(".du").textContent=fmt(a.currentTime)}};
   a.onended=()=>{const i=rows.indexOf(cur),d=cur.dataset.dur;cur.querySelector(".du").textContent=d;reset(cur);const n=rows[i+1];cur=null;if(n)play(n)};
   rows.forEach(r=>r.dataset.dur=r.querySelector(".du").textContent);
+  document.addEventListener("rif:pause",()=>a.pause());
 })();
