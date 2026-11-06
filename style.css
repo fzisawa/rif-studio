@@ -40,3 +40,5 @@ textarea{padding:14px;border-radius:12px;border:1px solid #7775;background:trans
 .card{display:grid;gap:2px;padding:16px;border:1px solid #7775;border-radius:14px;text-decoration:none;color:var(--fg)}.card span{color:var(--mut);font-size:13px}.card:hover{border-color:var(--ac)}
 body{word-break:keep-all;overflow-wrap:break-word}
 h1+ul{margin-top:1.2em}
+.item audio{width:100%;display:block}.item:has(audio){grid-column:span 2;border:1px solid #7775;border-radius:12px;padding:14px}.item:has(audio) figcaption{margin:0 0 8px;color:var(--fg);order:-1}.ico{width:96px;aspect-ratio:16/9;display:grid;place-items:center;border:1px solid #7775;border-radius:8px;color:var(--ac);font-size:28px}
+.item:has(audio){display:flex;flex-direction:column}
