@@ -12,7 +12,7 @@ async function render(){
       x.onclick=async()=>{if(confirm("삭제할까요?")){await delItem(it);render()}};
       box.append(el("div",{className:"row"},[el("img",{src:thumb(it),alt:"",loading:"lazy"}),
         el("div",{},[el("b",{textContent:it.caption||"(설명 없음)"}),el("div",{className:"note",textContent:(it.kind==="youtube"?"YouTube":"사진")+" · "+new Date(it.created_at).toLocaleDateString("ko-KR")})]),
-        el("a",{href:"/"+p+"/",textContent:"보기"}),x]))})})}
+        el("a",{href:"../"+p+"/",textContent:"보기"}),x]))})})}
 $("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:$("em").value,password:$("pw").value});
   $("lmsg").textContent=error?"로그인 실패":"";render()};
 $("out").onclick=async e=>{e.preventDefault();await db.auth.signOut();render()};

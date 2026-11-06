@@ -38,3 +38,4 @@ textarea{padding:14px;border-radius:12px;border:1px solid #7775;background:trans
 .intro p{margin-bottom:1em}.intro .en{color:var(--mut);font-size:14px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:2em 0}
 .card{display:grid;gap:2px;padding:16px;border:1px solid #7775;border-radius:14px;text-decoration:none;color:var(--fg)}.card span{color:var(--mut);font-size:13px}.card:hover{border-color:var(--ac)}
+body{word-break:keep-all;overflow-wrap:break-word}
