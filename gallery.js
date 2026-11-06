@@ -14,7 +14,8 @@
       const ord=ORDER[page]||[],rank=n=>{const i=ord.indexOf(n);return i<0?99:i};
       const names=[...new Set(list.filter(i=>i.section).map(i=>i.section))].sort((a,b)=>rank(a)-rank(b));
       names.forEach(n=>{g.append(el("h3",{className:"sec",textContent:n}));
-        list.filter(i=>i.section===n).sort((a,b)=>a.created_at<b.created_at?-1:1).forEach(i=>g.append(card(i)))});
+        const its=list.filter(i=>i.section===n).sort((a,b)=>a.created_at<b.created_at?-1:1);
+        const w=el("div",{className:"grid"+(its.every(i=>i.kind==="image")?" imgs":"")});its.forEach(i=>w.append(card(i)));g.append(w)});
       const rest=list.filter(i=>!i.section);
       if(rest.length){g.append(el("h3",{className:"sec",textContent:"More"}));rest.forEach(i=>g.append(card(i)))}
     }else list.forEach(i=>g.append(card(i)));
