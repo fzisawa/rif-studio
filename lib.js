@@ -21,7 +21,8 @@ async function addItem(page,file,ytUrl,cap,section){
 async function delItem(it){if(it.path)await db.storage.from(B).remove([it.path]);const {error}=await db.from("items").delete().eq("id",it.id);if(error)throw error}
 const yt=it=>{const b=el("button",{className:"yt",type:"button",ariaLabel:"영상 재생"},[el("img",{loading:"lazy",alt:"",src:"https://img.youtube.com/vi/"+it.url+"/hqdefault.jpg"}),el("span",{textContent:"▶"})]);
   b.onclick=()=>b.replaceWith(el("iframe",{allow:"autoplay; encrypted-media; picture-in-picture",allowFullscreen:true,src:"https://www.youtube-nocookie.com/embed/"+it.url+"?autoplay=1"}));return b};
-const media=it=>it.kind==="youtube"?yt(it):it.kind==="audio"?el("audio",{controls:true,preload:"none",src:it.url}):el("img",{loading:"lazy",alt:it.caption||"",src:it.url});
+const zoom=i=>{i.style.cursor="zoom-in";i.onclick=()=>{const o=el("div",{className:"lb"},[el("img",{src:i.src,alt:i.alt})]);o.onclick=()=>o.remove();document.addEventListener("keydown",function k(e){if(e.key==="Escape"){o.remove();document.removeEventListener("keydown",k)}});document.body.append(o)};return i};
+const media=it=>it.kind==="youtube"?yt(it):it.kind==="audio"?el("audio",{controls:true,preload:"none",src:it.url}):zoom(el("img",{loading:"lazy",alt:it.caption||"",src:it.url}));
 function addForm(getPage,done,extra=[]){
   const yt=el("input",{placeholder:"유튜브 링크 붙여넣기"}),file=el("input",{type:"file",accept:"image/*,.mp3,.wav,audio/mpeg,audio/wav"}),cap=el("input",{placeholder:"설명 또는 곡 제목 (선택)"}),sec=el("input",{placeholder:"분류 (선택, 예: Premium / Cover)"}),prev=el("div"),msg=el("p",{className:"note"}),btn=el("button",{className:"btn",textContent:"추가"});
   yt.oninput=()=>{const v=ytid(yt.value);prev.replaceChildren(...(v?[el("iframe",{src:"https://www.youtube-nocookie.com/embed/"+v})]:[]))};
