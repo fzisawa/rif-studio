@@ -75,7 +75,8 @@ footer{position:relative}.adm{position:absolute;left:5vw;bottom:18px;display:blo
 .tabbed .tracks,.tabbed .gal{margin-top:0}.tabbed .tracks h2,.tabbed .gal h2{display:none}
 #panel select{padding:14px;border-radius:12px;border:1px solid #7775;background:transparent;color:var(--fg);font:inherit}#panel select[hidden]{display:none}
 header{justify-content:flex-start}.logo{margin-right:auto;order:1}nav{order:2}
-.mark{order:3;margin-left:18px;flex:none;display:block;width:68px;height:62px;background:var(--fg);-webkit-mask:url(img/logo-white.png) center/contain no-repeat;mask:url(img/logo-white.png) center/contain no-repeat;transition:transform .2s,background .2s}
-.mark:hover{transform:scale(1.06);background:var(--ac)}.mark img{width:100%;height:100%;opacity:0;display:block}
-@media(max-width:700px){header{gap:10px}.mark{order:2;margin-left:auto;width:56px;height:52px}nav{order:3;flex-basis:100%}}
+.mark{order:3;margin-left:18px;flex:none;display:block;line-height:0;transition:transform .2s}
+.mark:hover{transform:scale(1.06)}.mark img{height:76px;width:auto;display:block}.mark .md{display:none}
+@media(prefers-color-scheme:light){.mark .md{display:block}.mark .ml{display:none}}
+@media(max-width:700px){header{gap:10px}.mark{order:2;margin-left:auto}.mark img{height:60px}nav{order:3;flex-basis:100%}}
 .gal:has(.grid.imgs) .tabs{justify-content:center}.gal:has(.grid.imgs) h2{text-align:center}
