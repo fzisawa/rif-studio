@@ -1,11 +1,12 @@
+const T=(k,f)=>window.T?window.T(k,f):f;
 const $=i=>document.getElementById(i),db=supabase.createClient(RIF.URL,RIF.KEY);
 const el=(t,p={},k=[])=>{const e=Object.assign(document.createElement(t),p);k.forEach(c=>e.append(c));return e};
 $("f").onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target)),m=$("m");
-  if(d.website)return;$("go").disabled=true;m.textContent="보내는 중…";
+  if(d.website)return;$("go").disabled=true;m.textContent=T("join.sending","보내는 중…");
   const {error}=await db.from("join_requests").insert({name:d.name.trim(),email:d.email.trim(),youtube:d.youtube.trim()||null,twitter:d.twitter.trim()||null,intro:d.intro.trim()});
-  if(error){m.textContent="전송에 실패했어요. 잠시 후 다시 시도하거나 rif@rif-studio.com으로 보내주세요.";$("go").disabled=false;return}
+  if(error){m.textContent=T("join.fail","전송에 실패했어요. 잠시 후 다시 시도하거나 rif@rif-studio.com으로 보내주세요.");$("go").disabled=false;return}
   if(RIF.MAIL_KEY)try{await fetch("https://api.web3forms.com/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({access_key:RIF.MAIL_KEY,subject:"[Join Us] "+d.name,from_name:"RIF STUDIO Join Us",name:d.name,email:d.email,youtube:d.youtube||"-",twitter:d.twitter||"-",message:d.intro})})}catch(_){}
-  e.target.reset();m.textContent="지원서가 전달됐어요. 확인 후 연락드릴게요!"};
+  e.target.reset();m.textContent=T("join.ok","지원서가 전달됐어요. 확인 후 연락드릴게요!")};
 async function list(){
   const {data:s}=await db.auth.getSession();if(!s.session)return;
   const {data}=await db.from("join_requests").select("*").order("created_at",{ascending:false});

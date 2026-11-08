@@ -80,3 +80,10 @@ header{justify-content:flex-start}.logo{margin-right:auto;order:1}nav{order:2}
 @media(prefers-color-scheme:light){.mark .md{display:block}.mark .ml{display:none}}
 @media(max-width:700px){header{gap:10px}.mark{order:2;margin-left:auto}.mark img{height:60px}nav{order:3;flex-basis:100%}}
 .gal:has(.grid.imgs) .tabs{justify-content:center}.gal:has(.grid.imgs) h2{text-align:center}
+/* language switch */
+.lang{order:3;display:flex;gap:2px;align-items:center;border:1px solid color-mix(in srgb,var(--mut) 40%,transparent);border-radius:999px;padding:2px}
+.lang button{all:unset;cursor:pointer;font-size:12px;letter-spacing:.04em;color:var(--mut);padding:5px 10px;border-radius:999px;line-height:1}
+.lang button:hover{color:var(--ac)}
+.lang button[aria-pressed=true]{background:var(--ac);color:#fff}
+.lang button:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+@media(max-width:700px){.lang{order:2;margin-left:auto}.mark{margin-left:0}}

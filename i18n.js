@@ -1,0 +1,78 @@
+/* RIF STUDIO — 한국어 / 日本語 / English. 한국어가 기본(원문 HTML), 번역은 아래 사전에서만 덮어씁니다. */
+(()=>{
+const D={
+ja:{
+"meta.home":"RIF STUDIO — 声とサウンド、イラストでパンギョ・東京・ニューヨークをつなぐ新しいスタジオ。",
+"meta.sub":"RIF STUDIO — Pangyo · Tokyo · New York。音楽で国境をつなぐ新しいスタジオ。",
+"home.art":"藤と李の花のイラスト",
+"home.lead":"李の花は清らかにまっすぐに、藤は絡み合ってより高く。<br>リフ スタジオは、声とサウンド、絵がひとつの枝から咲く場所です。",
+"home.p1":"リフ スタジオは、韓国で始まり、日本、そしてアメリカへと向かう新しいエンターテインメントスタジオです。ボーカル、作曲、サウンドエンジニアリング、イラストまで──それぞれの持ち場で完成度に責任を持つ人々が集まり、ひとつの作品をつくります。",
+"home.p2":"私たちは、国境よりも先に心に届く音楽を信じています。最初の声が響いた今、次の物語を一緒に書いてくれる仲間を待っています。",
+"home.en":"RIF STUDIO は、声とサウンド、イラストを通じて韓国・日本・アメリカをつなぐ新しいエンターテインメントスタジオです。",
+"home.c1":"ディレクター · 1stボーカル","home.c2":"サウンドエンジニア · 作曲家","home.c3":"イラストレーター",
+"home.join":"参加する →","mark":"RIF STUDIO ホーム",
+"rif.lead":"パンギョから東京、そしてニューヨークまで。<br>ひとつの声で三つの都市をつなぐ、リフ スタジオの出発点。",
+"rif.1":"日本の名門大学出身","rif.2":"韓国の経営大学院 修士課程修了","rif.3":"韓国の大手企業出身","rif.4":"リフ スタジオ統括",
+"rif.5":"<b>THE FIRST VOICE</b> — リフ スタジオ最初のボーカル。スタジオ最初の歌は、この声から始まります。",
+"cb.lead":"サウンドの完成度に責任を持つ人。<br>広告、公共キャンペーン、教育の現場まで、音が届くあらゆる場所で。",
+"cb.1":"EIDER ショート広告 — サウンドエンジニア",
+"cb.2":"ミレエン × ソウル警察庁 Stop &amp; Check プロジェクト — サウンドエンジニア",
+"cb.3":"仁川市教育庁 才能寄付プログラム — サウンドエンジニア",
+"cb.4":"ハンセ大学 アンカー事業団 音楽作曲教育プログラムの開発",
+"wj.1":"アメリカ出身のイラストレーター","wj.2":"アルバムアート · キャラクター · ポスター",
+"join.h1":"次の声は、<br>あなたかもしれない。",
+"join.lead":"リフ スタジオは小さいけれど、素早く動くチームです。<br>ボーカル、作曲、エンジニアリング、イラスト、映像──パンギョ・東京・ニューヨークをつなぐ舞台を一緒につくる仲間を探しています。",
+"join.1":"年齢や経歴よりも<b>作品</b>と情熱を見ます","join.2":"実際のプロジェクトにすぐ参加します","join.3":"한국어 · 日本語 · English 歓迎",
+"join.name":"お名前","join.email":"メールアドレス","join.intro":"自己紹介",
+"join.yt":"チャンネルまたは動画のリンク","join.tw":"@ID またはリンク","join.go":"応募する →",
+"join.sending":"送信中…","join.fail":"送信に失敗しました。しばらくしてからもう一度お試しいただくか、rif@rif-studio.com までお送りください。","join.ok":"応募を受け付けました。確認のうえご連絡します！",
+"ct.lead":"コラボ、ご依頼、デモ、何でもどうぞ。"},
+en:{
+"meta.home":"RIF STUDIO — A new studio linking Pangyo, Tokyo and New York through voice, sound and illustration.",
+"meta.sub":"RIF STUDIO — Pangyo · Tokyo · New York. A new studio connecting borders through music.",
+"home.art":"Illustration of wisteria and plum blossoms",
+"home.lead":"The plum blossom grows pure and upright; the wisteria climbs higher by twining together.<br>RIF STUDIO is where voice, sound and illustration bloom from a single branch.",
+"home.p1":"RIF STUDIO is a new entertainment studio that started in Korea and is heading to Japan and the United States. Vocals, composition, sound engineering, illustration — people who each take responsibility for the quality of their craft come together to make a single work.",
+"home.p2":"We believe in music that reaches the heart before it crosses a border. Now that the first voice has rung out, we are waiting for companions to write the next story with us.",
+"home.en":"","mark":"RIF STUDIO home",
+"rif.lead":"From Pangyo to Tokyo, and on to New York.<br>The starting point of RIF STUDIO, linking three cities with a single voice.",
+"rif.1":"Graduate of a prestigious Japanese university","rif.2":"Master's degree from a Korean graduate school of business","rif.3":"Formerly at a major Korean corporation","rif.4":"Head of RIF STUDIO",
+"rif.5":"<b>THE FIRST VOICE</b> — The first vocalist of RIF STUDIO. The studio's first song begins with this voice.",
+"cb.lead":"The one responsible for how sound is finished.<br>In ads, public campaigns and classrooms — everywhere sound reaches.",
+"cb.1":"EIDER short ad — Sound Engineer",
+"cb.2":"Mirae-N x Seoul Metropolitan Police Agency “Stop &amp; Check” project — Sound Engineer",
+"cb.3":"Incheon Metropolitan Office of Education talent-donation program — Sound Engineer",
+"cb.4":"Developed a music composition education program for Hansei University's Anchor Project Group",
+"wj.1":"Illustrator from the United States","wj.2":"Album art · Characters · Posters",
+"join.h1":"The next voice<br>might be yours.",
+"join.lead":"RIF STUDIO is a small team that moves fast.<br>Vocals, composition, engineering, illustration, video — we're looking for people to build a stage linking Pangyo, Tokyo and New York.",
+"join.1":"We look at your <b>work</b> and passion, not your age or résumé","join.2":"You join real projects right away","join.3":"한국어 · 日本語 · English welcome",
+"join.name":"Name","join.email":"Email","join.intro":"About you",
+"join.yt":"Channel or video link","join.tw":"@handle or link","join.go":"Apply →",
+"join.sending":"Sending…","join.fail":"Sending failed. Please try again in a moment or email rif@rif-studio.com.","join.ok":"Your application has been received. We'll get back to you after reviewing it!",
+"ct.lead":"Collaborations, commissions, demos — anything."}
+};
+const LS="rif-lang",L=["ko","ja","en"];
+let lang="ko";
+try{const s=localStorage.getItem(LS);if(L.includes(s))lang=s;else{const n=(navigator.language||"ko").slice(0,2);lang=L.includes(n)?n:"en"}}catch(_){}
+const nodes=[...document.querySelectorAll("[data-i18n]:not(meta)")];
+nodes.forEach(n=>{n._o=n.innerHTML});
+const attrs=[...document.querySelectorAll("[data-i18n-attr]")];
+attrs.forEach(n=>{n._a=n.dataset.i18nAttr.split(";").map(p=>{const[a,k]=p.split(":");return{a,k,o:n.getAttribute(a)}})});
+const metaD=document.querySelector('meta[name="description"]');const metaO=metaD&&metaD.content;
+const tr=k=>(D[lang]&&D[lang][k]);
+function apply(){
+  document.documentElement.lang=lang;
+  nodes.forEach(n=>{const v=tr(n.dataset.i18n);if(v===""){n.hidden=true;return}n.hidden=false;n.innerHTML=(lang==="ko"||v==null)?n._o:v});
+  attrs.forEach(n=>n._a.forEach(x=>{const v=tr(x.k);n.setAttribute(x.a,(lang==="ko"||v==null)?x.o:v)}));
+  if(metaD){const k=metaD.dataset.i18n,v=k&&tr(k);metaD.content=(lang==="ko"||v==null)?metaO:v}
+  box.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.l===lang)));
+  document.dispatchEvent(new CustomEvent("rif:lang",{detail:lang}))}
+const box=document.createElement("div");box.className="lang";box.setAttribute("role","group");box.setAttribute("aria-label","Language");
+[["ko","KO"],["ja","日本語"],["en","EN"]].forEach(([l,t])=>{const b=document.createElement("button");b.type="button";b.dataset.l=l;b.textContent=t;b.lang=l;
+  b.onclick=()=>{lang=l;try{localStorage.setItem(LS,l)}catch(_){}apply()};box.append(b)});
+const h=document.querySelector("header"),mk=h&&h.querySelector(".mark");
+if(h)h.insertBefore(box,mk||null);
+window.T=(k,fallback)=>{const v=tr(k);return(lang==="ko"||v==null)?fallback:v};
+apply();
+})();
