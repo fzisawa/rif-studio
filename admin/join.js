@@ -19,7 +19,7 @@ const TYPE={mail_thanks:"thanks",mail_interview:"interview",mail_reject:"reject"
 function askMail(r,k,t){return new Promise(res=>{
   const who=(r.nickname||r.name||r.email)+" ("+r.email+")";
   $("mt").textContent=t+" 메일을 보낼까요?";
-  const lg=r.region==="korea"?"한국어":r.region==="japan"?"일본어":"영어";
+  const lg=r.region==="korea"?"한국어":r.region==="japan"?"일본어":(r.region==="english"||r.region==="other")?"영어":"한국어+일본어+영어";
   $("mp").textContent=who+"님께 "+t+" 메일("+lg+", 출신: "+(R[r.region]||"미입력")+")을 support@rif-studio.com으로 바로 보냅니다. 보내면 되돌릴 수 없어요.";
   const iv=false;$("mf").hidden=!iv;$("md").value="";$("ml").value="";
   $("mw").textContent=((k==="mail_reject"&&r.mail_hire)||(k==="mail_hire"&&r.mail_reject))?"주의: 이미 "+(k==="mail_reject"?"채용":"거절")+" 메일이 나간 지원자예요. 정말 보낼까요?":"";
