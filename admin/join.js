@@ -9,6 +9,17 @@ let rows=[];
 function cell(v,cls){return el("td",{className:cls||"",textContent:v||"-"})}
 function link(v,cls){const td=el("td",{className:cls||""});const u=url(v);if(u){const a=el("a",{href:u,target:"_blank",rel:"noopener noreferrer",textContent:v});a.onclick=e=>e.stopPropagation();td.append(a)}else td.textContent=v||"-";return td}
 const MC=[["mail_thanks","감사"],["mail_interview","면접"],["mail_reject","거절"],["mail_hire","채용"]];
+const TYPE={mail_thanks:"thanks",mail_interview:"interview",mail_reject:"reject",mail_hire:"hire"};
+function askMail(r,k,t){return new Promise(res=>{
+  const who=(r.nickname||r.name||r.email)+" ("+r.email+")";
+  $("mt").textContent=t+" 메일을 보낼까요?";
+  $("mp").textContent=who+"님께 "+t+" 메일(한국어+영어)을 support@rif-studio.com으로 바로 보냅니다. 보내면 되돌릴 수 없어요.";
+  const iv=k==="mail_interview";$("mf").hidden=!iv;$("md").value="";$("ml").value="";
+  $("mw").textContent=((k==="mail_reject"&&r.mail_hire)||(k==="mail_hire"&&r.mail_reject))?"주의: 이미 "+(k==="mail_reject"?"채용":"거절")+" 메일이 나간 지원자예요. 정말 보낼까요?":"";
+  const o=$("mm");o.hidden=false;(iv?$("md"):$("mg")).focus();
+  const done=v=>{o.hidden=true;document.removeEventListener("keydown",kd);res(v)},kd=e=>{if(e.key==="Escape")done(null)};document.addEventListener("keydown",kd);
+  $("mc").onclick=()=>done(null);o.onclick=e=>{if(e.target===o)done(null)};
+  $("mg").onclick=()=>{if(iv){const d=$("md").value.trim(),l=$("ml").value.trim();if(!d||!l){alert("일시와 장소(링크)를 입력해 주세요.");return}done({date:d,place:l})}else done({})}})}
 async function save(r,patch,node){
   const {error}=await db.from("join_requests").update(patch).eq("id",r.id);
   if(error){alert("저장 실패: "+error.message);return false}
@@ -23,7 +34,15 @@ function draw(){
     const n=cnt[(r.email||"").trim().toLowerCase()],isDup=n>1;
     const nick=cell(r.nickname||r.name);if(isDup)nick.append(el("span",{className:"dupb",textContent:"재지원"}));
     const chk=MC.map(([k,t])=>{const c=el("input",{type:"checkbox",checked:!!r[k],title:t+" 메일 발송"});c.onclick=e=>e.stopPropagation();
-      c.onchange=async()=>{if(!(await save(r,{[k]:c.checked},td))){c.checked=!c.checked}};
+      c.onchange=async()=>{
+        if(!c.checked){if(confirm("체크만 해제할까요?\n(이미 보낸 메일은 취소되지 않아요)")){if(!(await save(r,{[k]:false},td)))c.checked=true}else c.checked=true;return}
+        const ex=await askMail(r,k,t);if(!ex){c.checked=false;return}
+        c.disabled=true;let ok=false,msg="";
+        try{const {data,error}=await db.functions.invoke("send-applicant-mail",{body:{id:r.id,type:TYPE[k],...ex}});
+          if(error){try{msg=(await error.context.json()).error}catch(_){msg=error.message}}else if(data&&data.ok){ok=true;msg=data.warn||""}else msg=(data&&data.error)||"알 수 없는 오류"}catch(e){msg=String(e.message||e)}
+        c.disabled=false;
+        if(!ok){c.checked=false;alert("메일 발송 실패: "+msg);return}
+        r[k]=true;td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900);if(msg)alert(msg)};
       const td=el("td",{className:"mk"},[c]);return td});
     const memo=el("input",{className:"memo",value:r.memo||"",placeholder:"메모",maxLength:500});memo.onclick=e=>e.stopPropagation();
     memo.onchange=()=>save(r,{memo:memo.value.trim()||null},memo);
