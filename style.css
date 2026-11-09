@@ -118,3 +118,4 @@ nav{align-items:center;gap:6px 18px}
 .nm a{padding:9px 12px;border-radius:8px;white-space:nowrap}
 .nm a:hover{background:color-mix(in srgb,var(--ac) 14%,transparent)}
 @media(max-width:700px){nav{gap:4px 14px}.nm{left:0}}
+@media(hover:hover){.ng:focus-within:not(:hover):not(:has(:focus-visible)) .nm,.ng.open:not(:hover) .nm{display:none}.ng:focus-within:not(:hover):not(:has(:focus-visible))>button{color:var(--mut)}.ng.on:focus-within:not(:hover):not(:has(:focus-visible))>button{color:var(--ac)}}
