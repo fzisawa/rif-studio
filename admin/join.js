@@ -40,7 +40,7 @@ function draw(){
   view.forEach(r=>{
     const n=cnt[(r.email||"").trim().toLowerCase()],isDup=n>1;
     const nick=cell(r.nickname||r.name);if(isDup)nick.append(el("span",{className:"dupb",textContent:"재지원"}));
-    const chk=MC.map(([k,t])=>{const c=el("input",{type:"checkbox",checked:!!r[k],disabled:!!r[k],title:r[k]?t+" 메일 발송 완료 (해제할 수 없어요)":t+" 메일 발송"});c.className="mc"+(k==="mail_reject"?" mr":"");c.onclick=e=>e.stopPropagation();
+    const chk=MC.map(([k,t])=>{const c=el("input",{type:"checkbox",checked:!!r[k],disabled:!!r[k]||!!r.ceo_reject,title:r[k]?t+" 메일 발송 완료 (해제할 수 없어요)":r.ceo_reject?"채용 거절 처리된 지원자 (대표 비밀번호로 거절을 풀어야 수정 가능)":t+" 메일 발송"});c.className="mc"+(k==="mail_reject"?" mr":"");c.onclick=e=>e.stopPropagation();
       c.onchange=async()=>{
         if(!c.checked){c.checked=true;return}
         const ex=await askMail(r,k,t);if(!ex){c.checked=false;return}
@@ -57,14 +57,16 @@ function draw(){
         r[k]=true;c.disabled=true;c.title=t+" 메일 발송 완료 (해제할 수 없어요)";td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900)};
       const td=el("td",{className:"mk"},[c]);return td});
     const CK=[["ceo_interview","면접 의향","ci"],["ceo_hire","채용 의향","ch"],["ceo_reject","채용 거절","cr"]].map(([k,t,cl])=>{const c=el("input",{type:"checkbox",checked:!!r[k],disabled:!PIN,title:PIN?t:"대표 잠금 해제 후 변경할 수 있어요"});c.onclick=e=>e.stopPropagation();
-      c.onchange=async()=>{const v=c.checked;c.disabled=true;const {error}=await db.rpc("set_ceo_intent",{p_id:r.id,p_field:k,p_val:v,p_pin:PIN});c.disabled=!PIN;if(error){c.checked=!v;alert("저장하지 못했어요: "+(/bad pin/.test(error.message)?"비밀번호가 맞지 않아요. 잠금을 풀고 다시 시도해 주세요.":error.message));return}r[k]=v;td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900)};
+      c.onchange=async()=>{const v=c.checked;c.disabled=true;const {error}=await db.rpc("set_ceo_intent",{p_id:r.id,p_field:k,p_val:v,p_pin:PIN});c.disabled=!PIN;if(error){c.checked=!v;alert("저장하지 못했어요: "+(/bad pin/.test(error.message)?"비밀번호가 맞지 않아요. 잠금을 풀고 다시 시도해 주세요.":error.message));return}r[k]=v;if(k==="ceo_reject"){draw();return}td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900)};
       const td=el("td",{className:"mk ck "+cl},[c]);return td});
     const memo=el("input",{className:"memo",value:r.memo||"",placeholder:"메모",maxLength:500});memo.onclick=e=>e.stopPropagation();
+    if(r.ceo_reject){memo.readOnly=true;memo.title="채용 거절 처리됨 — 대표 비밀번호로 거절을 풀면 수정할 수 있어요"}
     memo.onchange=()=>save(r,{memo:memo.value.trim()||null},memo);
-    const tr=el("tr",{className:"r"+(isDup?" dup":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(r.email),cell(R[r.region]||"-"),cell(flds(r),"ch"),cell(r.discord),link(r.youtube,"ln"),link(r.twitter,"ln"),...chk,...CK,el("td",{className:"mm"},[memo])]);
+    const tr=el("tr",{className:"r"+(isDup?" dup":"")+(r.ceo_reject?" rej":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(r.email),cell(R[r.region]||"-"),cell(flds(r),"ch"),cell(r.discord),link(r.youtube,"ln"),link(r.twitter,"ln"),...chk,...CK,el("td",{className:"mm"},[memo])]);
     const dtl=el("tr",{className:"d",hidden:true},[el("td",{colSpan:18},[el("b",{textContent:"경력"}),el("p",{textContent:r.career||"-"}),el("b",{textContent:"자기소개"}),el("p",{textContent:r.intro||"-"}),el("b",{textContent:"지원동기"}),el("p",{textContent:r.motive||"-"})])]);
     const x=el("button",{className:"btn small",textContent:"삭제"});
-    x.onclick=async e=>{e.stopPropagation();if(confirm((r.nickname||r.name)+" 지원서를 삭제할까요? 되돌릴 수 없어요.")){const {error}=await db.from("join_requests").delete().eq("id",r.id);if(error)alert("삭제 실패");load()}};
+    if(r.ceo_reject){x.disabled=true;x.title="채용 거절 처리됨 — 대표 비밀번호로 거절을 풀어야 삭제할 수 있어요"}
+    x.onclick=async e=>{e.stopPropagation();if(r.ceo_reject)return;if(confirm((r.nickname||r.name)+" 지원서를 삭제할까요? 되돌릴 수 없어요.")){const {error}=await db.from("join_requests").delete().eq("id",r.id);if(error)alert("삭제 실패");load()}};
     dtl.firstChild.append(x);tr.onclick=()=>{dtl.hidden=!dtl.hidden};tb.append(tr,dtl)});
   if(!view.length)tb.append(el("tr",{},[el("td",{colSpan:18,textContent:"아직 지원서가 없어요."})]))}
 let loaded=false;
