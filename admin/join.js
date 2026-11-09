@@ -56,9 +56,9 @@ function draw(){
         if(msg){await save(r,{[k]:true})}
         r[k]=true;td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900)};
       const td=el("td",{className:"mk"},[c]);return td});
-    const CK=[["ceo_interview","면접 의향"],["ceo_hire","채용 의향"]].map(([k,t])=>{const c=el("input",{type:"checkbox",checked:!!r[k],disabled:!PIN,title:PIN?t:"대표 잠금 해제 후 변경할 수 있어요"});c.onclick=e=>e.stopPropagation();
+    const CK=[["ceo_interview","면접 의향","ci"],["ceo_hire","채용 의향","ch"]].map(([k,t,cl])=>{const c=el("input",{type:"checkbox",checked:!!r[k],disabled:!PIN,title:PIN?t:"대표 잠금 해제 후 변경할 수 있어요"});c.onclick=e=>e.stopPropagation();
       c.onchange=async()=>{const v=c.checked;c.disabled=true;const {error}=await db.rpc("set_ceo_intent",{p_id:r.id,p_field:k,p_val:v,p_pin:PIN});c.disabled=!PIN;if(error){c.checked=!v;alert("저장하지 못했어요: "+(/bad pin/.test(error.message)?"비밀번호가 맞지 않아요. 잠금을 풀고 다시 시도해 주세요.":error.message));return}r[k]=v;td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900)};
-      const td=el("td",{className:"mk ck"},[c]);return td});
+      const td=el("td",{className:"mk ck "+cl},[c]);return td});
     const memo=el("input",{className:"memo",value:r.memo||"",placeholder:"메모",maxLength:500});memo.onclick=e=>e.stopPropagation();
     memo.onchange=()=>save(r,{memo:memo.value.trim()||null},memo);
     const tr=el("tr",{className:"r"+(isDup?" dup":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(r.email),cell(R[r.region]||"-"),cell(flds(r),"ch"),cell(r.discord),link(r.youtube,"ln"),link(r.twitter,"ln"),...chk,...CK,el("td",{className:"mm"},[memo])]);
