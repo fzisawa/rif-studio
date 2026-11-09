@@ -8,9 +8,9 @@ $("f").onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),d=O
   if(d.website)return;
   if(!fl.length){m.textContent=T("join.nof","분야를 하나 이상 선택해 주세요.");return}
   const fo=fl.includes("etc")?(d.field_other||"").trim()||null:null;$("go").disabled=true;m.textContent=T("join.sending","보내는 중…");
-  const {error}=await db.from("join_requests").insert({name:d.name.trim(),email:d.email.trim(),youtube:d.youtube.trim()||null,twitter:d.twitter.trim()||null,intro:d.intro.trim(),fields:fl.join(","),field_other:fo});
+  const {error}=await db.from("join_requests").insert({name:d.name.trim(),email:d.email.trim(),youtube:d.youtube.trim()||null,twitter:d.twitter.trim()||null,intro:d.intro.trim(),fields:fl.join(","),field_other:fo,region:d.region});
   if(error){m.textContent=T("join.fail","전송에 실패했어요. 잠시 후 다시 시도하거나 rif@rif-studio.com으로 보내주세요.");$("go").disabled=false;return}
-  try{const body={subject:"[Join Us] "+d.name,name:d.name,email:d.email,youtube:d.youtube||"-",twitter:d.twitter||"-",fields:fl.join(", ")+(fo?" ("+fo+")":""),message:d.intro};
+  try{const body={subject:"[Join Us] "+d.name,name:d.name,email:d.email,youtube:d.youtube||"-",twitter:d.twitter||"-",fields:fl.join(", ")+(fo?" ("+fo+")":""),region:d.region,message:d.intro};
     if(RIF.MAIL_KEY)await fetch("https://api.web3forms.com/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({access_key:RIF.MAIL_KEY,from_name:"RIF STUDIO Join Us",...body})});
     else if(RIF.MAIL_TO)await fetch("https://formsubmit.co/ajax/"+RIF.MAIL_TO,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({_subject:body.subject,_template:"table",_captcha:"false",...body})})}catch(_){}
   e.target.reset();m.textContent=T("join.ok","지원서가 전달됐어요. 확인 후 연락드릴게요!")};
@@ -20,7 +20,7 @@ async function list(){
   $("admin").hidden=false;const L=$("list");L.replaceChildren();
   (data||[]).forEach(r=>{const c=el("div",{className:"req"},[
     el("b",{textContent:r.name+" · "+r.email}),el("div",{className:"note",textContent:new Date(r.created_at).toLocaleString("ko-KR")}),
-    el("div",{textContent:"분야: "+fmt(r.fields)+(r.field_other?" ("+r.field_other+")":"")}),el("div",{textContent:"YouTube: "+(r.youtube||"-")}),el("div",{textContent:"Twitter: "+(r.twitter||"-")}),el("p",{textContent:r.intro})]);
+    el("div",{textContent:"출신: "+({korea:"한국",japan:"일본",english:"영미권",other:"기타"}[r.region]||"-")}),el("div",{textContent:"분야: "+fmt(r.fields)+(r.field_other?" ("+r.field_other+")":"")}),el("div",{textContent:"YouTube: "+(r.youtube||"-")}),el("div",{textContent:"Twitter: "+(r.twitter||"-")}),el("p",{textContent:r.intro})]);
     const x=el("button",{className:"btn small",textContent:"삭제"});
     x.onclick=async()=>{if(confirm("삭제할까요?")){await db.from("join_requests").delete().eq("id",r.id);list()}};c.append(x);L.append(c)});
   if(!(data||[]).length)L.textContent="아직 지원서가 없어요."}
