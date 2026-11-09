@@ -13,6 +13,7 @@ $("f").onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),d=O
   try{const body={subject:"[Join Us] "+d.nickname,nickname:d.nickname,name:d.name||"-",email:d.email,youtube:d.youtube||"-",twitter:d.twitter||"-",fields:fl.join(", ")+(fo?" ("+fo+")":""),region:d.region,discord:d.discord,motive:d.motive,career:d.career||"-",message:d.intro};
     if(RIF.MAIL_KEY)await fetch("https://api.web3forms.com/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({access_key:RIF.MAIL_KEY,from_name:"RIF STUDIO Join Us",...body})});
     else if(RIF.MAIL_TO)await fetch("https://formsubmit.co/ajax/"+RIF.MAIL_TO,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({_subject:body.subject,_template:"table",_captcha:"false",...body})})}catch(_){}
-  e.target.reset();m.textContent=T("join.ok","지원서가 전달됐어요. 확인 후 연락드릴게요!")};
+  e.target.reset();m.textContent="";$("go").disabled=false;$("fo").hidden=true;showDone()};
+function showDone(){const o=$("done");o.hidden=false;$("dok").focus();const c=()=>{o.hidden=true;document.removeEventListener("keydown",k)},k=e=>{if(e.key==="Escape")c()};document.addEventListener("keydown",k);$("dok").onclick=c;o.onclick=e=>{if(e.target===o)c()}}
 
 $("f").addEventListener("change",e=>{if(e.target.value==="etc"){const o=$("fo");o.hidden=!e.target.checked;if(!o.hidden)o.focus()}});
