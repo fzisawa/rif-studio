@@ -120,3 +120,5 @@ nav{align-items:center;gap:6px 18px}
 @media(max-width:700px){nav{gap:4px 14px}.nm{left:0}}
 @media(hover:hover){.ng:focus-within:not(:hover):not(:has(:focus-visible)) .nm,.ng.open:not(:hover) .nm{display:none}.ng:focus-within:not(:hover):not(:has(:focus-visible))>button{color:var(--mut)}.ng.on:focus-within:not(:hover):not(:has(:focus-visible))>button{color:var(--ac)}}
 ruby rt{font-size:.5em;font-weight:400;letter-spacing:.08em;line-height:1}
+.spin{width:44px;height:44px;border-radius:50%;border:4px solid color-mix(in srgb,var(--mut) 30%,transparent);border-top-color:var(--ac);animation:sp .8s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.mchk.bad{background:#d64545}

@@ -8,14 +8,16 @@ $("f").onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),d=O
   if(d.website)return;
   if(!fl.length){m.textContent=T("join.nof","분야를 하나 이상 선택해 주세요.");return}
   if(!window.__yes){askSure(()=>{window.__yes=true;e.target.requestSubmit()});return}window.__yes=false;
-  const fo=fl.includes("etc")?(d.field_other||"").trim()||null:null;$("go").disabled=true;m.textContent=T("join.sending","보내는 중…");
+  const fo=fl.includes("etc")?(d.field_other||"").trim()||null:null;$("go").disabled=true;m.textContent="";$("wait").hidden=false;
   const {error}=await db.from("join_requests").insert({nickname:d.nickname.trim(),name:(d.name||"").trim()||null,email:d.email.trim(),youtube:d.youtube.trim()||null,twitter:d.twitter.trim()||null,intro:d.intro.trim(),fields:fl.join(","),field_other:fo,region:d.region,discord:d.discord.trim(),motive:d.motive.trim(),career:(d.career||"").trim()||null});
-  if(error){m.textContent=T("join.fail","전송에 실패했어요. 잠시 후 다시 시도하거나 rif@rif-studio.com으로 보내주세요.");$("go").disabled=false;return}
-  try{const body={subject:"[Join Us] "+d.nickname,nickname:d.nickname,name:d.name||"-",email:d.email,youtube:d.youtube||"-",twitter:d.twitter||"-",fields:fl.join(", ")+(fo?" ("+fo+")":""),region:d.region,discord:d.discord,motive:d.motive,career:d.career||"-",message:d.intro};
+  $("wait").hidden=true;
+  if(error){$("go").disabled=false;showErr(T("join.fail","전송에 실패했어요. 잠시 후 다시 시도하거나 rif@rif-studio.com으로 보내주세요."));return}
+  e.target.reset();m.textContent="";$("go").disabled=false;$("fo").hidden=true;showDone();
+  (async()=>{try{const body={subject:"[Join Us] "+d.nickname,nickname:d.nickname,name:d.name||"-",email:d.email,youtube:d.youtube||"-",twitter:d.twitter||"-",fields:fl.join(", ")+(fo?" ("+fo+")":""),region:d.region,discord:d.discord,motive:d.motive,career:d.career||"-",message:d.intro};
     if(RIF.MAIL_KEY)await fetch("https://api.web3forms.com/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({access_key:RIF.MAIL_KEY,from_name:"RIF STUDIO Join Us",...body})});
-    else if(RIF.MAIL_TO)await fetch("https://formsubmit.co/ajax/"+RIF.MAIL_TO,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({_subject:body.subject,_template:"table",_captcha:"false",...body})})}catch(_){}
-  e.target.reset();m.textContent="";$("go").disabled=false;$("fo").hidden=true;showDone()};
+    else if(RIF.MAIL_TO)await fetch("https://formsubmit.co/ajax/"+RIF.MAIL_TO,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({_subject:body.subject,_template:"table",_captcha:"false",...body})})}catch(_){}})()};
 function askSure(go){const o=$("sure");o.hidden=false;$("sy").focus();const c=()=>{o.hidden=true;document.removeEventListener("keydown",k)},k=e=>{if(e.key==="Escape")c()};document.addEventListener("keydown",k);$("sy").onclick=()=>{c();go()};$("sn").onclick=c;o.onclick=e=>{if(e.target===o)c()}}
+function showErr(t){const o=$("err");$("em").textContent=t;o.hidden=false;$("eok").focus();const c=()=>{o.hidden=true;document.removeEventListener("keydown",k)},k=e=>{if(e.key==="Escape")c()};document.addEventListener("keydown",k);$("eok").onclick=c;o.onclick=e=>{if(e.target===o)c()}}
 function showDone(){const o=$("done");o.hidden=false;$("dok").focus();const c=()=>{o.hidden=true;document.removeEventListener("keydown",k)},k=e=>{if(e.key==="Escape")c()};document.addEventListener("keydown",k);$("dok").onclick=c;o.onclick=e=>{if(e.target===o)c()}}
 
 $("f").addEventListener("change",e=>{if(e.target.value==="etc"){const o=$("fo");o.hidden=!e.target.checked;if(!o.hidden)o.focus()}});
