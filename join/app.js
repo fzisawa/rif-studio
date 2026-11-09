@@ -14,16 +14,5 @@ $("f").onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),d=O
     if(RIF.MAIL_KEY)await fetch("https://api.web3forms.com/submit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({access_key:RIF.MAIL_KEY,from_name:"RIF STUDIO Join Us",...body})});
     else if(RIF.MAIL_TO)await fetch("https://formsubmit.co/ajax/"+RIF.MAIL_TO,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({_subject:body.subject,_template:"table",_captcha:"false",...body})})}catch(_){}
   e.target.reset();m.textContent=T("join.ok","지원서가 전달됐어요. 확인 후 연락드릴게요!")};
-async function list(){
-  const {data:s}=await db.auth.getSession();if(!s.session)return;
-  const {data}=await db.from("join_requests").select("*").order("created_at",{ascending:false});
-  $("admin").hidden=false;const L=$("list");L.replaceChildren();
-  (data||[]).forEach(r=>{const c=el("div",{className:"req"},[
-    el("b",{textContent:(r.nickname||r.name||"-")+(r.nickname&&r.name?" ("+r.name+")":"")+" · "+r.email}),el("div",{className:"note",textContent:new Date(r.created_at).toLocaleString("ko-KR")}),
-    el("div",{textContent:"출신: "+({korea:"한국",japan:"일본",english:"영미권",other:"기타"}[r.region]||"-")}),el("div",{textContent:"분야: "+fmt(r.fields)+(r.field_other?" ("+r.field_other+")":"")}),el("div",{textContent:"Discord: "+(r.discord||"-")}),el("div",{textContent:"YouTube: "+(r.youtube||"-")}),el("div",{textContent:"Twitter: "+(r.twitter||"-")}),el("p",{textContent:r.intro}),el("p",{textContent:"[지원동기] "+(r.motive||"-")}),el("p",{textContent:"[경력] "+(r.career||"-")})]);
-    const x=el("button",{className:"btn small",textContent:"삭제"});
-    x.onclick=async()=>{if(confirm("삭제할까요?")){await db.from("join_requests").delete().eq("id",r.id);list()}};c.append(x);L.append(c)});
-  if(!(data||[]).length)L.textContent="아직 지원서가 없어요."}
-list();
 
 $("f").addEventListener("change",e=>{if(e.target.value==="etc"){const o=$("fo");o.hidden=!e.target.checked;if(!o.hidden)o.focus()}});
