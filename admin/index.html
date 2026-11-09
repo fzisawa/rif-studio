@@ -17,7 +17,7 @@ table.jt{border-collapse:collapse;width:100%;font-size:14px;line-height:1.5}
 .jt tr.dup td{background:#ff2d2d22}.jt tr.dup:hover td{background:#ff2d2d33}
 .dupb{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:99px;background:#e5332a;color:#fff;font-size:11px;font-weight:700;vertical-align:middle}
 .jt td.mk{text-align:center;width:48px}.jt td.mk input{width:18px;height:18px;padding:0;accent-color:var(--ac);cursor:pointer}
-.jt td.mm{min-width:180px}.jt input.memo{width:100%;padding:6px 10px;border-radius:8px;font-size:13px}
+.cth{background:#7c5cd622}.jt td.ck{width:44px;padding:8px 2px;background:#7c5cd610}.jt td.ck input:disabled{opacity:.55;cursor:not-allowed}.jt td.mm{min-width:180px}.jt input.memo{width:100%;padding:6px 10px;border-radius:8px;font-size:13px}
 .jt td.ok,.jt input.memo.ok{outline:2px solid #3bb273;outline-offset:-2px}
 #mf[hidden]{display:none!important}
 #tw{overflow:visible;border:0}
@@ -35,11 +35,12 @@ main.wide{max-width:1500px;padding-left:2vw;padding-right:2vw}
 <div id="app" hidden><p class="lead"><a href="#" id="out">로그아웃</a></p>
 <div class="tabs"><button type="button" id="t1" aria-pressed="true">포트폴리오 올리기</button><button type="button" id="t2" aria-pressed="false">지원서 보기</button></div>
 <div id="p1"><h2>새로 추가</h2><div id="mount"></div><h2 style="margin-top:48px">올린 목록</h2><div id="items"></div></div>
-<div id="p2" hidden><div class="jbar"><b id="cnt"></b><input id="q" placeholder="검색 (이름·이메일·분야…)"><button class="btn" id="csv" type="button">CSV 받기</button></div>
-<div id="tw"><table class="jt"><thead><tr><th>No.</th><th>접수일시</th><th>닉네임</th><th>성명</th><th>이메일</th><th>출신</th><th>분야</th><th>Discord</th><th>YouTube</th><th>Twitter</th><th>감사</th><th>면접</th><th>거절</th><th>채용</th><th>메모</th></tr></thead><tbody id="tb"></tbody></table></div>
+<div id="p2" hidden><div class="jbar"><b id="cnt"></b><input id="q" placeholder="검색 (이름·이메일·분야…)"><button class="btn" id="csv" type="button">CSV 받기</button><button class="btn ghost" id="ceo" type="button">🔒 대표 잠금 해제</button></div>
+<div id="tw"><table class="jt"><thead><tr><th>No.</th><th>접수일시</th><th>닉네임</th><th>성명</th><th>이메일</th><th>출신</th><th>분야</th><th>Discord</th><th>YouTube</th><th>Twitter</th><th>감사</th><th>면접</th><th>거절</th><th>채용</th><th class="cth">면접<br>의향</th><th class="cth">채용<br>의향</th><th>메모</th></tr></thead><tbody id="tb"></tbody></table></div>
 <p class="note">줄을 누르면 자기소개·지원동기·경력이 펼쳐져요.</p></div></div>
 </section></main>
+<div id="pm" class="mdl" role="dialog" aria-modal="true" aria-labelledby="pt" hidden><div class="mbox"><h2 id="pt">대표 확인</h2><p>면접·채용 의향은 대표만 바꿀 수 있어요.<br>대표 비밀번호를 입력해 주세요.</p><input id="pi" type="password" inputmode="numeric" autocomplete="off" maxlength="20" style="padding:12px 14px;text-align:center;letter-spacing:.3em;width:100%"><p id="pe" style="color:#d64545;min-height:1.4em;margin:0"></p><div class="mrow"><button type="button" class="btn ghost" id="pc">취소</button><button type="button" class="btn" id="po">확인</button></div></div></div>
 <div id="mm" class="mdl" role="dialog" aria-modal="true" aria-labelledby="mt" hidden><div class="mbox" style="text-align:left;justify-items:stretch"><h2 id="mt"></h2><p id="mp"></p><div id="mf" hidden style="display:grid;gap:10px"><label>일시<input id="md" maxlength="200" placeholder="예: 11월 15일(토) 오후 3시 (KST)"></label><label>방식·장소 또는 링크<input id="ml" maxlength="300" placeholder="예: Zoom 링크 / 판교 사무실"></label></div><p id="mw" style="color:#e5332a;font-weight:700"></p><div class="mrow" style="justify-content:flex-end"><button type="button" class="btn ghost" id="mc">취소</button><button type="button" class="btn" id="mg">보내기</button></div></div></div>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js"></script><script src="app.js"></script><script src="join.js?v=43"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js"></script><script src="app.js"></script><script src="join.js?v=44"></script><script src="../nav.js" defer></script></body></html>
