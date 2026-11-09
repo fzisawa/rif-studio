@@ -28,7 +28,7 @@ function draw(){
     const memo=el("input",{className:"memo",value:r.memo||"",placeholder:"메모",maxLength:500});memo.onclick=e=>e.stopPropagation();
     memo.onchange=()=>save(r,{memo:memo.value.trim()||null},memo);
     const tr=el("tr",{className:"r"+(isDup?" dup":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(r.email),cell(R[r.region]||"-"),cell(flds(r),"ch"),cell(r.discord),link(r.youtube,"ln"),link(r.twitter,"ln"),...chk,el("td",{className:"mm"},[memo])]);
-    const dtl=el("tr",{className:"d",hidden:true},[el("td",{colSpan:15},[el("b",{textContent:"자기소개"}),el("p",{textContent:r.intro||"-"}),el("b",{textContent:"지원동기"}),el("p",{textContent:r.motive||"-"}),el("b",{textContent:"경력"}),el("p",{textContent:r.career||"-"})])]);
+    const dtl=el("tr",{className:"d",hidden:true},[el("td",{colSpan:15},[el("b",{textContent:"경력"}),el("p",{textContent:r.career||"-"}),el("b",{textContent:"자기소개"}),el("p",{textContent:r.intro||"-"}),el("b",{textContent:"지원동기"}),el("p",{textContent:r.motive||"-"})])]);
     const x=el("button",{className:"btn small",textContent:"삭제"});
     x.onclick=async e=>{e.stopPropagation();if(confirm((r.nickname||r.name)+" 지원서를 삭제할까요? 되돌릴 수 없어요.")){const {error}=await db.from("join_requests").delete().eq("id",r.id);if(error)alert("삭제 실패");load()}};
     dtl.firstChild.append(x);tr.onclick=()=>{dtl.hidden=!dtl.hidden};tb.append(tr,dtl)});
