@@ -40,9 +40,9 @@ function draw(){
   view.forEach(r=>{
     const n=cnt[(r.email||"").trim().toLowerCase()],isDup=n>1;
     const nick=cell(r.nickname||r.name);if(isDup)nick.append(el("span",{className:"dupb",textContent:"재지원"}));
-    const chk=MC.map(([k,t])=>{const c=el("input",{type:"checkbox",checked:!!r[k],title:t+" 메일 발송"});c.onclick=e=>e.stopPropagation();
+    const chk=MC.map(([k,t])=>{const c=el("input",{type:"checkbox",checked:!!r[k],disabled:!!r[k],title:r[k]?t+" 메일 발송 완료 (해제할 수 없어요)":t+" 메일 발송"});c.className="mc";c.onclick=e=>e.stopPropagation();
       c.onchange=async()=>{
-        if(!c.checked){if(confirm("체크만 해제할까요?\n(이미 보낸 메일은 취소되지 않아요)")){if(!(await save(r,{[k]:false},td)))c.checked=true}else c.checked=true;return}
+        if(!c.checked){c.checked=true;return}
         const ex=await askMail(r,k,t);if(!ex){c.checked=false;return}
         c.disabled=true;let ok=false,msg="";
         try{const {data,error}=await db.functions.invoke("send-applicant-mail",{body:{id:r.id,type:TYPE[k],...ex}});
@@ -50,11 +50,11 @@ function draw(){
         c.disabled=false;
         if(!ok){
           let sent=false;try{const {data:cur}=await db.from("join_requests").select(k).eq("id",r.id).single();sent=!!(cur&&cur[k])}catch(_){}
-          if(sent){c.checked=true;r[k]=true;alert("응답은 실패로 왔지만 서버에는 발송된 것으로 기록돼 있어요. 받은 메일함(보낸 편지함)을 확인해 주세요.")}
+          if(sent){c.checked=true;c.disabled=true;r[k]=true;alert("응답은 실패로 왔지만 서버에는 발송된 것으로 기록돼 있어요. 받은 메일함(보낸 편지함)을 확인해 주세요.")}
           else{c.checked=false;r[k]=false;alert("메일이 발송되지 않았어요. 체크를 풀었습니다.\n사유: "+msg)}
           return}
         if(msg){await save(r,{[k]:true})}
-        r[k]=true;td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900)};
+        r[k]=true;c.disabled=true;c.title=t+" 메일 발송 완료 (해제할 수 없어요)";td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900)};
       const td=el("td",{className:"mk"},[c]);return td});
     const CK=[["ceo_interview","면접 의향","ci"],["ceo_hire","채용 의향","ch"],["ceo_reject","채용 거절","cr"]].map(([k,t,cl])=>{const c=el("input",{type:"checkbox",checked:!!r[k],disabled:!PIN,title:PIN?t:"대표 잠금 해제 후 변경할 수 있어요"});c.onclick=e=>e.stopPropagation();
       c.onchange=async()=>{const v=c.checked;c.disabled=true;const {error}=await db.rpc("set_ceo_intent",{p_id:r.id,p_field:k,p_val:v,p_pin:PIN});c.disabled=!PIN;if(error){c.checked=!v;alert("저장하지 못했어요: "+(/bad pin/.test(error.message)?"비밀번호가 맞지 않아요. 잠금을 풀고 다시 시도해 주세요.":error.message));return}r[k]=v;td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900)};
