@@ -1,0 +1,36 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Mail · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=53"><link rel="icon" href="../img/favicon.png" type="image/png">
+<style>.jt{border-collapse:collapse;width:100%;font-size:14px;line-height:1.5}.jt th{text-align:left;padding:10px 12px;border-bottom:2px solid #7775;white-space:nowrap;font-size:12px;letter-spacing:.06em;color:var(--mut)}.jt td{padding:10px 12px;border-bottom:1px solid #7773;vertical-align:top}
+.jt tr.r{cursor:pointer}.jt tr.r:hover td{background:#7771}.jt td.dt{white-space:nowrap}.jt tr.d td{background:#7771;padding:16px 20px}.jt tr.d p{white-space:pre-wrap;margin:0 0 12px}.jt tr.d b{color:#d64545;font-size:12px;letter-spacing:.1em}
+.jbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}.jbar .btn{padding:8px 18px;font-size:14px}.jbar input{padding:8px 14px;min-width:200px}
+.mf{display:grid;gap:12px;max-width:760px}.mf label{display:grid;gap:6px;font-size:13px;color:var(--mut)}.mf input,.mf textarea{padding:10px 14px;font:inherit;border-radius:10px}.mf textarea{resize:vertical}
+.btn.mred{background:#d64545;border-color:#d64545;color:#fff}.note.err{color:#d64545}.tag.red{color:#d64545}
+.rb{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700}.rb.on{background:#2fa36b;color:#fff}.rb.off{background:#7775;color:var(--mut)}
+#tw{overflow-x:auto;margin-top:16px;border:1px solid #7773;border-radius:12px}main.wide{max-width:1100px}
+.sigbox{max-width:760px;margin-top:40px;display:grid;gap:10px}.sigbox textarea{padding:10px 14px;font:inherit;border-radius:10px;resize:vertical}
+.pv{border:1px dashed #7775;border-radius:10px;padding:12px 16px;font-size:14px;line-height:1.6;white-space:pre-wrap;color:var(--mut)}
+#login{display:grid;gap:10px;max-width:360px}#login input{padding:12px 14px}</style></head><body>
+<header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.vocal">Vocal</button><div class="nm"><a href="../rif/">RIF</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.sound">Sound</button><div class="nm"><a href="../charmbung/">Charmbung</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.art">Art</button><div class="nm"><a href="../woljae/">Woljae</a></div></div><div class="ng on"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.content">Content</button><div class="nm"><a href="../join/" class=on data-i18n=nav.cj>Join Us</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.mgmt">Management</button><div class="nm"><a href="../rif-management/">RIF</a></div></div><a class="nl" href="../join/">Join Us</a><a class="nl" href="../contact/">Contact</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
+<main id="mn" class="wide"><section class="hero"><p class="tag red">MAIL</p><h1>Mail</h1>
+<form id="login"><input id="em" type="email" placeholder="이메일" required autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" required autocomplete="current-password"><button class="btn mred">로그인</button><p class="note err" id="lmsg"></p></form>
+<div id="app" hidden><p class="lead"><span id="who"></span> · <a href="#" id="out">로그아웃</a></p>
+<p class="note err" id="nomail" hidden>이 계정에는 메일 권한이 없어요. 대표님께 요청해 주세요.</p>
+<div id="box" hidden>
+<form id="mform" class="mf"><h2>새 메일</h2><p class="note">support@rif-studio.com 으로 발송되고, 답장도 support@ 로 와요. 받는 사람은 쉼표로 최대 5명까지.</p>
+<label>받는 사람<input id="mto" type="text" placeholder="name@example.com" autocomplete="off"></label>
+<label>제목<input id="msj" maxlength="200"></label>
+<label>내용<textarea id="mbd" rows="9" maxlength="20000"></textarea></label>
+<div class="pv" id="pv"></div>
+<div class="jbar"><button class="btn mred" id="msend">보내기</button><span class="note" id="mmsg"></span></div></form>
+<div class="sigbox"><h2>내 서명</h2><p class="note">메일 맨 아래, RIF STUDIO 로고 위에 붙어요. 이름·직함·연락처 등 자유롭게 (최대 500자). 비워 두면 이름만 들어가요.</p>
+<textarea id="sig" rows="4" maxlength="500" placeholder="예) 김민아 / Manager&#10;Tel. 010-0000-0000"></textarea>
+<div class="jbar"><button class="btn" id="sigsave" type="button">서명 저장</button><span class="note" id="sigmsg"></span></div></div>
+<h2 style="margin-top:44px">보낸 편지함</h2>
+<div class="jbar"><b id="mcnt"></b><input id="mq" placeholder="검색 (받는 사람·제목·내용…)"><button class="btn ghost" id="mrf" type="button">새로고침</button></div>
+<div id="tw"><table class="jt"><thead><tr><th>보낸 시간</th><th>보낸 사람</th><th>받는 사람</th><th>제목</th><th>읽음</th></tr></thead><tbody id="mtb"></tbody></table></div>
+<p class="note">읽음은 메일 안의 보이지 않는 이미지가 열렸을 때 기록돼요. 받는 분이 이미지 차단을 켜 두면 읽어도 "안 읽음"으로, 메일 앱이 이미지를 미리 받아 가면 안 읽어도 "읽음"으로 보일 수 있어요. 참고용으로만 봐 주세요.</p></div>
+</div></section></main>
+<footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="../config.js"></script><script src="../lib.js"></script><script src="app.js?v=1"></script><script src="../nav.js" defer></script></body></html>
