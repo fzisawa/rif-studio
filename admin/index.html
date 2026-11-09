@@ -14,6 +14,11 @@ table.jt{border-collapse:collapse;width:100%;font-size:14px;line-height:1.5}
 .jt tr.d td{background:#7771;padding:16px 20px}.jt tr.d p{white-space:pre-wrap;margin:0 0 12px}.jt tr.d b{color:var(--ac);font-size:12px;letter-spacing:.1em}
 .jbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}.jbar .btn{padding:8px 18px;font-size:14px}.jbar input{padding:8px 14px;min-width:200px}
 .btn.small{padding:6px 14px;font-size:13px;background:#7776}
+.jt tr.dup td{background:#ff2d2d22}.jt tr.dup:hover td{background:#ff2d2d33}
+.dupb{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:99px;background:#e5332a;color:#fff;font-size:11px;font-weight:700;vertical-align:middle}
+.jt td.mk{text-align:center;width:48px}.jt td.mk input{width:18px;height:18px;padding:0;accent-color:var(--ac);cursor:pointer}
+.jt td.mm{min-width:180px}.jt input.memo{width:100%;padding:6px 10px;border-radius:8px;font-size:13px}
+.jt td.ok,.jt input.memo.ok{outline:2px solid #3bb273;outline-offset:-2px}
 </style></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><a href="../rif/">RIF</a><a href="../charmbung/">Charmbung</a><a href="../woljae/">Woljae</a><a href="../join/">Join Us</a><a href="../contact/">Contact</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
 <main id="mn"><section class="hero"><p class="tag">ADMIN</p><h1>Admin</h1>
@@ -22,7 +27,7 @@ table.jt{border-collapse:collapse;width:100%;font-size:14px;line-height:1.5}
 <div class="tabs"><button type="button" id="t1" aria-pressed="true">포트폴리오 올리기</button><button type="button" id="t2" aria-pressed="false">지원서 보기</button></div>
 <div id="p1"><h2>새로 추가</h2><div id="mount"></div><h2 style="margin-top:48px">올린 목록</h2><div id="items"></div></div>
 <div id="p2" hidden><div class="jbar"><b id="cnt"></b><input id="q" placeholder="검색 (이름·이메일·분야…)"><button class="btn" id="csv" type="button">CSV 받기</button></div>
-<div id="tw"><table class="jt"><thead><tr><th>No.</th><th>접수일시</th><th>닉네임</th><th>성명</th><th>이메일</th><th>출신</th><th>분야</th><th>Discord</th><th>YouTube</th><th>Twitter</th></tr></thead><tbody id="tb"></tbody></table></div>
+<div id="tw"><table class="jt"><thead><tr><th>No.</th><th>접수일시</th><th>닉네임</th><th>성명</th><th>이메일</th><th>출신</th><th>분야</th><th>Discord</th><th>YouTube</th><th>Twitter</th><th>감사</th><th>면접</th><th>거절</th><th>채용</th><th>메모</th></tr></thead><tbody id="tb"></tbody></table></div>
 <p class="note">줄을 누르면 자기소개·지원동기·경력이 펼쳐져요.</p></div></div>
 </section></main>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
