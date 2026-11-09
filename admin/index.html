@@ -34,19 +34,33 @@ main.wide{max-width:1500px;padding-left:2vw;padding-right:2vw}
 .jt td.ck input{border-color:currentColor}.jt td.ci input{color:#2f80ed;border-color:#2f80ed}.jt td.ci input:checked{background:#2f80ed;border-color:#2f80ed}.jt td.ch input{color:#7c5cd6;border-color:#7c5cd6}.jt td.ch input:checked{background:#7c5cd6;border-color:#7c5cd6}.jt td.cr input{border-color:#d64545}.jt td.cr input:checked{background:#d64545;border-color:#d64545}
 .jt td.ck input:disabled:not(:checked){opacity:.85;border-style:dashed}
 .jt tr.rej td.nick,.jt tr.rej{box-shadow:inset 3px 0 0 #d64545}.jt td.mk input.mr{border-color:#d64545}.jt td.mk input.mr:checked{background:#d64545;border-color:#d64545}
+.tabs button.tm{border-color:#d64545;color:#d64545}.tabs button.tm[aria-pressed="true"]{background:#d64545;border-color:#d64545;color:#fff}
+.mf{display:grid;gap:12px;max-width:760px}.mf label{display:grid;gap:6px;font-size:13px;color:var(--mut)}.mf input,.mf textarea{padding:10px 14px;font:inherit;border-radius:10px}.mf textarea{resize:vertical}
+.btn.mred{background:#d64545;border-color:#d64545;color:#fff}.note.err{color:#d64545}
+.rb{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700}.rb.on{background:#2fa36b;color:#fff}.rb.off{background:#7775;color:var(--mut)}
 </style></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.vocal">Vocal</button><div class="nm"><a href="../rif/">RIF</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.sound">Sound</button><div class="nm"><a href="../charmbung/">Charmbung</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.art">Art</button><div class="nm"><a href="../woljae/">Woljae</a></div></div><div class="ng on"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.content">Content</button><div class="nm"><a href="../join/" class=on data-i18n=nav.cj>Join Us</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.mgmt">Management</button><div class="nm"><a href="../rif-management/">RIF</a></div></div><a class="nl" href="../join/">Join Us</a><a class="nl" href="../contact/">Contact</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
 <main id="mn"><section class="hero"><p class="tag">ADMIN</p><h1>Admin</h1>
-<form id="login"><input id="em" type="email" value="takanashi@rif-studio.com" hidden autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password"><button class="btn">로그인</button><p class="note" id="lmsg"></p></form>
+<form id="login"><input id="em" type="email" placeholder="이메일" required autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password"><button class="btn">로그인</button><p class="note" id="lmsg"></p></form>
 <div id="app" hidden><p class="lead"><a href="#" id="out">로그아웃</a></p>
-<div class="tabs"><button type="button" id="t1" aria-pressed="true">포트폴리오 올리기</button><button type="button" id="t2" aria-pressed="false">지원서 보기</button></div>
+<div class="tabs"><button type="button" id="t1" aria-pressed="true">포트폴리오 올리기</button><button type="button" id="t2" aria-pressed="false">지원서 보기</button><button type="button" id="t3" class="tm" aria-pressed="false" hidden>메일</button></div>
 <div id="p1"><h2>새로 추가</h2><div id="mount"></div><h2 style="margin-top:48px">올린 목록</h2><div id="items"></div></div>
 <div id="p2" hidden><div class="jbar"><b id="cnt"></b><input id="q" placeholder="검색 (이름·이메일·분야…)"><button class="btn" id="csv" type="button">CSV 받기</button><button class="btn ghost" id="ceo" type="button">🔒 대표 잠금 해제</button></div>
 <div id="tw"><table class="jt"><thead><tr><th>No.</th><th>접수일시</th><th>닉네임</th><th>성명</th><th>이메일</th><th>출신</th><th>분야</th><th>Discord</th><th>YouTube</th><th>Twitter</th><th>감사</th><th>면접</th><th>거절</th><th>채용</th><th class="cth ci">면접<br>의향</th><th class="cth ch">채용<br>의향</th><th class="cth cr">채용<br>거절</th><th>메모</th></tr></thead><tbody id="tb"></tbody></table></div>
 <p class="note">줄을 누르면 자기소개·지원동기·경력이 펼쳐져요.</p></div></div>
+<div id="p3" hidden><p class="note err" id="nomail" hidden>이 계정에는 메일 권한이 없어요. 대표님께 요청해 주세요.</p>
+<form id="mform" class="mf"><h2>새 메일</h2><p class="note">support@rif-studio.com 으로 발송돼요. 답장도 support@ 로 옵니다. 받는 사람은 쉼표로 최대 5명.</p>
+<label>받는 사람<input id="mto" type="text" placeholder="name@example.com" autocomplete="off"></label>
+<label>제목<input id="msj" maxlength="200"></label>
+<label>내용<textarea id="mbd" rows="9" maxlength="20000"></textarea></label>
+<div class="jbar"><button class="btn mred" id="msend">보내기</button><span class="note" id="mmsg"></span></div></form>
+<h2 style="margin-top:36px">보낸 편지함</h2>
+<div class="jbar"><b id="mcnt"></b><input id="mq" placeholder="검색 (받는 사람·제목·내용…)"><button class="btn ghost" id="mrf" type="button">새로고침</button></div>
+<div id="mw2" style="overflow-x:auto;margin-top:16px;border:1px solid #7773;border-radius:12px"><table class="jt"><thead><tr><th>보낸 시간</th><th>보낸 사람</th><th>받는 사람</th><th>제목</th><th>읽음</th></tr></thead><tbody id="mtb"></tbody></table></div>
+<p class="note">읽음 표시는 메일 안의 보이지 않는 이미지가 열렸을 때 기록돼요. 받는 분이 이미지 차단을 켜 두면 읽어도 "안 읽음"으로 보일 수 있어요.</p></div>
 </section></main>
 <div id="pm" class="mdl" role="dialog" aria-modal="true" aria-labelledby="pt" hidden><div class="mbox"><h2 id="pt">대표 확인</h2><p>면접·채용 의향은 대표만 바꿀 수 있어요.<br>대표 비밀번호를 입력해 주세요.</p><input id="pi" type="password" inputmode="numeric" autocomplete="off" maxlength="20" style="padding:12px 14px;text-align:center;letter-spacing:.3em;width:100%"><p id="pe" style="color:#d64545;min-height:1.4em;margin:0"></p><div class="mrow"><button type="button" class="btn ghost" id="pc">취소</button><button type="button" class="btn" id="po">확인</button></div></div></div>
 <div id="mm" class="mdl" role="dialog" aria-modal="true" aria-labelledby="mt" hidden><div class="mbox" style="text-align:left;justify-items:stretch"><h2 id="mt"></h2><p id="mp"></p><div id="mf" hidden style="display:grid;gap:10px"><label>일시<input id="md" maxlength="200" placeholder="예: 11월 15일(토) 오후 3시 (KST)"></label><label>방식·장소 또는 링크<input id="ml" maxlength="300" placeholder="예: Zoom 링크 / 판교 사무실"></label></div><p id="mw" style="color:#e5332a;font-weight:700"></p><div class="mrow" style="justify-content:flex-end"><button type="button" class="btn ghost" id="mc">취소</button><button type="button" class="btn" id="mg">보내기</button></div></div></div>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js"></script><script src="app.js"></script><script src="join.js?v=52"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js"></script><script src="app.js"></script><script src="join.js?v=52"></script><script src="mail.js?v=1"></script><script src="../nav.js" defer></script></body></html>
