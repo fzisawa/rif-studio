@@ -41,8 +41,13 @@ function draw(){
         try{const {data,error}=await db.functions.invoke("send-applicant-mail",{body:{id:r.id,type:TYPE[k],...ex}});
           if(error){try{msg=(await error.context.json()).error}catch(_){msg=error.message}}else if(data&&data.ok){ok=true;msg=data.warn||""}else msg=(data&&data.error)||"알 수 없는 오류"}catch(e){msg=String(e.message||e)}
         c.disabled=false;
-        if(!ok){c.checked=false;alert("메일 발송 실패: "+msg);return}
-        r[k]=true;td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900);if(msg)alert(msg)};
+        if(!ok){
+          let sent=false;try{const {data:cur}=await db.from("join_requests").select(k).eq("id",r.id).single();sent=!!(cur&&cur[k])}catch(_){}
+          if(sent){c.checked=true;r[k]=true;alert("응답은 실패로 왔지만 서버에는 발송된 것으로 기록돼 있어요. 받은 메일함(보낸 편지함)을 확인해 주세요.")}
+          else{c.checked=false;r[k]=false;alert("메일이 발송되지 않았어요. 체크를 풀었습니다.\n사유: "+msg)}
+          return}
+        if(msg){await save(r,{[k]:true})}
+        r[k]=true;td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900)};
       const td=el("td",{className:"mk"},[c]);return td});
     const memo=el("input",{className:"memo",value:r.memo||"",placeholder:"메모",maxLength:500});memo.onclick=e=>e.stopPropagation();
     memo.onchange=()=>save(r,{memo:memo.value.trim()||null},memo);
