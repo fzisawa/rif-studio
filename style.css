@@ -105,3 +105,4 @@ fieldset.grp legend{padding:0;margin-bottom:8px;font-size:14px;color:var(--mut)}
 .mbox{background:var(--bg);color:var(--fg);border-radius:20px;padding:36px 32px 28px;max-width:380px;width:100%;text-align:center;display:grid;gap:12px;justify-items:center;box-shadow:0 20px 60px #0008}
 .mbox h2{font-size:22px;margin:0}.mbox p{color:var(--mut);margin:0 0 8px}
 .mchk{width:56px;height:56px;border-radius:50%;background:var(--ac);color:#fff;font-size:30px;line-height:56px;font-weight:700}
+.mrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.btn.ghost{background:none;color:var(--fg);border:1px solid #7775}
