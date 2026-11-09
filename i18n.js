@@ -11,6 +11,10 @@ ja:{
 "home.en":"RIF STUDIO は、声とサウンド、イラストを通じて韓国・日本・アメリカをつなぐ新しいエンターテインメントスタジオです。",
 "home.c1":"ディレクター · 1stボーカル","home.c2":"サウンドエンジニア · 作曲家","home.c3":"イラストレーター",
 "home.join":"参加する →","mark":"RIF STUDIO ホーム",
+"nav.vocal":"ボーカル","nav.sound":"サウンド","nav.art":"アート","nav.content":"コンテンツ","nav.mgmt":"マネジメント","nav.cj":"クリエイター募集 · Join Us",
+"rif.vl":"韓国語と日本語、二つの言語を行き来する声。<br>リフ スタジオ最初の歌は、この声から始まります。","rif.v1":"韓国語・日本語の楽曲を歌うボーカル",
+"mg.lead":"信頼でつなぎ、ビジネスで形にする。<br>営業の現場での経験と経営の学びで、スタジオとパートナーをつなぐマネジメント。","mg.1":"韓国の大手企業出身 — 営業の現場で培った実務経験","mg.2":"韓国の経営大学院 修士課程修了 — ビジネスを構造で捉える視点","mg.3":"日本の名門大学出身 — 韓国と日本、二つの市場をつなぐコミュニケーション","mg.4":"リフ スタジオ統括 — 契約・スケジュール・精算まで担う窓口",
+
 "rif.lead":"パンギョから東京、そしてニューヨークまで。<br>ひとつの声で三つの都市をつなぐ、リフ スタジオの出発点。",
 "rif.1":"日本の名門大学出身","rif.2":"韓国の経営大学院 修士課程修了","rif.3":"韓国の大手企業出身","rif.4":"リフ スタジオ統括",
 "rif.5":"<b>THE FIRST VOICE</b> — リフ スタジオ最初のボーカル。スタジオ最初の歌は、この声から始まります。",
@@ -35,6 +39,10 @@ en:{
 "home.p1":"RIF STUDIO is a new entertainment studio that started in Korea and is heading to Japan and the United States. Vocals, composition, sound engineering, illustration — people who each take responsibility for the quality of their craft come together to make a single work.",
 "home.p2":"We believe in music that reaches the heart before it crosses a border. Now that the first voice has rung out, we are waiting for companions to write the next story with us.",
 "home.en":"","mark":"RIF STUDIO home",
+"nav.vocal":"Vocal","nav.sound":"Sound","nav.art":"Art","nav.content":"Content","nav.mgmt":"Management","nav.cj":"Creators wanted · Join Us",
+"rif.vl":"A voice that moves between Korean and Japanese.<br>The studio's first song begins with this voice.","rif.v1":"Vocalist singing in Korean and Japanese",
+"mg.lead":"Connected by trust, delivered through business.<br>Management that links the studio and its partners, drawing on field sales experience and business training.","mg.1":"Formerly at a major Korean corporation — hands-on sales experience","mg.2":"Master's degree from a Korean graduate school of business — seeing business as structure","mg.3":"Graduate of a prestigious Japanese university — bridging the Korean and Japanese markets","mg.4":"Head of RIF STUDIO — one point of contact for contracts, schedules and settlements",
+
 "rif.lead":"From Pangyo to Tokyo, and on to New York.<br>The starting point of RIF STUDIO, linking three cities with a single voice.",
 "rif.1":"Graduate of a prestigious Japanese university","rif.2":"Master's degree from a Korean graduate school of business","rif.3":"Formerly at a major Korean corporation","rif.4":"Head of RIF STUDIO",
 "rif.5":"<b>THE FIRST VOICE</b> — The first vocalist of RIF STUDIO. The studio's first song begins with this voice.",

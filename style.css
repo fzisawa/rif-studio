@@ -106,3 +106,15 @@ fieldset.grp legend{padding:0;margin-bottom:8px;font-size:14px;color:var(--mut)}
 .mbox h2{font-size:22px;margin:0}.mbox p{color:var(--mut);margin:0 0 8px}
 .mchk{width:56px;height:56px;border-radius:50%;background:var(--ac);color:#fff;font-size:30px;line-height:56px;font-weight:700}
 .mrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.btn.ghost{background:none;color:var(--fg);border:1px solid #7775}
+/* grouped nav */
+nav{align-items:center;gap:6px 18px}
+.ng{position:relative}
+.ng>button{all:unset;cursor:pointer;color:var(--mut);font-size:14px;padding:8px 2px;line-height:1}
+.ng>button:hover,.ng.on>button,.ng:focus-within>button{color:var(--ac)}
+.ng>button:focus-visible{outline:2px solid var(--ac);outline-offset:2px;border-radius:4px}
+.nm{position:absolute;left:-12px;top:100%;min-width:170px;display:none;flex-direction:column;gap:2px;padding:8px;background:var(--bg);border:1px solid color-mix(in srgb,var(--mut) 35%,transparent);border-radius:12px;box-shadow:0 14px 30px -12px #0009;z-index:40}
+.nm::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px}
+.ng:hover .nm,.ng:focus-within .nm,.ng.open .nm{display:flex}
+.nm a{padding:9px 12px;border-radius:8px;white-space:nowrap}
+.nm a:hover{background:color-mix(in srgb,var(--ac) 14%,transparent)}
+@media(max-width:700px){nav{gap:4px 14px}.nm{left:0}}
