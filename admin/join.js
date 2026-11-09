@@ -40,7 +40,7 @@ function draw(){
   view.forEach(r=>{
     const n=cnt[(r.email||"").trim().toLowerCase()],isDup=n>1;
     const nick=cell(r.nickname||r.name);if(isDup)nick.append(el("span",{className:"dupb",textContent:"재지원"}));
-    const chk=MC.map(([k,t])=>{const c=el("input",{type:"checkbox",checked:!!r[k],disabled:!!r[k],title:r[k]?t+" 메일 발송 완료 (해제할 수 없어요)":t+" 메일 발송"});c.className="mc";c.onclick=e=>e.stopPropagation();
+    const chk=MC.map(([k,t])=>{const c=el("input",{type:"checkbox",checked:!!r[k],disabled:!!r[k],title:r[k]?t+" 메일 발송 완료 (해제할 수 없어요)":t+" 메일 발송"});c.className="mc"+(k==="mail_reject"?" mr":"");c.onclick=e=>e.stopPropagation();
       c.onchange=async()=>{
         if(!c.checked){c.checked=true;return}
         const ex=await askMail(r,k,t);if(!ex){c.checked=false;return}
