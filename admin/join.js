@@ -4,7 +4,6 @@ const U={"사운드":["vocal","composition","directing","mixing","mastering"],"�
   R={korea:"한국",japan:"일본",english:"영미권",other:"기타"};
 const flds=r=>{const f=(r.fields||"").split(",").filter(Boolean);return f.map(x=>x==="etc"&&r.field_other?"기타("+r.field_other+")":(N[x]||x)).join(", ")||"-"};
 const pad=n=>String(n).padStart(2,"0"),dt=s=>{const d=new Date(s);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes())};
-const LN=g=>({korea:"한국어",japan:"영어 (일본어 템플릿 준비 중)",english:"영어",other:"영어"})[g]||"출신 미입력 — 한국어+영어";
 const url=v=>/^https?:\/\//.test(v||"")?v:null;
 let rows=[],PIN=null,lockT=null;
 function setLock(on){const b=$("ceo");if(on){PIN=null;clearTimeout(lockT);b.textContent="🔒 대표 잠금 해제"}else{b.textContent="🔓 잠금 (대표 모드)";clearTimeout(lockT);lockT=setTimeout(()=>{setLock(true);draw()},600000)}}
@@ -20,7 +19,7 @@ const TYPE={mail_thanks:"thanks",mail_interview:"interview",mail_reject:"reject"
 function askMail(r,k,t){return new Promise(res=>{
   const who=(r.nickname||r.name||r.email)+" ("+r.email+")";
   $("mt").textContent=t+" 메일을 보낼까요?";
-  $("mp").textContent=who+"님께 "+t+" 메일("+LN(r.region)+")을 support@rif-studio.com으로 바로 보냅니다. 보내면 되돌릴 수 없어요.";
+  $("mp").textContent=who+"님께 "+t+" 메일(한국어+영어)을 support@rif-studio.com으로 바로 보냅니다. 보내면 되돌릴 수 없어요.";
   const iv=false;$("mf").hidden=!iv;$("md").value="";$("ml").value="";
   $("mw").textContent=((k==="mail_reject"&&r.mail_hire)||(k==="mail_hire"&&r.mail_reject))?"주의: 이미 "+(k==="mail_reject"?"채용":"거절")+" 메일이 나간 지원자예요. 정말 보낼까요?":"";
   const o=$("mm");o.hidden=false;(iv?$("md"):$("mg")).focus();
