@@ -89,7 +89,9 @@ header{justify-content:flex-start}.logo{margin-right:auto;order:1}nav{order:2}
 @media(max-width:700px){.lang{order:2;margin-left:auto}.mark{margin-left:0}}
 
 /* join: fields */
-fieldset.grp{border:0;margin:0;padding:0;display:grid;gap:8px}
+fieldset.grp{border:0;margin:0;padding:0;display:grid;gap:14px}
+.unit{display:grid;gap:6px}
+.unit-h{margin:0;font-size:12px;letter-spacing:.06em;color:var(--mut)}
 fieldset.grp legend{padding:0;margin-bottom:8px;font-size:14px;color:var(--mut)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chips label{display:block;position:relative;cursor:pointer}
