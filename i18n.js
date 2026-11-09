@@ -23,7 +23,7 @@ ja:{
 "join.h1":"次の声は、<br>あなたかもしれない。",
 "join.lead":"リフ スタジオは小さいけれど、素早く動くチームです。<br>ボーカル、作曲、エンジニアリング、イラスト、映像──パンギョ・東京・ニューヨークをつなぐ舞台を一緒につくる仲間を探しています。",
 "join.1":"年齢や経歴よりも<b>作品</b>と情熱を見ます","join.2":"実際のプロジェクトにすぐ参加します","join.3":"한국어 · 日本語 · English 歓迎",
-"join.name":"お名前","join.email":"メールアドレス","join.intro":"自己紹介",
+"join.field":"分野(複数選択可)","join.fo":"どんな分野ですか？","join.nof":"分野を1つ以上選んでください。","f.vocal":"ボーカル","f.composition":"作曲","f.directing":"ディレクティング","f.mixing":"ミキシング","f.mastering":"マスタリング","f.illustration":"イラスト","f.video":"映像","f.etc":"その他 (etc)","join.name":"お名前","join.email":"メールアドレス","join.intro":"自己紹介",
 "join.yt":"チャンネルまたは動画のリンク","join.tw":"@ID またはリンク","join.go":"応募する →",
 "join.sending":"送信中…","join.fail":"送信に失敗しました。しばらくしてからもう一度お試しいただくか、rif@rif-studio.com までお送りください。","join.ok":"応募を受け付けました。確認のうえご連絡します！",
 "ct.lead":"コラボ、ご依頼、デモ、何でもどうぞ。"},
@@ -47,7 +47,7 @@ en:{
 "join.h1":"The next voice<br>might be yours.",
 "join.lead":"RIF STUDIO is a small team that moves fast.<br>Vocals, composition, engineering, illustration, video — we're looking for people to build a stage linking Pangyo, Tokyo and New York.",
 "join.1":"We look at your <b>work</b> and passion, not your age or résumé","join.2":"You join real projects right away","join.3":"한국어 · 日本語 · English welcome",
-"join.name":"Name","join.email":"Email","join.intro":"About you",
+"join.field":"Field (choose all that apply)","join.fo":"What field?","join.nof":"Please choose at least one field.","f.vocal":"Vocals","f.composition":"Composition","f.directing":"Directing","f.mixing":"Mixing","f.mastering":"Mastering","f.illustration":"Illustration","f.video":"Video","f.etc":"Other (etc)","join.name":"Name","join.email":"Email","join.intro":"About you",
 "join.yt":"Channel or video link","join.tw":"@handle or link","join.go":"Apply →",
 "join.sending":"Sending…","join.fail":"Sending failed. Please try again in a moment or email rif@rif-studio.com.","join.ok":"Your application has been received. We'll get back to you after reviewing it!",
 "ct.lead":"Collaborations, commissions, demos — anything."}
