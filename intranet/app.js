@@ -14,12 +14,18 @@ async function render(){
   me=(s.user.email||"").toLowerCase();uid=s.user.id;ceo=me===CEO;$("who").textContent=s.user.email;
   const {data:st}=await db.from("mail_staff").select("email,name").maybeSingle();
   $("box").hidden=!st;$("nomail").hidden=!!st;if(!st)return;
-  myName=st.name;{const {data:ex}=await db.rpc("is_exec");exec=!!ex||ceo}$("nf").hidden=!exec;
+  myName=st.name;{const {data:ex}=await db.rpc("is_exec");exec=!!ex||ceo}$("nw").hidden=!exec;
   await loadStaff();await loadAll()}
 async function loadStaff(){const {data}=await db.rpc("staff_list");staff=data||[];
   $("ta").replaceChildren(el("option",{value:"",textContent:"미지정"}),...staff.map(x=>el("option",{value:x.email,textContent:x.name||x.email})))}
 async function loadAll(){await Promise.all([loadNotices(),loadTasks(),loadDocs(),loadDir(),loadInbox()]);startChat()}
 
+/* 작성 팝업 */
+let wmForm=null;
+function openWm(id){wmForm=$(id);$("wmb").replaceChildren(wmForm);$("wm").hidden=false;const f=wmForm.querySelector("input");if(f)f.focus()}
+function closeWm(){$("wm").hidden=true;if(wmForm){$("forms").append(wmForm);wmForm=null}}
+$("nw").onclick=()=>openWm("nf");$("dw").onclick=()=>openWm("df");$("wmx").onclick=closeWm;$("wm").onclick=e=>{if(e.target===$("wm"))closeWm()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeWm()});
 /* 공지 */
 async function loadNotices(){
   const [a,b]=await Promise.all([db.from("notices").select("*").order("pinned",{ascending:false}).order("created_at",{ascending:false}).limit(200),db.from("notice_reads").select("notice_id,email,read_at")]);
@@ -48,7 +54,7 @@ function drawNotices(byN){
   if(!notices.length)box.append(el("p",{className:"note",textContent:"아직 공지가 없어요."}))}
 $("nf").onsubmit=async e=>{e.preventDefault();const t=$("nt").value.trim();if(!t)return msg("nmsg","제목을 써 주세요.",1);
   const {error}=await db.from("notices").insert({title:t,body:$("nbd").value.trim(),pinned:$("npin").checked,author_name:myName,author_email:me});
-  if(error)return msg("nmsg","올리지 못했어요",1);$("nt").value="";$("nbd").value="";$("npin").checked=false;msg("nmsg","올렸어요 ✓");loadNotices()};
+  if(error)return msg("nmsg","올리지 못했어요",1);$("nt").value="";$("nbd").value="";$("npin").checked=false;msg("nmsg","올렸어요 ✓");closeWm();loadNotices()};
 
 /* 업무 */
 async function loadTasks(){const {data}=await db.from("intra_tasks").select("*").order("created_at",{ascending:false}).limit(500);tasks=data||[];drawTasks()}
@@ -97,7 +103,7 @@ $("df").onsubmit=async e=>{e.preventDefault();const f=$("dfile").files[0],t=$("d
   if(error)return msg("dmsg","올리지 못했어요 (파일 형식이나 크기를 확인해 주세요)",1);
   const {error:e2}=await db.from("intra_docs").insert({title:t,note:$("dn").value.trim(),path,filename:f.name,size:f.size,uploader_email:me,uploader_name:myName});
   if(e2){await db.storage.from("intranet-docs").remove([path]);return msg("dmsg","기록하지 못했어요",1)}
-  $("dt").value="";$("dn").value="";$("dfile").value="";msg("dmsg","올렸어요 ✓");loadDocs()};
+  $("dt").value="";$("dn").value="";$("dfile").value="";msg("dmsg","올렸어요 ✓");closeWm();loadDocs()};
 
 /* 메일 (Outlook 스타일) */
 let inbox=[],irds=new Set(),irdBy={},outbox=[],fold="in",selId=null,composing=null,bodies={};
