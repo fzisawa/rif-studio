@@ -106,6 +106,7 @@ $("df").onsubmit=async e=>{e.preventDefault();const f=$("dfile").files[0],t=$("d
   $("dt").value="";$("dn").value="";$("dfile").value="";msg("dmsg","올렸어요 ✓");closeWm();loadDocs()};
 
 /* 메일 (Outlook 스타일) */
+let selMode=false,picked=new Set();
 let inbox=[],irds=new Set(),irdBy={},outbox=[],fold="in",selId=null,composing=null,bodies={};
 const fmt=s=>{if(!s)return"";const d=new Date(s),n=new Date();return d.toDateString()===n.toDateString()?d.toLocaleTimeString("ko-KR",{hour:"numeric",minute:"2-digit"}):d.toLocaleDateString("ko-KR",{month:"numeric",day:"numeric"})};
 const ftl=s=>s?new Date(s).toLocaleString("ko-KR",{dateStyle:"medium",timeStyle:"short"}):"";
@@ -125,7 +126,7 @@ function drawMail(){
   const trN=inbox.filter(m=>m.deleted_at).length+outbox.filter(r=>r.deleted_at).length;
   const mineN=inbox.filter(m=>!m.deleted_at&&!m.done&&(m.assignee_email||"").toLowerCase()===me&&!irds.has(m.id)).length;
   const F=[["in","받은 편지함",un||""],["mine",ceo?"대표 관리":"내 담당",mineN||""],["out","보낸 편지함",""],["done","완료한 메일",""],["trash","휴지통",trN||""]];
-  $("ofl").replaceChildren(...F.map(([k,l,c])=>{const d=el("div",{className:"ofi"+(fold===k?" on":"")},[el("span",{textContent:l}),el("span",{className:"c",textContent:c})]);d.onclick=()=>{fold=k;selId=null;composing=null;drawMail()};return d}));
+  $("ofl").replaceChildren(...F.map(([k,l,c])=>{const d=el("div",{className:"ofi"+(fold===k?" on":"")},[el("span",{textContent:l}),el("span",{className:"c",textContent:c})]);d.onclick=()=>{fold=k;selId=null;composing=null;picked.clear();drawMail()};return d}));
   $("ol").classList.toggle("rd",!!(selId||composing));drawUsage();
   const q=$("oq").value.trim().toLowerCase(),box=$("oli");box.replaceChildren();
   let list;
@@ -138,7 +139,21 @@ function drawMail(){
       el("div",{className:"r1"},[el("span",{className:"fr1",textContent:out?(m.sender_name?m.sender_name+" → ":"")+m.to_email:(m.from_name||m.from_addr)}),el("span",{className:"dd",textContent:fmt(out?m.created_at:m.received_at)})]),
       el("div",{className:"sj",textContent:m.subject||"(제목 없음)"}),
       el("div",{className:"pv2"},out?[document.createTextNode((m.opened_at?"✓ 읽음 · ":"안 읽음 · ")+(m.body||"").replace(/\s+/g," ").slice(0,80))]:[document.createTextNode((ceo&&m.to_addrs?"→ "+m.to_addrs.replace(/@rif-studio\.com/gi,"")+" · ":"")+(m.assignee_email?"담당 "+nameOf(m.assignee_email)+" · ":"")+(m.preview||""))])]);
-    row.onclick=()=>selectMsg(m.id);box.append(row)});
+    if(selMode){const cb=el("input",{type:"checkbox",className:"omc",checked:picked.has(m.id)});cb.onclick=e=>e.stopPropagation();cb.onchange=()=>{cb.checked?picked.add(m.id):picked.delete(m.id);drawMail()};row.prepend(cb);row.classList.add("pk");if(picked.has(m.id))row.classList.add("sel");row.onclick=()=>{picked.has(m.id)?picked.delete(m.id):picked.add(m.id);drawMail()}}
+    else row.onclick=()=>selectMsg(m.id);box.append(row)});
+  $("osl").textContent=selMode?"✕ 선택 취소":"☑ 선택";$("osl").classList.toggle("on",selMode);
+  if(selMode){const oset=new Set(outbox.map(x=>x.id)),ids=[...picked].filter(id=>list.some(x=>x.id===id)),n=ids.length;
+    const all=el("input",{type:"checkbox",checked:!!list.length&&n===list.length,title:"전체 선택"});all.onchange=()=>{all.checked?list.forEach(x=>picked.add(x.id)):picked.clear();drawMail()};
+    const mk=(t,fn,cls)=>{const b=el("button",{type:"button",className:"ob"+(cls||""),textContent:t,disabled:!n});b.onclick=async()=>{b.disabled=true;await fn(ids.filter(i=>!oset.has(i)),ids.filter(i=>oset.has(i)));picked.clear();selId=null;await loadInbox();loadUsage()};return b};
+    const now=()=>new Date().toISOString();
+    const delIn=ii=>ii.length?db.from("inbox_messages").update({deleted_at:now(),deleted_by:me}).in("id",ii):null;
+    const delOut=oo=>Promise.all(oo.map(i=>db.rpc("outbox_set_deleted",{p_id:i,p_del:true})));
+    const rsIn=ii=>ii.length?db.from("inbox_messages").update({deleted_at:null,deleted_by:null}).in("id",ii):null;
+    const rsOut=oo=>Promise.all(oo.map(i=>db.rpc("outbox_set_deleted",{p_id:i,p_del:false})));
+    const bar=el("div",{className:"selbar"},[el("label",{className:"sa"},[all,document.createTextNode(" 전체")]),el("span",{className:"note",textContent:n+"개 선택"}),
+      ...(fold==="trash"?[mk("↩ 복원",async(ii,oo)=>{await Promise.all([rsIn(ii),rsOut(oo)])}),mk("영구 삭제",async(ii,oo)=>{if(!confirm("선택한 "+n+"건을 영구 삭제할까요?\n되돌릴 수 없어요."))return;await Promise.all([ii.length?db.rpc("inbox_purge",{p_ids:ii}):null,oo.length?db.rpc("outbox_purge",{p_ids:oo}):null])})]
+       :[...(fold!=="out"?[mk(fold==="done"?"완료 취소":"✓ 완료",async ii=>{if(ii.length)await db.from("inbox_messages").update({done:fold!=="done"}).in("id",ii)})]:[]),mk("🗑 삭제",async(ii,oo)=>{await Promise.all([delIn(ii),delOut(oo)])})])]);
+    box.prepend(bar)}
   if(fold==="trash"&&list.length){const eb=el("button",{className:"ob tb",type:"button",textContent:"🗑 휴지통 비우기 ("+list.length+")"});eb.onclick=async()=>{if(!confirm("휴지통의 메일 "+list.length+"건을 영구 삭제할까요?\n되돌릴 수 없어요."))return;const ri=list.filter(x=>!x._o).map(x=>x.id),ro=list.filter(x=>x._o).map(x=>x.id);const [e1,e2]=await Promise.all([ri.length?db.rpc("inbox_purge",{p_ids:ri}):{},ro.length?db.rpc("outbox_purge",{p_ids:ro}):{}]);if(e1.error||e2.error)return alert("일부를 비우지 못했어요");selId=null;await loadInbox();loadUsage()};box.prepend(eb)}
   if(!list.length)box.append(el("p",{className:"note",textContent:fold==="out"?"보낸 메일이 없어요.":fold==="trash"?"휴지통이 비어 있어요.":"메일이 없어요.",style:"padding:20px;text-align:center"}));
   drawPane()}
@@ -241,7 +256,7 @@ function drawCompose(p){
     composing=null;fold="out";selId=null;await loadInbox()};
   p.append(el("h2",{className:"eh",textContent:"새 메일"}),el("div",{className:"cf"},[el("label",{},[document.createTextNode("보내는 사람"),fromSel]),el("label",{},[document.createTextNode("받는 사람"),to]),el("label",{},[document.createTextNode("제목"),sj]),bd,afl,fi,el("div",{className:"acts",style:"border:0;padding:0;margin:0"},[send,ab,cancel,msgx,el("span",{className:"note",textContent:"엑셀 표를 복사해 붙여넣을 수 있어요 · 서명은 자동으로 붙어요 (서명 설정에서 바꿀 수 있어요)"})])]));
   to.focus()}
-$("onew").onclick=()=>{composing={};drawMail()};$("oq").oninput=drawMail;$("orf").onclick=()=>{loadInbox();loadUsage()};loadUsage();
+$("onew").onclick=()=>{composing={};drawMail()};$("oq").oninput=drawMail;$("osl").onclick=()=>{selMode=!selMode;picked.clear();drawMail()};$("orf").onclick=()=>{loadInbox();loadUsage()};loadUsage();
 
 /* 직원 · 프로필 */
 let dir=[],urls={};
