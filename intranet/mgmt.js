@@ -99,7 +99,7 @@ const cutQ=s=>{s=String(s||"").replace(/\r\n/g,"\n");const i=s.search(/\n[^\n]*(
 async function loadQ(){
   const [a,b,c]=await Promise.all([
     db.from("inbox_messages").select("id,from_addr,from_name,to_addrs,subject,received_at,assignee_email,done,preview,attachments,first_read_by,first_read_at").is("deleted_at",null).order("received_at",{ascending:false}).limit(500),
-    db.from("mail_outbox").select("id,inbox_id,author_name,author_email,to_email,subject,body,created_at").not("inbox_id","is",null).order("created_at",{ascending:true}),
+    db.from("mail_outbox").select("id,inbox_id,author_name,author_email,to_email,subject,body,created_at").not("inbox_id","is",null).is("deleted_at",null).order("created_at",{ascending:true}),
     db.rpc("staff_directory")]);
   if(a.error){$("mqc").textContent="불러오지 못했어요";return}
   who={};(c.data||[]).forEach(p=>{who[(p.email||"").toLowerCase()]=p});
@@ -164,7 +164,8 @@ function showBody(m,box){
       else{const t=h?toText(h):(showFull?txt:txtCut);body.append(el("div",{className:"mbody",textContent:t||txt||"(내용 없음)"}))}};
     draw();
     if(canToggle){tg.onclick=()=>{showFull=!showFull;tg.textContent=showFull?"이전 내용 접기":"이전 내용 보기";draw()};box.append(tg)}
-    if((m.attachments||[]).length)box.append(el("div",{className:"mnote",textContent:"첨부 "+m.attachments.length+"개: "+m.attachments.map(x=>x.filename).join(", ")+" (파일은 Resend 대시보드에서 확인)"}))})}
+    if((m.attachments||[]).length)box.append(el("div",{className:"mnote",style:"display:flex;flex-wrap:wrap;gap:8px"},m.attachments.map((x,i)=>{const b=el("button",{type:"button",className:"ob",style:"cursor:pointer",textContent:"📎 "+x.filename+(x.size?" ("+(x.size>=1048576?(x.size/1048576).toFixed(1)+" MB":Math.max(1,Math.round(x.size/1024))+" KB")+")":"")});
+      b.onclick=async()=>{b.disabled=true;const {data:d,error}=await db.functions.invoke("mail-file",{body:{inbox_id:m.id,index:i}});b.disabled=false;if(error||!d||!d.url)return alert("파일을 가져오지 못했어요"+(d&&d.error?": "+d.error:""));window.open(d.url,"_blank","noopener")};return b})))})}
 function buildQ(t,box){
   box.replaceChildren();
   box.append(el("p",{className:"mnote",textContent:"대화 "+t.ev.length+"건 · 받은 메일 "+t.ins.length+"통 · 보낸 답장 "+t.outs.length+"건 · 같은 사람이 같은 제목(Re: 제외)으로 보낸 메일은 한 대화로 이어져요"}));
