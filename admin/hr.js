@@ -29,6 +29,12 @@ function draw(){
     if(!r.used_at&&r.status==="active"&&r.invite_email){const b=el("button",{className:"btn small",textContent:r.onboard_sent_at?"메일 재발송":"축하 메일 보내기"});
       b.onclick=async()=>{if(!confirm(r.invite_email+" 에게 입사 축하 메일(한/일/영, 사번 "+r.emp_no+" 포함)을 보낼까요?"))return;b.disabled=true;const m=await sendMail(r);b.disabled=false;if(m)alert("메일을 보내지 못했어요: "+m);else{alert("보냈어요.");load()}};acts.push(b)}
     if(expired(r)){const b=el("button",{className:"btn small",textContent:"기간 연장"});b.onclick=async()=>{const {error}=await db.rpc("hr_renew",{p_pin:PIN,p_id:r.id});if(error)return alert(err(error));load()};acts.push(b)}
+    if(r.used_at&&r.user_email&&r.status==="active"){const bp=el("button",{className:"btn small",textContent:"비밀번호 재설정"});
+      bp.onclick=async()=>{const pw=prompt(r.user_email+" 의 새 비밀번호를 입력하세요 (8자 이상).\n입력한 비밀번호는 직원에게 직접 알려 주세요.");if(!pw)return;
+        if(pw.length<8)return alert("8자 이상으로 입력해 주세요.");
+        const {data,error}=await db.functions.invoke("admin-account",{body:{action:"setpw",pin:PIN,email:r.user_email,password:pw}});
+        let m="";if(error){try{m=(await error.context.json()).error}catch(_){m=error.message}}else if(!(data&&data.ok))m=(data&&data.error)||"알 수 없는 오류";
+        alert(m?"바꾸지 못했어요: "+m:"비밀번호를 바꿨어요. 직원에게 새 비밀번호를 전달해 주세요.")};acts.push(bp)}
     const b2=el("button",{className:"btn small",textContent:r.status==="left"?"복직":"퇴사 처리"});
     b2.onclick=async()=>{const to=r.status==="left"?"active":"left";if(to==="left"&&!confirm((r.name||r.emp_no)+" 님을 퇴사 처리할까요?\n메일 사용 권한이 바로 사라져요."))return;
       const {error}=await db.rpc("hr_set_status",{p_pin:PIN,p_id:r.id,p_status:to});if(error)return alert(err(error));load()};acts.push(b2);
@@ -38,6 +44,16 @@ function draw(){
     tb.append(el("tr",{className:r.status==="left"?"lft":""},[el("td",{className:"en",textContent:r.emp_no}),el("td",{textContent:r.name}),el("td",{textContent:r.nickname}),mailTd,el("td",{textContent:r.phone}),el("td",{textContent:r.position}),el("td",{textContent:r.dept}),
       el("td",{},[el("span",{className:"hs "+st[1],textContent:st[0]}),...(r.onboard_sent_at&&!r.used_at?[el("div",{className:"sm",textContent:"축하 메일 발송 "+dt(r.onboard_sent_at)})]:[])]),el("td",{className:"sm",textContent:dt(r.issued_at)}),el("td",{textContent:r.memo}),el("td",{className:"ac"},acts)]))});
   if(!rows.length)tb.append(el("tr",{},[el("td",{colSpan:11,textContent:"아직 발급된 사번이 없어요."})]))}
+$("cshow").onchange=()=>{$("cpw").type=$("cshow").checked?"text":"password"};
+$("cform").onsubmit=async e=>{e.preventDefault();const m=$("cmsg");
+  const id=$("cid").value.trim(),nm=$("cn").value.trim(),pw=$("cpw").value;
+  if(!id||!nm||!pw){m.className="note err";m.textContent="아이디·이름·비밀번호를 모두 써 주세요.";return}
+  if(!confirm(id.replace(/@rif-studio\.com$/i,"")+"@rif-studio.com 계정을 만들까요?"))return;
+  const b=$("cgo");b.disabled=true;m.className="note";m.textContent="만드는 중…";
+  const {data,error}=await db.functions.invoke("admin-account",{body:{action:"create",pin:PIN,loginId:id,name:nm,nickname:$("cnk").value,phone:$("cph").value,password:pw}});
+  b.disabled=false;let msg2="";if(error){try{msg2=(await error.context.json()).error}catch(_){msg2=error.message}}else if(!(data&&data.ok))msg2=(data&&data.error)||"알 수 없는 오류";
+  if(msg2){m.className="note err";m.textContent=msg2;return}
+  m.textContent=data.email+" 계정을 만들었어요 ✓ 아이디와 비밀번호를 직원에게 전달해 주세요.";["cid","cn","cnk","cph","cpw"].forEach(x=>$(x).value="");$("cpw").type="password";$("cshow").checked=false;load()};
 $("iform").onsubmit=async e=>{e.preventDefault();
   const em=$("iem").value.trim(),send=$("isend").checked&&em;
   if(!em&&$("isend").checked&&!confirm("이메일이 없어서 축하 메일은 보내지 않아요. 사번만 발급할까요?"))return;
