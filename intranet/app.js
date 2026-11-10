@@ -226,6 +226,8 @@ function drawDir(){
   if(!q&&!osel){$("ecnt").textContent="";g.append(el("p",{className:"note",style:"padding:30px 4px",textContent:"왼쪽에서 RIF STUDIO → 부서 → 팀을 눌러 사원을 확인하세요."}));return}
   $("ecnt").textContent="총 "+l.length+"명 · 이름을 누르면 연락처가 나와요";
   if(!l.length){g.append(el("p",{className:"note",style:"padding:20px 4px",textContent:"해당하는 사원이 없어요."}));return}
+  const PO=["대표이사","이사","팀장","팀원"],RK=["수석","차석","책임","사원"],ix=(a,v)=>{const i=a.indexOf(v);return i<0?99:i};
+  l.sort((a,b)=>ix(PO,a.pos)-ix(PO,b.pos)||ix(RK,a.rnk)-ix(RK,b.rnk)||String(a.emp).localeCompare(String(b.emp)));
   const tb=el("tbody");
   l.forEach(r=>{const has=r.avatar&&urls[r.avatar],av=el("span",{className:"avs l"});if(has)avatar(av,r.avatar,"");else av.textContent=ini(r.nickname||r.name);
     const nm=el("td",{},[el("b",{textContent:r.nickname||r.name}),...(r.nickname&&r.name?[el("span",{className:"note",textContent:" "+r.name})]:[])]);
