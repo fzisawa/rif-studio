@@ -1,6 +1,6 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Employee Mail · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=56"><link rel="icon" href="../img/favicon.png" type="image/png">
+<title>서명 설정 · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=56"><link rel="icon" href="../img/favicon.png" type="image/png">
 <style>.jt{border-collapse:collapse;width:100%;font-size:14px;line-height:1.5}.jt th{text-align:left;padding:10px 12px;border-bottom:2px solid #7775;white-space:nowrap;font-size:12px;letter-spacing:.06em;color:var(--mut)}.jt td{padding:10px 12px;border-bottom:1px solid #7773;vertical-align:top}
 .jt tr.r{cursor:pointer}.jt tr.r:hover td{background:#7771}.jt td.dt{white-space:nowrap}.jt tr.d td{background:#7771;padding:16px 20px}.jt tr.d p{white-space:pre-wrap;margin:0 0 12px}.jt tr.d b{color:#d64545;font-size:12px;letter-spacing:.1em}
 .jbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}.jbar .btn{padding:8px 18px;font-size:14px}.jbar input{padding:8px 14px;min-width:200px}
@@ -16,7 +16,7 @@
 .idrow{display:flex;align-items:center;gap:8px}.idrow input{flex:1;min-width:0}.idrow span{color:var(--mut);font-size:14px;white-space:nowrap}
 #login{display:grid;gap:10px;max-width:360px}#login input{padding:12px 14px}</style></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.vocal">Vocal</button><div class="nm"><a href="../rif/">RIF</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.sound">Sound</button><div class="nm"><a href="../charmbung/">Charmbung</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.art">Art</button><div class="nm"><a href="../woljae/">Woljae</a></div></div><div class="ng on"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.content">Content</button><div class="nm"><a href="../join/" class=on data-i18n=nav.cj>Join Us</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.mgmt">Management</button><div class="nm"><a href="../rif-management/">RIF</a></div></div><a class="nl" href="../join/">Join Us</a><a class="nl" href="../contact/">Contact</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
-<main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>Employee Mail</h1>
+<main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>서명 설정</h1>
 <form id="login"><div class="idrow"><input id="em" type="text" placeholder="아이디 (예: mina)" required autocomplete="username" autocapitalize="none"></div><input id="pw" type="password" placeholder="비밀번호" required autocomplete="current-password"><button class="btn mred">로그인</button><p class="note err" id="lmsg"></p></form>
 <details id="sg" class="sg"><summary>가입</summary>
 <form id="signup" class="sgf"><p class="note">입사 축하 메일의 8자리 사번을 입력하고, 로그인에 쓸 아이디(이름@rif-studio.com)와 비밀번호(8자 이상)를 직접 정해 주세요. 초대 메일을 받은 이메일도 확인용으로 한 번 적어 주세요.</p>
@@ -28,23 +28,14 @@
 <div id="app" hidden><p class="lead"><span id="who"></span> · <a href="../intranet/">Intranet</a> · <a href="#" id="out">로그아웃</a></p>
 <p class="note err" id="nomail" hidden>이 계정에는 메일 권한이 없어요. 대표님께 요청해 주세요.</p>
 <div id="box" hidden>
-<form id="mform" class="mf"><h2>새 메일</h2><p class="note">support@rif-studio.com 으로 발송되고, 답장도 support@ 로 와요. 받는 사람은 쉼표로 최대 5명까지.</p>
-<label>받는 사람<input id="mto" type="text" placeholder="name@example.com" autocomplete="off"></label>
-<label>제목<input id="msj" maxlength="200"></label>
-<label>내용<textarea id="mbd" rows="9" maxlength="20000"></textarea></label>
-<p class="note">내 서명은 메일 맨 아래에 자동으로 붙어요.</p>
-<div class="jbar"><button class="btn mred" id="msend">보내기</button><span class="note" id="mmsg"></span></div></form>
-<div class="sigbox"><h2>내 서명</h2><p class="note">Gmail처럼 글자 꾸미기·링크·사진을 넣을 수 있어요. 메일 맨 아래, RIF STUDIO 로고 위에 붙습니다. 사진은 png·jpg·gif·webp, 2MB까지.</p>
+<div class="sigbox"><h2>내 서명</h2><p class="note">내 이름으로 보내는 메일 맨 아래에 붙는 서명이에요. support@ 공용 답장에는 개인 서명이 붙지 않아요. Gmail처럼 글자 꾸미기·링크·사진을 넣을 수 있어요. 메일 맨 아래, RIF STUDIO 로고 위에 붙습니다. 사진은 png·jpg·gif·webp, 2MB까지.</p>
 <div class="tb" id="stb"><button type="button" data-c="bold" title="굵게"><b>B</b></button><button type="button" data-c="italic" title="기울임"><i>I</i></button><button type="button" data-c="underline" title="밑줄"><u>U</u></button>
 <label class="cl" title="글자색">A<input type="color" id="scol" value="#1d1b22"></label><button type="button" id="slink" title="링크">링크</button><button type="button" id="simg" title="사진 넣기">사진</button>
 <button type="button" id="sminus" title="사진 작게">사진 −</button><button type="button" id="splus" title="사진 크게">사진 +</button><button type="button" data-c="removeFormat" title="서식 지우기">서식 지우기</button><input type="file" id="sfile" accept="image/png,image/jpeg,image/gif,image/webp" hidden></div>
 <div id="sig" class="ed" contenteditable="true" data-ph="이름 / 직책 / 연락처를 적어 보세요"></div>
 <div class="jbar"><button class="btn" id="sigsave" type="button">서명 저장</button><span class="note" id="sigmsg"></span></div></div>
-<h2 style="margin-top:44px">보낸 편지함</h2>
-<div class="jbar"><b id="mcnt"></b><input id="mq" placeholder="검색 (받는 사람·제목·내용…)"><button class="btn ghost" id="mrf" type="button">새로고침</button></div>
-<div id="tw"><table class="jt"><thead><tr><th>보낸 시간</th><th>보낸 사람</th><th>받는 사람</th><th>제목</th><th>읽음</th></tr></thead><tbody id="mtb"></tbody></table></div>
-<p class="note">읽음은 메일 안의 보이지 않는 이미지가 열렸을 때 기록돼요. 받는 분이 이미지 차단을 켜 두면 읽어도 "안 읽음"으로, 메일 앱이 이미지를 미리 받아 가면 안 읽어도 "읽음"으로 보일 수 있어요. 참고용으로만 봐 주세요.</p></div>
+</div>
 </div></section></main>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=2"></script><script src="app.js?v=6"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=2"></script><script src="app.js?v=7"></script><script src="../nav.js" defer></script></body></html>
