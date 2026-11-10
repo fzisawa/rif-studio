@@ -38,9 +38,14 @@ function draw(){
     const b2=el("button",{className:"btn small",textContent:r.status==="left"?"복직":"퇴사 처리"});
     b2.onclick=async()=>{const to=r.status==="left"?"active":"left";if(to==="left"&&!confirm((r.name||r.emp_no)+" 님을 퇴사 처리할까요?\n메일 사용 권한이 바로 사라져요."))return;
       const {error}=await db.rpc("hr_set_status",{p_pin:PIN,p_id:r.id,p_status:to});if(error)return alert(err(error));load()};acts.push(b2);
-    const b3=el("button",{className:"btn small",textContent:"삭제"});b3.disabled=!!r.used_at;
-    b3.onclick=async()=>{if(!confirm(r.emp_no+" 을 삭제할까요?"))return;const {error}=await db.rpc("hr_delete",{p_pin:PIN,p_id:r.id});if(error)return alert(err(error));load()};acts.push(b3);
-    const mailTd=el("td",{textContent:r.email||""});if(!r.used_at&&r.invite_email){mailTd.textContent="초대: "+r.invite_email;mailTd.className="sm"}
+    const b3=el("button",{className:"btn small",textContent:"삭제"});const isCeo=(r.user_email||"").toLowerCase()==="takanashi@rif-studio.com";b3.disabled=isCeo;if(isCeo)b3.title="대표님 계정은 지울 수 없어요";
+    b3.onclick=async()=>{
+      if(!r.used_at){if(!confirm(r.emp_no+" 을 삭제할까요?"))return;const {error}=await db.rpc("hr_delete",{p_pin:PIN,p_id:r.id});if(error)return alert(err(error));load();return}
+      if(!confirm((r.name||r.user_email)+" ("+r.user_email+") 계정을 완전히 삭제할까요?\n\n· 로그인 계정, 메일 권한, 프로필 사진, 인사정보가 모두 지워져요\n· 되돌릴 수 없어요\n· 이미 보낸 메일 기록과 올린 공지·자료는 남아요"))return;
+      b3.disabled=true;const {data,error}=await db.functions.invoke("admin-account",{body:{action:"delete",pin:PIN,email:r.user_email}});
+      let m="";if(error){try{m=(await error.context.json()).error}catch(_){m=error.message}}else if(!(data&&data.ok))m=(data&&data.error)||"알 수 없는 오류";
+      b3.disabled=false;if(m)return alert("지우지 못했어요: "+m);load()};acts.push(b3);
+    const mailTd=el("td",{textContent:(r.email||"").replace(/@rif-studio\.com$/i,"")});if(!r.used_at&&r.invite_email){mailTd.textContent="초대: "+r.invite_email;mailTd.className="sm"}
     tb.append(el("tr",{className:r.status==="left"?"lft":""},[el("td",{className:"en",textContent:r.emp_no}),el("td",{textContent:r.name}),el("td",{textContent:r.nickname}),mailTd,el("td",{textContent:r.phone}),el("td",{textContent:[r.position,r.rank].filter(Boolean).join(" / ")}),el("td",{},[document.createTextNode(r.dept||""),...((r.discord||r.twitter)?[el("div",{className:"sm",textContent:[r.discord&&"Discord "+r.discord,r.twitter&&"X "+r.twitter].filter(Boolean).join(" · ")})]:[])]),
       el("td",{},[el("span",{className:"hs "+st[1],textContent:st[0]}),...(r.onboard_sent_at&&!r.used_at?[el("div",{className:"sm",textContent:"축하 메일 발송 "+dt(r.onboard_sent_at)})]:[])]),el("td",{className:"sm",textContent:dt(r.issued_at)}),el("td",{textContent:r.memo}),el("td",{className:"ac"},acts)]))});
   if(!rows.length)tb.append(el("tr",{},[el("td",{colSpan:11,textContent:"아직 발급된 사번이 없어요."})]))}
