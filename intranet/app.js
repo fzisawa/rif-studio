@@ -121,8 +121,11 @@ const unreadN=()=>inbox.filter(m=>!m.deleted_at&&!irds.has(m.id)&&!m.done).lengt
 let usage=null;async function loadUsage(){const {data}=await db.rpc("mail_usage");usage=data||null;drawUsage()}
 const mb=b=>b>=1073741824?(b/1073741824).toFixed(2)+" GB":b>=1048576?(b/1048576).toFixed(1)+" MB":Math.max(1,Math.round(b/1024))+" KB";
 const DB_LIMIT=524288000;
-function drawUsage(){const u=$("ousg");if(!u)return;u.replaceChildren();if(!usage)return;const left=Math.max(0,DB_LIMIT-usage.db_bytes),pc=Math.min(100,usage.db_bytes/DB_LIMIT*100);
-  u.append(el("div",{className:"ub"},[el("i",{style:"width:"+pc.toFixed(1)+"%"})]),el("div",{className:"ut",textContent:"남은 용량 "+mb(left)}),el("div",{className:"us",textContent:"메일 "+mb(usage.mail_bytes)+" · 전체 "+mb(usage.db_bytes)+" / "+mb(DB_LIMIT)}))}
+function drawUsage(){const u=$("ousg");if(!u)return;u.replaceChildren();if(!usage)return;const left=Math.max(0,DB_LIMIT-usage.db_bytes),pc=Math.min(100,Math.max(usage.mine_bytes/DB_LIMIT*100,0.6));
+  u.append(el("div",{className:"us",textContent:"내 메일 사용량"}),el("div",{className:"ut",textContent:mb(usage.mine_bytes||0)+" · "+(usage.mine_count||0)+"통"}),el("div",{className:"ub"},[el("i",{style:"width:"+pc.toFixed(1)+"%"})]),el("div",{className:"us",textContent:"사이트 전체 남은 용량 "+mb(left)+" / "+mb(DB_LIMIT)}));
+  if(ceo&&usage.staff){const l=el("div",{className:"usl"},[el("div",{className:"us",textContent:"사원별 (대표만 보여요)"})]);
+    usage.staff.forEach(x=>l.append(el("div",{className:"usr"},[el("span",{textContent:dispName(x.email)}),el("span",{textContent:mb(x.bytes||0)})])));
+    l.append(el("div",{className:"usr"},[el("span",{textContent:"support@ (공용)"}),el("span",{textContent:mb(usage.support_bytes||0)})]));u.append(l)}}
 function drawMail(){
   const un=unreadN();$("ib").hidden=!un;$("ib").textContent=un;
   const trN=inbox.filter(m=>m.deleted_at).length+outbox.filter(r=>r.deleted_at).length;
