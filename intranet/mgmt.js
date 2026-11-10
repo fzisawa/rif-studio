@@ -30,6 +30,7 @@ table.mt{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.5}
 .mtl{display:flex;flex-direction:column;gap:10px;margin:6px 0 16px}.mmsg{border:1px solid #7775;border-radius:8px;padding:10px 14px;background:var(--bg)}
 .mmsg .h{font-size:12px;color:var(--mut);margin-bottom:8px}.mmsg.in{border-left:3px solid #9a98a3}.mmsg.out{border-left:3px solid #0f6cbd;background:#0f6cbd12}.mmsg .t{white-space:pre-wrap;line-height:1.7}
 .mwho{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:700;color:var(--fg);background:#7772}.mwho.out{background:#0f6cbd;color:#fff}
+.mbadge.nw{background:#ff3d6e;letter-spacing:.06em}.mbadge.chk{background:#6b7a99}.mrd{margin-left:10px;color:var(--mut)}.mrd.on{color:#3bb273;font-weight:700}.mt td.rd{white-space:nowrap;font-size:13px}
 .mbtn.mq{margin-top:8px;padding:4px 10px;font-size:12px}
 .mfrm textarea{width:100%;min-height:110px;padding:10px;border:1px solid #7775;border-radius:6px;font:inherit;background:var(--bg);color:var(--fg);box-sizing:border-box}
 .mfrm .acts{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
@@ -88,7 +89,7 @@ const label=e=>{const p=who[(e||"").toLowerCase()];return p?[p.name||p.nickname,
 const cutQ=s=>{s=String(s||"").replace(/\r\n/g,"\n");const i=s.search(/\n[^\n]*(wrote:|작성:)\s*(\n|$)|\n>/);return i>0?s.slice(0,i).trim():s.trim()};
 async function loadQ(){
   const [a,b,c]=await Promise.all([
-    db.from("inbox_messages").select("id,from_addr,from_name,to_addrs,subject,received_at,assignee_email,done,preview,attachments").order("received_at",{ascending:false}).limit(500),
+    db.from("inbox_messages").select("id,from_addr,from_name,to_addrs,subject,received_at,assignee_email,done,preview,attachments,first_read_by,first_read_at").order("received_at",{ascending:false}).limit(500),
     db.from("mail_outbox").select("id,inbox_id,author_name,author_email,to_email,subject,body,created_at").not("inbox_id","is",null).order("created_at",{ascending:true}),
     db.rpc("staff_directory")]);
   if(a.error){$("mqc").textContent="불러오지 못했어요";return}
@@ -102,20 +103,33 @@ async function loadQ(){
     t.ev=[...t.ins.map(m=>({k:"in",t:new Date(m.received_at),m})),...t.outs.map(r=>({k:"out",t:new Date(r.created_at),r}))].sort((x,y)=>x.t-y.t);
     t.last=t.ev[t.ev.length-1];t.done=t.ins.every(m=>m.done);return t}).sort((x,y)=>y.last.t-x.last.t);
   drawQ()}
-const tstatus=t=>t.done?["done","완료"]:t.last.k==="out"?["rep","답장함 "+t.outs.length]:["new","새 메일"+(t.ins.length>1?" · "+t.ins.length+"통":"")];
+const tstatus=t=>{
+  if(t.done)return["done","완료"];
+  if(t.last.k==="out")return["rep","답장함 "+t.outs.length];
+  if(!t.ins.some(m=>!m.first_read_at))return["chk","확인함"];
+  return t.ins.length>1||t.outs.length?["nw","NEW"]:["new","새 메일"]};
+const who2=e=>label(e)||e||"";
+const rdOf=t=>{const m=t.ins[t.ins.length-1];return m&&m.first_read_at?who2(m.first_read_by)+" · "+dt(m.first_read_at).slice(5):"-"};
+const rdText=m=>m.first_read_at?"👁 "+who2(m.first_read_by)+" 님이 먼저 확인 · "+dt(m.first_read_at):"👁 아직 아무도 확인하지 않았어요";
+function paint(t){const [k,s]=tstatus(t);if(t.ui){t.ui.bd.className="mbadge "+k;t.ui.bd.textContent=s;t.ui.rd.textContent=rdOf(t)}
+  (t.ins||[]).forEach(m=>{const e=t.rds&&t.rds[m.id];if(e){e.textContent=rdText(m);e.className="mrd"+(m.first_read_at?" on":"")}})}
+async function markRead(t){
+  const ids=t.ins.filter(m=>!m.first_read_at).map(m=>m.id);if(!ids.length)return;
+  const {data,error}=await db.rpc("inbox_mark_read",{p_ids:ids});if(error){console.error(error);return}
+  (data||[]).forEach(r=>{const m=t.ins.find(x=>x.id===r.id);if(m){m.first_read_by=r.first_read_by;m.first_read_at=r.first_read_at}});paint(t)}
 function drawQ(){
   const q=$("mqq").value.trim().toLowerCase(),tb=$("mqb");tb.replaceChildren();
   let view=threads.filter(t=>!q||[t.subject,t.from,t.fromName,...t.ins.map(m=>m.preview),...t.outs.map(r=>(r.body||"")+" "+(r.author_name||""))].join(" ").toLowerCase().includes(q));
-  if(qfilter==="new")view=view.filter(t=>tstatus(t)[0]==="new");else if(qfilter==="rep")view=view.filter(t=>tstatus(t)[0]==="rep");else if(qfilter==="done")view=view.filter(t=>t.done);
+  if(qfilter==="new")view=view.filter(t=>["new","nw"].includes(tstatus(t)[0]));else if(qfilter==="chk")view=view.filter(t=>tstatus(t)[0]==="chk");else if(qfilter==="rep")view=view.filter(t=>tstatus(t)[0]==="rep");else if(qfilter==="done")view=view.filter(t=>t.done);
   $("mqc").textContent="문의 "+view.length+"건";
   const total=threads.length;
   view.forEach(t=>{
     const [k,s]=tstatus(t),lo=t.outs[t.outs.length-1];
-    const tr=el("tr",{className:"r"},[cell(String(total-threads.indexOf(t)),"no"),el("td",{},[el("span",{className:"mbadge "+k,textContent:s})]),cell(t.subject||"(제목 없음)"),cell((t.fromName?t.fromName+" ":"")+"<"+t.from+">"),cell(lo?(label(lo.author_email)||lo.author_name||lo.author_email):"-"),cell(dt(t.last.t),"dt")]);
-    const dtl=el("tr",{className:"d",hidden:openQ!==t.key},[el("td",{colSpan:6},[])]);
+    const bd=el("span",{className:"mbadge "+k,textContent:s});const tr=el("tr",{className:"r"},[cell(String(total-threads.indexOf(t)),"no"),el("td",{},[bd]),cell(t.subject||"(제목 없음)"),cell((t.fromName?t.fromName+" ":"")+"<"+t.from+">"),(()=>{const c=cell(rdOf(t),"rd");t.ui={bd:null,rd:c};return c})(),cell(lo?(label(lo.author_email)||lo.author_name||lo.author_email):"-"),cell(dt(t.last.t),"dt")]);
+    t.ui.bd=bd;const dtl=el("tr",{className:"d",hidden:openQ!==t.key},[el("td",{colSpan:7},[])]);
     const fill=()=>{if(dtl.dataset.on)return;dtl.dataset.on="1";buildQ(t,dtl.firstChild)};
     if(openQ===t.key)fill();
-    tr.onclick=()=>{dtl.hidden=!dtl.hidden;openQ=dtl.hidden?null:t.key;if(!dtl.hidden)fill()};
+    tr.onclick=()=>{dtl.hidden=!dtl.hidden;openQ=dtl.hidden?null:t.key;if(!dtl.hidden){fill();markRead(t)}};
     tb.append(tr,dtl)})}
 function showBody(m,box){
   db.from("inbox_messages").select("body_text,body_html").eq("id",m.id).single().then(({data,error})=>{
@@ -141,7 +155,7 @@ function buildQ(t,box){
   t.ev.forEach((e,i)=>{
     const ind="margin-left:"+Math.min(i,5)*18+"px";
     if(e.k==="in"){const m=e.m,body=el("div",{className:"mbd"},[el("span",{className:"mnote",textContent:"본문 불러오는 중…"})]);
-      tl.append(el("div",{className:"mmsg in",style:ind},[el("div",{className:"h"},[el("span",{className:"mwho in",textContent:"📩 "+(m.from_name||m.from_addr)}),el("span",{textContent:" <"+m.from_addr+"> → "+(m.to_addrs||"support@rif-studio.com")+" · "+dt(m.received_at)})]),body]));
+      tl.append(el("div",{className:"mmsg in",style:ind},[el("div",{className:"h"},[el("span",{className:"mwho in",textContent:"📩 "+(m.from_name||m.from_addr)}),el("span",{textContent:" <"+m.from_addr+"> → "+(m.to_addrs||"support@rif-studio.com")+" · "+dt(m.received_at)}),(()=>{const r=el("span",{className:"mrd"+(m.first_read_at?" on":""),textContent:rdText(m)});(t.rds=t.rds||{})[m.id]=r;return r})()]),body]));
       showBody(m,body)}
     else{const r=e.r;
       tl.append(el("div",{className:"mmsg out",style:ind},[el("div",{className:"h"},[el("span",{className:"mwho out",textContent:"✉ "+(label(r.author_email)||r.author_name||r.author_email)}),el("span",{textContent:" 님이 보냄 → "+r.to_email+" · "+dt(r.created_at)})]),el("div",{className:"t",textContent:r.body})]))}});
@@ -168,10 +182,10 @@ function build(){
   const pj=el("div",{id:"pj",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mjc"}),el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("span",{className:"mnote",textContent:"클릭하면 상세 내용이 펼쳐져요 · 감사/면접/거절/채용은 표시만 하고 메일은 자동으로 나가지 않아요"})]),
     el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","접수일시","닉네임","성명","출신","분야","감사","면접","거절","채용","대표 면접","대표 채용","대표 거절","대표 메모 🔒","경영지원팀 메모"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mjb"})])])]);
-  const sel=el("select",{id:"mqs"},[["all","전체"],["new","새 메일"],["rep","답장함"],["done","완료"]].map(([v,t])=>el("option",{value:v,textContent:t})));
+  const sel=el("select",{id:"mqs"},[["all","전체"],["new","읽지 않음"],["chk","확인함"],["rep","답장함"],["done","완료"]].map(([v,t])=>el("option",{value:v,textContent:t})));
   const pq=el("div",{id:"pq",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mqc"}),sel,el("input",{id:"mqq",placeholder:"검색 (제목·보낸 사람·내용)"}),el("button",{className:"mbtn",type:"button",id:"mqr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"support@rif-studio.com 으로 온 메일이에요. 답장은 기록으로 계속 남아요."})]),
-    el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","상태","제목","보낸 사람","답장한 사원","최근 활동"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mqb"})])])]);
+    el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","상태","제목","보낸 사람","먼저 확인","답장한 사원","최근 활동"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mqb"})])])]);
   const panes={w:w,j:pj,q:pq};
   defs.forEach(([k,t],i)=>{const b=el("button",{type:"button",textContent:t});b.setAttribute("aria-pressed",i===0?"true":"false");
     b.onclick=()=>{[...bar.children].forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));Object.entries(panes).forEach(([kk,p])=>p.hidden=kk!==k);if(k==="j")loadJ();if(k==="q")loadQ()};bar.append(b)});
