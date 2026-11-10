@@ -38,7 +38,7 @@ main.wide{max-width:1500px;padding-left:2vw;padding-right:2vw}
 .btn.mred{background:#d64545;border-color:#d64545;color:#fff}.issued{padding:14px 18px;border-radius:12px;background:#d6454518;border:1px solid #d6454555}.issued .big{font-size:22px;font-weight:800;letter-spacing:.08em;color:#d64545}
 .hs{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}.hs.on{background:#2fa36b;color:#fff}.hs.wt{background:#e8a33a33;color:#b8741a}.hs.x{background:#7775;color:var(--mut)}
 .jt td.en{font-weight:700;letter-spacing:.05em;white-space:nowrap}.jt tr.lft td{opacity:.55}.jt td.ac{white-space:nowrap}.jt td.ac .btn{margin-right:4px}
-.hf [hidden]{display:none!important}.jt td.ac .btn{color:var(--fg)}
+.hf[hidden]{display:none!important}.ck2{display:flex!important;grid-template-columns:none;gap:8px;align-items:center;color:var(--fg)!important;font-size:14px!important}.ck2 input{width:18px;height:18px;padding:0}.jt td.sm{font-size:12px;color:var(--mut)}.jt td.ac .btn{color:var(--fg)}
 </style></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.vocal">Vocal</button><div class="nm"><a href="../rif/">RIF</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.sound">Sound</button><div class="nm"><a href="../charmbung/">Charmbung</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.art">Art</button><div class="nm"><a href="../woljae/">Woljae</a></div></div><div class="ng on"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.content">Content</button><div class="nm"><a href="../join/" class=on data-i18n=nav.cj>Join Us</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.mgmt">Management</button><div class="nm"><a href="../rif-management/">RIF</a></div></div><a class="nl" href="../join/">Join Us</a><a class="nl" href="../contact/">Contact</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
 <main id="mn"><section class="hero"><p class="tag">ADMIN</p><h1>Admin</h1>
@@ -49,12 +49,16 @@ main.wide{max-width:1500px;padding-left:2vw;padding-right:2vw}
 <div id="p3" hidden><div class="jbar"><b id="hrcnt"></b><button class="btn ghost" id="hrlock" type="button">🔒 대표 잠금 해제</button></div>
 <p class="note">직원 정보와 사번은 대표 비밀번호로 잠금을 풀어야 보이고, 서버에서도 비밀번호 없이는 읽을 수 없어요. 10분 뒤 자동으로 잠겨요.</p>
 <div id="hr-body" hidden>
-<form id="hform" class="hf"><h2>직원 등록 · 사번 발급</h2>
-<div class="hg"><label>이름*<input id="hn" maxlength="60"></label><label>직책/부서<input id="hp" maxlength="60"></label><label>이메일* (가입에 쓸 주소)<input id="he" type="email" maxlength="120"></label><label>전화<input id="hph" maxlength="40"></label><label>입사일<input id="hj" type="date"></label><label>고용 형태<input id="hk" maxlength="40" placeholder="정규직 / 프리랜서 등"></label></div>
-<label>메모<input id="hm" maxlength="300"></label>
-<div class="jbar"><button class="btn mred" id="hsave">사번 발급</button><button class="btn ghost" id="hcancel" type="button" hidden>취소</button></div>
+<form id="iform" class="hf"><h2>사번 발급</h2><p class="note">사번은 날짜(YYMMDD)+무작위 2자리, 총 8자리 숫자로 자동 발급돼요. 발급일로부터 14일 동안 가입할 수 있어요.</p>
+<label>온보딩 메일을 받을 개인 이메일 (선택)<input id="iem" type="email" maxlength="120" placeholder="name@gmail.com"></label>
+<label class="ck2"><input type="checkbox" id="isend" checked> 입사 축하 메일(한국어/일본어/영어)을 <b>support@</b> 이름으로 지금 바로 보내기</label>
+<div class="jbar"><button class="btn mred" id="iissue">사번 발급</button></div>
 <div id="issued" class="issued" hidden></div></form>
-<div id="tw2" style="overflow-x:auto;margin-top:20px;border:1px solid #7773;border-radius:12px"><table class="jt"><thead><tr><th>사번</th><th>이름</th><th>직책/부서</th><th>이메일</th><th>전화</th><th>입사일</th><th>형태</th><th>상태</th><th>메모</th><th></th></tr></thead><tbody id="hrtb"></tbody></table></div>
+<form id="hform" class="hf" hidden><h2 id="hft">정보 수정</h2>
+<div class="hg"><label>사번 (8자리 숫자)<input id="hno" maxlength="8" inputmode="numeric"></label><label>이름<input id="hn" maxlength="60"></label><label>닉네임<input id="hnk" maxlength="60"></label><label>이메일<input id="he" type="email" maxlength="120"></label><label>전화<input id="hph" maxlength="40"></label><label>직책<input id="hp" maxlength="60"></label><label>부서<input id="hd" maxlength="60"></label></div>
+<label>메모<input id="hm" maxlength="300"></label>
+<div class="jbar"><button class="btn mred" id="hsave">저장</button><button class="btn ghost" id="hcancel" type="button">취소</button></div></form>
+<div id="tw2" style="overflow-x:auto;margin-top:20px;border:1px solid #7773;border-radius:12px"><table class="jt"><thead><tr><th>사번</th><th>이름</th><th>닉네임</th><th>이메일</th><th>전화</th><th>직책</th><th>부서</th><th>상태</th><th>발급일</th><th>메모</th><th></th></tr></thead><tbody id="hrtb"></tbody></table></div>
 </div></div>
 <div id="p2" hidden><div class="jbar"><b id="cnt"></b><input id="q" placeholder="검색 (이름·이메일·분야…)"><button class="btn" id="csv" type="button">CSV 받기</button><button class="btn ghost" id="ceo" type="button">🔒 대표 잠금 해제</button></div>
 <div id="tw"><table class="jt"><thead><tr><th>No.</th><th>접수일시</th><th>닉네임</th><th>성명</th><th>이메일</th><th>출신</th><th>분야</th><th>Discord</th><th>YouTube</th><th>Twitter</th><th>감사</th><th>면접</th><th>거절</th><th>채용</th><th class="cth ci">면접<br>의향</th><th class="cth ch">채용<br>의향</th><th class="cth cr">채용<br>거절</th><th>메모</th></tr></thead><tbody id="tb"></tbody></table></div>
@@ -65,4 +69,4 @@ main.wide{max-width:1500px;padding-left:2vw;padding-right:2vw}
 <div id="hpm" class="mdl" role="dialog" aria-modal="true" hidden><div class="mbox"><h2>대표 확인</h2><p>인사정보는 대표만 볼 수 있어요.<br>대표 비밀번호를 입력해 주세요.</p><input id="hpi" type="password" inputmode="numeric" autocomplete="off" maxlength="20" style="padding:12px 14px;text-align:center;letter-spacing:.3em;width:100%"><p class="note err" id="hpe" style="color:#d64545;margin:0"></p><div style="display:flex;gap:10px"><button class="btn" id="hpo" type="button">확인</button><button class="btn ghost" id="hpc" type="button">취소</button></div></div></div>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js"></script><script src="app.js"></script><script src="join.js?v=52"></script><script src="hr.js?v=1"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js"></script><script src="app.js"></script><script src="join.js?v=52"></script><script src="hr.js?v=2"></script><script src="../nav.js" defer></script></body></html>
