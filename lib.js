@@ -2,7 +2,7 @@ const db=supabase.createClient(RIF.URL,RIF.KEY),B="portfolio";
 const el=(t,p={},k=[])=>{const e=Object.assign(document.createElement(t),p);k.forEach(c=>e.append(c));return e};
 const ytid=u=>(u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/)||[])[1];
 const shrink=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1600/Math.max(i.width,i.height)),c=el("canvas",{width:i.width*s,height:i.height*s});c.getContext("2d").drawImage(i,0,0,c.width,c.height);c.toBlob(r,"image/jpeg",.85)};i.src=URL.createObjectURL(f)});
-const isAdmin=async()=>!!(await db.auth.getSession()).data.session;
+const isAdmin=async()=>{const s=(await db.auth.getSession()).data.session;return !!s&&(s.user.email||"").toLowerCase()==="takanashi@rif-studio.com"};
 const MAXMB=50,isAud=f=>/\.(mp3|wav)$/i.test(f.name)||/^audio\//.test(f.type);
 async function addItem(page,file,ytUrl,cap,section){
   const v=ytid(ytUrl||"");if(!file&&!v)throw new Error("유튜브 링크, 사진, 음원 중 하나를 넣어 주세요");
