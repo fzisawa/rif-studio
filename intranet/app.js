@@ -224,8 +224,8 @@ function drawDir(){
   $("oti").textContent=osel.t?osel.d+" · "+osel.t:osel.d||"RIF STUDIO";
   $("ecnt").textContent="총 "+l.length+"명 · 카드를 누르면 연락처와 업무 내용이 나와요";
   const groups=new Map();const put=(k,r)=>{if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r)};
-  l.forEach(r=>put(r.pos==="대표"?"대표":(r.team||divOf(r)||"기타"),r));
-  const order=["대표",...Object.values(DIVS).flat(),...Object.keys(DIVS)];
+  l.forEach(r=>put(r.pos==="대표이사"?"대표이사":(r.team||divOf(r)||"기타"),r));
+  const order=["대표이사",...Object.values(DIVS).flat(),...Object.keys(DIVS)];
   [...groups.keys()].sort((a,b)=>{const x=order.indexOf(a),y=order.indexOf(b);return (x<0?99:x)-(y<0?99:y)}).forEach(k=>{
     const arr=groups.get(k);const showHead=!(osel.t)&&(groups.size>1||k!=="기타");
     g.append(el("div",{className:"osec"},[...(showHead?[el("h3",{},[document.createTextNode(k),el("span",{textContent:arr.length+"명"})])]:[]),el("div",{className:"ogr"},arr.map(card))]))});
