@@ -274,29 +274,35 @@ $("pfdel").onclick=async()=>{const mine=dir.find(r=>r.email.toLowerCase()===me)|
   await db.rpc("set_my_avatar",{p_path:""});await db.storage.from("avatars").remove([mine.avatar]);loadDir()};
 
 /* 채팅 */
+let rooms=[],roomMem={};
 let chatMsgs=[],chatSub=null,chatOpen=false,chatTimer=null,chatStarted=false,chatTo="";
 const seenKey=()=>"rif_chat_seen2_"+me;
 const getSeenMap=()=>{try{return JSON.parse(localStorage.getItem(seenKey())||"{}")||{}}catch(_){return {}}};
 const setSeenFor=(k,n)=>{try{const m=getSeenMap();m[k]=n;localStorage.setItem(seenKey(),JSON.stringify(m))}catch(_){}};
 const dispName=e=>{const r=dir.find(x=>x.email.toLowerCase()===String(e).toLowerCase());return r?(r.nickname||r.name):e};
 const dayStr=s=>new Date(s).toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"short"});
-const convKey=m=>{if(!m.to_email)return "";return m.author_email.toLowerCase()===me?m.to_email.toLowerCase():m.author_email.toLowerCase()};
+const convKey=m=>{if(m.room_id)return "room:"+m.room_id;if(!m.to_email)return "";return m.author_email.toLowerCase()===me?m.to_email.toLowerCase():m.author_email.toLowerCase()};
 const convMsgs=k=>chatMsgs.filter(m=>convKey(m)===k);
 const convUnread=k=>{const sn=Number(getSeenMap()[k])||0;return convMsgs(k).filter(m=>m.id>sn&&m.author_email.toLowerCase()!==me).length};
 function chatBadge(){let un=0;const keys=new Set(chatMsgs.map(convKey));keys.forEach(k=>{if(chatOpen&&k===chatTo)return;un+=convUnread(k)});$("cb").hidden=!un;$("cb").textContent=un>99?"99+":un}
 function markSeen(){const l=convMsgs(chatTo);setSeenFor(chatTo,l.length?l[l.length-1].id:0)}
 function drawPeople(){const box=$("cp");box.replaceChildren();
   const q=($("cq").value||"").trim().toLowerCase();
-  const items=[{k:"",name:"전체 채팅",sub:"모든 사원"}].concat(dir.filter(r=>r.email.toLowerCase()!==me&&(!q||[r.name,r.nickname,r.email].join(" ").toLowerCase().includes(q))).map(r=>({k:r.email.toLowerCase(),name:r.nickname||r.name,sub:[r.pos,r.rnk].filter(Boolean).join(" · "),r})));
+  const roomItems=rooms.map(r=>({k:"room:"+r.id,name:r.name,sub:"👥 "+((roomMem[r.id]||[]).length+1)+"명",room:r}));
+  const items=[{k:"",name:"전체 채팅",sub:"모든 사원"}].concat(roomItems.filter(it=>!q||it.name.toLowerCase().includes(q))).concat(dir.filter(r=>r.email.toLowerCase()!==me&&(!q||[r.name,r.nickname,r.email].join(" ").toLowerCase().includes(q))).map(r=>({k:r.email.toLowerCase(),name:r.nickname||r.name,sub:[r.pos,r.rnk].filter(Boolean).join(" · "),r})));
+  if(canLead()){const nb=el("button",{type:"button",className:"cpi cnew",textContent:"＋ 새 팀 채팅방 만들기"});nb.onclick=()=>roomDlg(null);box.prepend(nb)}
   items.forEach(it=>{const av=el("span",{className:"avs l"});
-    if(it.r&&it.r.avatar&&urls[it.r.avatar])avatar(av,it.r.avatar,"");else av.textContent=it.r?ini(it.name):"#";
+    if(it.r&&it.r.avatar&&urls[it.r.avatar])avatar(av,it.r.avatar,"");else av.textContent=it.r?ini(it.name):it.room?"👥":"#";
     const un=convUnread(it.k);
     const b=el("button",{type:"button",className:"cpi"+(chatTo===it.k?" on":"")},[av,el("span",{className:"cpt"},[el("b",{textContent:it.name}),el("span",{className:"note",textContent:it.sub})]),...(un&&!(chatOpen&&chatTo===it.k)?[el("span",{className:"cbd",textContent:un>99?"99+":un})]:[])]);
     b.onclick=()=>{chatTo=it.k;markSeen();drawPeople();drawChat(true);$("ci").focus()};box.append(b)})}
 function drawChat(stick){const box=$("cl"),near=box.scrollHeight-box.scrollTop-box.clientHeight<80;box.replaceChildren();let lastDay="";
   const to=chatTo?dir.find(x=>x.email.toLowerCase()===chatTo):null;
-  $("ch2").textContent=chatTo?(to?(to.nickname||to.name):chatTo)+" 님과의 1:1 대화":"전체 채팅 · 모든 사원이 볼 수 있어요";
-  $("ci").placeholder=chatTo?"이 사원에게만 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)":"전체에게 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)";
+  const rm=curRoom();
+  $("ch2").replaceChildren(el("span",{textContent:rm?"👥 "+rm.name+" · "+[rm.owner_email,...(roomMem[rm.id]||[])].map(dispName).join(", "):chatTo?(to?(to.nickname||to.name):chatTo)+" 님과의 1:1 대화":"전체 채팅 · 모든 사원이 볼 수 있어요"}));
+  if(rm&&(rm.owner_email.toLowerCase()===me||ceo)){const mb=el("button",{type:"button",className:"ob2",textContent:"멤버 관리"});mb.onclick=()=>roomDlg(rm);const db2=el("button",{type:"button",className:"ob2",textContent:"방 삭제"});
+    db2.onclick=async()=>{if(!confirm("'"+rm.name+"' 채팅방을 삭제할까요?\n대화 내용도 모두 사라지고 되돌릴 수 없어요."))return;const {error}=await db.rpc("chat_room_delete",{p_id:rm.id});if(error)return alert("삭제하지 못했어요");chatTo="";await loadRooms();await loadChat(true)};$("ch2").append(mb,db2)}
+  $("ci").placeholder=rm?"채팅방 멤버 모두에게 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)":chatTo?"이 사원에게만 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)":"전체에게 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)";
   const list=convMsgs(chatTo);
   if(!list.length)box.append(el("div",{className:"cday",textContent:chatTo?"아직 대화가 없어요. 먼저 말을 걸어 보세요.":"아직 메시지가 없어요."}));
   list.forEach(m=>{const d=dayStr(m.created_at);if(d!==lastDay){lastDay=d;box.append(el("div",{className:"cday",textContent:d}))}
@@ -305,10 +311,35 @@ function drawChat(stick){const box=$("cl"),near=box.scrollHeight-box.scrollTop-b
     const tm=new Date(m.created_at).toLocaleTimeString("ko-KR",{hour:"numeric",minute:"2-digit"});
     const body=el("div",{},[...(mine?[]:[el("div",{className:"cn",textContent:rr?(rr.nickname||rr.name):m.author_name})]),el("div",{className:"cb2",textContent:m.body})]);
     const row=el("div",{className:"cm"+(mine?" me":"")},[...(mine?[]:[av]),body,el("span",{className:"ct",textContent:tm})]);
-    if(mine||(ceo&&!m.to_email)){row.title="더블클릭하면 삭제";row.ondblclick=async()=>{if(!confirm("이 메시지를 삭제할까요?"))return;await db.from("chat_messages").delete().eq("id",m.id);chatMsgs=chatMsgs.filter(x=>x.id!==m.id);drawChat()}}
+    const rmo=m.room_id&&rooms.find(x=>x.id===m.room_id);if(mine||(ceo&&!m.to_email)||(rmo&&rmo.owner_email.toLowerCase()===me)){row.title="더블클릭하면 삭제";row.ondblclick=async()=>{if(!confirm("이 메시지를 삭제할까요?"))return;await db.from("chat_messages").delete().eq("id",m.id);chatMsgs=chatMsgs.filter(x=>x.id!==m.id);drawChat()}}
     box.append(row)});
   if(stick||near)box.scrollTop=box.scrollHeight;chatBadge()}
-async function loadChat(stick){const {data}=await db.from("chat_messages").select("id,author_email,author_name,body,created_at,to_email").order("id",{ascending:false}).limit(500);
+const curRoom=()=>chatTo.startsWith("room:")?rooms.find(r=>"room:"+r.id===chatTo)||null:null;
+const canLead=()=>ceo||(dir.find(x=>x.email.toLowerCase()===me)||{}).pos==="팀장"||(dir.find(x=>x.email.toLowerCase()===me)||{}).pos==="대표이사";
+async function loadRooms(){const [a,b]=await Promise.all([db.from("chat_rooms").select("id,name,owner_email").order("id"),db.from("chat_room_members").select("room_id,email")]);
+  if(a.error)return;rooms=a.data||[];roomMem={};(b.data||[]).forEach(x=>(roomMem[x.room_id]=roomMem[x.room_id]||[]).push(x.email));
+  if(chatTo.startsWith("room:")&&!curRoom())chatTo=""}
+function roomDlg(rm){
+  const old=document.getElementById("rmdlg");if(old)old.remove();
+  const sel=new Set(rm?(roomMem[rm.id]||[]).map(e=>e.toLowerCase()):[]);
+  const nm=el("input",{value:rm?rm.name:"",maxLength:60,placeholder:"예: 사운드제작팀 채팅방"});
+  const q=el("input",{type:"search",placeholder:"사원 검색"});const lst=el("div",{className:"rml"});const cnt=el("span",{className:"note"});
+  const myT=(dir.find(x=>x.email.toLowerCase()===me)||{}).team||"";
+  const draw=()=>{lst.replaceChildren();const k=q.value.trim().toLowerCase();
+    dir.filter(r=>r.email.toLowerCase()!==me&&(!k||[r.name,r.nickname,r.team].join(" ").toLowerCase().includes(k))).forEach(r=>{
+      const cb=el("input",{type:"checkbox",checked:sel.has(r.email.toLowerCase())});cb.onchange=()=>{cb.checked?sel.add(r.email.toLowerCase()):sel.delete(r.email.toLowerCase());cnt.textContent="초대 "+sel.size+"명"};
+      lst.append(el("label",{className:"rmi"},[cb,el("span",{textContent:(r.nickname||r.name)+(r.team?" · "+r.team:"")+(r.rnk?" · "+r.rnk:"")})]))});cnt.textContent="초대 "+sel.size+"명"};
+  q.oninput=draw;draw();
+  const tm=myT?el("button",{type:"button",className:"ob2",textContent:"내 팀("+myT+") 전원 선택"}):null;
+  if(tm)tm.onclick=()=>{dir.filter(r=>r.team===myT&&r.email.toLowerCase()!==me).forEach(r=>sel.add(r.email.toLowerCase()));draw()};
+  const msgx=el("span",{className:"note"});const ok=el("button",{type:"button",className:"btn mred",textContent:rm?"저장":"만들기"}),cx=el("button",{type:"button",className:"btn",textContent:"취소"});
+  const wrap=el("div",{className:"mod",id:"rmdlg"},[el("div",{className:"mbox wd"},[el("h2",{textContent:rm?"채팅방 멤버 관리":"새 팀 채팅방",style:"margin-top:0"}),el("label",{className:"rmn"},[document.createTextNode("방 이름"),nm]),q,...(tm?[tm]:[]),lst,el("div",{className:"wr",style:"justify-content:space-between;align-items:center;gap:10px"},[cnt,msgx,el("span",{},[cx,document.createTextNode(" "),ok])])])]);
+  cx.onclick=()=>wrap.remove();wrap.addEventListener("click",e=>{if(e.target===wrap)wrap.remove()});
+  ok.onclick=async()=>{const n=nm.value.trim();if(!n){msgx.textContent="방 이름을 써 주세요.";return}ok.disabled=true;msgx.textContent="저장 중…";
+    const {data,error}=await db.rpc("chat_room_save",{p_id:rm?rm.id:null,p_name:n,p_members:[...sel]});ok.disabled=false;
+    if(error){msgx.textContent="저장하지 못했어요 (권한을 확인해 주세요)";return}wrap.remove();await loadRooms();if(!rm)chatTo="room:"+data;drawPeople();await loadChat(true)};
+  document.body.append(wrap);nm.focus()}
+async function loadChat(stick){await loadRooms();const {data}=await db.from("chat_messages").select("id,author_email,author_name,body,created_at,to_email,room_id").order("id",{ascending:false}).limit(500);
   if(!data)return;chatMsgs=data.reverse();if(chatOpen)markSeen();drawPeople();drawChat(stick)}
 function startChat(){if(chatStarted)return;chatStarted=true;loadChat(true);
   try{chatSub=db.channel("chat-room").on("postgres_changes",{event:"*",schema:"public",table:"chat_messages"},()=>loadChat(false)).subscribe()}catch(_){}
@@ -317,7 +348,7 @@ function openChat(){chatOpen=true;markSeen();drawPeople();drawChat(true);chatBad
 document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.t!=="c"){chatOpen=false;chatBadge()}}));
 $("cq").oninput=drawPeople;
 async function sendChat(){const t=$("ci").value.trim();if(!t)return;$("ci").value="";
-  const row={author_email:me,author_name:myName,body:t.slice(0,2000)};if(chatTo)row.to_email=chatTo;
+  const row={author_email:me,author_name:myName,body:t.slice(0,2000)};if(chatTo.startsWith("room:"))row.room_id=Number(chatTo.slice(5));else if(chatTo)row.to_email=chatTo;
   const {error}=await db.from("chat_messages").insert(row);
   if(error){$("ci").value=t;alert("보내지 못했어요");return}await loadChat(true)}
 $("cf2").onsubmit=e=>{e.preventDefault();sendChat()};
