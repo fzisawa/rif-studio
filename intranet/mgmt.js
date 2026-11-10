@@ -109,10 +109,10 @@ function buildQ(m,box){
       const t=(txt||html.replace(/<br\s*\/?>/gi,"\n").replace(/<\/(p|div|li)>/gi,"\n").replace(/<[^>]+>/g,"").replace(/&nbsp;/g," ").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&amp;/g,"&")).trim();
       bodyBox.append(el("div",{className:"mbody",textContent:t||"(내용 없음)"}))}
     else{
-      const f=document.createElement("iframe");f.setAttribute("sandbox","allow-same-origin");f.className="mfr dark";
+      const f=document.createElement("iframe");f.setAttribute("sandbox","allow-same-origin");const dm=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):{matches:true};f.className="mfr"+(dm.matches?" dark":"");
       f.srcdoc='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: cid:; style-src \'unsafe-inline\'"><style>html,body{background:#fff}img,video{filter:invert(1) hue-rotate(180deg)}</style><body style="font:14px/1.6 sans-serif;margin:12px;color:#222">'+html;
       f.onload=()=>{try{f.style.height=Math.min(640,Math.max(120,f.contentDocument.body.scrollHeight+28))+"px"}catch(_){}};
-      const tg=el("button",{className:"mbtn",type:"button",textContent:"원본 색으로 보기"});tg.style.marginBottom="8px";
+      const tg=el("button",{className:"mbtn",type:"button",textContent:dm.matches?"원본 색으로 보기":"다크로 보기"});tg.style.marginBottom="8px";
       tg.onclick=()=>{const d=f.classList.toggle("dark");tg.textContent=d?"원본 색으로 보기":"다크로 보기"};
       bodyBox.append(tg,f)}
     if((m.attachments||[]).length)bodyBox.append(el("div",{className:"mnote",textContent:"첨부 "+m.attachments.length+"개: "+m.attachments.map(x=>x.filename).join(", ")+" (파일은 Resend 대시보드에서 확인)"}))});
