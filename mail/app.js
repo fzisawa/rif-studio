@@ -45,6 +45,16 @@ $("mform").onsubmit=async e=>{e.preventDefault();
   else{msg.className="note err";msg.textContent="보내지 못했어요: "+m}};
 $("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:$("em").value.trim(),password:$("pw").value});
   $("lmsg").textContent=error?"로그인 실패 — 이메일과 비밀번호를 확인해 주세요":"";$("pw").value="";render()};
+$("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
+  if($("spw").value!==$("spw2").value){m.textContent="비밀번호 확인이 달라요";return}
+  const b=$("sgo");b.disabled=true;m.className="note";m.textContent="가입 중…";
+  let ok=false,msg="";
+  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value,name:$("sna").value,email:$("sem").value,password:$("spw").value}});
+    if(error){try{msg=(await error.context.json()).error}catch(_){msg=error.message}}else if(data&&data.ok)ok=true;else msg=(data&&data.error)||"알 수 없는 오류"}catch(x){msg=String(x.message||x)}
+  b.disabled=false;
+  if(!ok){m.className="note err";m.textContent=msg;return}
+  const {error}=await db.auth.signInWithPassword({email:$("sem").value.trim(),password:$("spw").value});
+  $("spw").value="";$("spw2").value="";m.textContent=error?"가입은 됐어요. 위에서 로그인해 주세요.":"";render()};
 $("out").onclick=async e=>{e.preventDefault();await db.auth.signOut();render()};
 render();
 })();

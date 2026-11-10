@@ -10,10 +10,16 @@
 #tw{overflow-x:auto;margin-top:16px;border:1px solid #7773;border-radius:12px}main.wide{max-width:1100px}
 .sigbox{max-width:760px;margin-top:40px;display:grid;gap:10px}.sigbox textarea{padding:10px 14px;font:inherit;border-radius:10px;resize:vertical}
 .pv{border:1px dashed #7775;border-radius:10px;padding:12px 16px;font-size:14px;line-height:1.6;white-space:pre-wrap;color:var(--mut)}
+.sg{margin-top:22px;max-width:360px}.sg summary{cursor:pointer;color:var(--mut);font-size:14px}.sgf{display:grid;gap:10px;margin-top:12px}.sgf input{padding:12px 14px}
 #login{display:grid;gap:10px;max-width:360px}#login input{padding:12px 14px}</style></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.vocal">Vocal</button><div class="nm"><a href="../rif/">RIF</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.sound">Sound</button><div class="nm"><a href="../charmbung/">Charmbung</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.art">Art</button><div class="nm"><a href="../woljae/">Woljae</a></div></div><div class="ng on"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.content">Content</button><div class="nm"><a href="../join/" class=on data-i18n=nav.cj>Join Us</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.mgmt">Management</button><div class="nm"><a href="../rif-management/">RIF</a></div></div><a class="nl" href="../join/">Join Us</a><a class="nl" href="../contact/">Contact</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
 <main id="mn" class="wide"><section class="hero"><p class="tag red">MAIL</p><h1>Mail</h1>
 <form id="login"><input id="em" type="email" placeholder="이메일" required autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" required autocomplete="current-password"><button class="btn mred">로그인</button><p class="note err" id="lmsg"></p></form>
+<details id="sg" class="sg"><summary>처음이신가요? 사번으로 가입</summary>
+<form id="signup" class="sgf"><p class="note">대표님께 받은 사번과, 등록된 이름·이메일을 그대로 넣어 주세요. 비밀번호는 직접 정하세요 (8자 이상).</p>
+<input id="sn" placeholder="사번 (예: RIF-123456)" autocomplete="off" required><input id="sna" placeholder="이름" autocomplete="name" required><input id="sem" type="email" placeholder="이메일" autocomplete="username" required>
+<input id="spw" type="password" placeholder="비밀번호 (8자 이상)" autocomplete="new-password" minlength="8" required><input id="spw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="8" required>
+<button class="btn mred" id="sgo">가입하기</button><p class="note err" id="smsg"></p></form></details>
 <div id="app" hidden><p class="lead"><span id="who"></span> · <a href="#" id="out">로그아웃</a></p>
 <p class="note err" id="nomail" hidden>이 계정에는 메일 권한이 없어요. 대표님께 요청해 주세요.</p>
 <div id="box" hidden>
@@ -33,4 +39,4 @@
 </div></section></main>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js"></script><script src="app.js?v=1"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js"></script><script src="app.js?v=2"></script><script src="../nav.js" defer></script></body></html>
