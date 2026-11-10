@@ -144,10 +144,39 @@ function drawInbox(){
   if(!list.length)box.append(el("p",{className:"note",textContent:"받은 메일이 없어요."}))}
 $("ihide").onchange=drawInbox;$("irf").onclick=loadInbox;
 
-/* 직원 */
-async function loadDir(){const {data}=await db.rpc("staff_directory");const tb=$("stb2");tb.replaceChildren();
-  (data||[]).forEach(r=>tb.append(el("tr",{},[el("td",{textContent:r.name}),el("td",{textContent:r.nickname}),el("td",{textContent:r.pos}),el("td",{textContent:r.dept}),el("td",{textContent:r.email})])));
-  if(!(data||[]).length)tb.append(el("tr",{},[el("td",{colSpan:5,textContent:"직원이 없어요."})]))}
+/* 직원 · 프로필 */
+let dir=[],urls={};
+const ini=s=>(String(s||"?").trim()[0]||"?").toUpperCase();
+function avatar(node,path,name){node.textContent="";node.style.backgroundImage="";if(path&&urls[path])node.style.backgroundImage='url("'+encodeURI(urls[path])+'")';else node.textContent=ini(name)}
+async function loadDir(){const {data}=await db.rpc("staff_directory");dir=data||[];
+  const paths=[...new Set(dir.map(r=>r.avatar).filter(Boolean))];urls={};
+  if(paths.length){const {data:u}=await db.storage.from("avatars").createSignedUrls(paths,3600);(u||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
+  const mine=dir.find(r=>r.email.toLowerCase()===me)||{};
+  avatar($("pfav"),mine.avatar,mine.name);$("pfnk").value=mine.nickname||"";$("pfdc").value=mine.discord||"";$("pftw").value=mine.twitter||"";
+  drawDir()}
+const GROUPS=[["경영부",r=>r.division==="경영부"],["프로덕션부 · 보컬팀",r=>r.team==="보컬팀"],["프로덕션부 · 사운드제작팀",r=>r.team==="사운드제작팀"],["프로덕션부 · 일러스트팀",r=>r.team==="일러스트팀"],["프로덕션부 · 매니지먼트팀",r=>r.team==="매니지먼트팀"],["프로덕션부 (팀 미배정)",r=>r.division==="프로덕션부"&&!r.team],["미배정",r=>!r.division&&!r.team]];
+function drawDir(){const g=$("dirg");g.replaceChildren();
+  GROUPS.forEach(([label,fn])=>{const l=dir.filter(fn);if(!l.length)return;g.append(el("h3",{className:"dh",textContent:label+" ("+l.length+")"}));
+    l.forEach(r=>{const av=el("div",{className:"av"});avatar(av,r.avatar,r.nickname||r.name);
+      const lines=[];if(r.email)lines.push(r.email);if(r.discord)lines.push("Discord: "+r.discord);if(r.twitter)lines.push("X: "+r.twitter);
+      g.append(el("div",{className:"pc"},[av,el("div",{},[el("b",{textContent:r.name+(r.nickname?" ("+r.nickname+")":"")}),el("div",{className:"t",textContent:[r.pos,r.rnk].filter(Boolean).join(" · ")||" "}),el("div",{className:"m",textContent:lines.join("\n"),style:"white-space:pre-line"})])]))})});
+  if(!dir.length)g.append(el("p",{className:"note",textContent:"직원이 없어요."}))}
+$("pf").onsubmit=async e=>{e.preventDefault();const {error}=await db.rpc("set_my_profile",{p_nick:$("pfnk").value,p_discord:$("pfdc").value,p_twitter:$("pftw").value});
+  msg("pfmsg",error?"저장하지 못했어요":"저장했어요 ✓",!!error);if(!error)loadDir()};
+$("pfpick").onclick=()=>$("pfile").click();
+function shrink(f){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const S=512,k=Math.min(1,S/Math.min(im.width,im.height)),w=Math.round(im.width*k),h=Math.round(im.height*k);
+  const side=Math.min(w,h),c=document.createElement("canvas");c.width=c.height=side;const x=c.getContext("2d");x.drawImage(im,(w-side)/2/k,(h-side)/2/k,side/k,side/k,0,0,side,side);
+  URL.revokeObjectURL(u);c.toBlob(b=>b?res(b):rej(),"image/jpeg",0.85)};im.onerror=()=>rej();im.src=u})}
+$("pfile").onchange=async()=>{const f=$("pfile").files[0];$("pfile").value="";if(!f)return;
+  if(!/^image\/(jpeg|png|webp)$/.test(f.type))return msg("pfm2","jpg·png·webp 사진만 올릴 수 있어요.",1);
+  msg("pfm2","올리는 중…");let blob;try{blob=await shrink(f)}catch(_){return msg("pfm2","사진을 읽지 못했어요.",1)}
+  const mine=dir.find(r=>r.email.toLowerCase()===me)||{},old=mine.avatar;
+  const path=uid+"/"+Date.now()+".jpg";
+  const {error}=await db.storage.from("avatars").upload(path,blob,{contentType:"image/jpeg"});if(error)return msg("pfm2","올리지 못했어요.",1);
+  const {error:e2}=await db.rpc("set_my_avatar",{p_path:path});if(e2){await db.storage.from("avatars").remove([path]);return msg("pfm2","저장하지 못했어요.",1)}
+  if(old)await db.storage.from("avatars").remove([old]);msg("pfm2","바꿨어요 ✓");loadDir()};
+$("pfdel").onclick=async()=>{const mine=dir.find(r=>r.email.toLowerCase()===me)||{};if(!mine.avatar)return;if(!confirm("프로필 사진을 지울까요?"))return;
+  await db.rpc("set_my_avatar",{p_path:""});await db.storage.from("avatars").remove([mine.avatar]);loadDir()};
 
 /* 탭 */
 const P={n:"pn",t:"pt",i:"pi",d:"pd",s:"ps"};
@@ -163,7 +192,7 @@ $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
   if($("spw").value!==$("spw2").value){m.textContent="비밀번호 확인이 달라요";return}
   const b=$("sgo");b.disabled=true;m.className="note";m.textContent="가입 중…";
   let ok=false,msg2="";
-  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value.trim(),name:$("sna").value,nickname:$("snk").value,phone:$("sph").value,loginId:$("sid").value,inviteEmail:$("sem").value,password:$("spw").value}});
+  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value.trim(),name:$("sna").value,nickname:$("snk").value,phone:$("sph").value,loginId:$("sid").value,discord:$("sdc").value,twitter:$("stw").value,password:$("spw").value}});
     if(error){try{msg2=(await error.context.json()).error}catch(_){msg2=error.message}}else if(data&&data.ok)ok=true;else msg2=(data&&data.error)||"알 수 없는 오류"}catch(x){msg2=String(x.message||x)}
   b.disabled=false;
   if(!ok){m.className="note err";m.textContent=msg2;return}

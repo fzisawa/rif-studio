@@ -1,7 +1,7 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Intranet · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=54"><link rel="icon" href="../img/favicon.png" type="image/png">
-<style>.jt{border-collapse:collapse;width:100%;font-size:14px;line-height:1.5}.jt th{text-align:left;padding:10px 12px;border-bottom:2px solid #7775;white-space:nowrap;font-size:12px;letter-spacing:.06em;color:var(--mut)}.jt td{padding:10px 12px;border-bottom:1px solid #7773;vertical-align:top}
+<style>.av{width:56px;height:56px;border-radius:50%;background:#7773 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--mut);flex:none;overflow:hidden}.av.big{width:96px;height:96px;font-size:30px}.dirg{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:24px}.pc{border:1px solid #7773;border-radius:14px;padding:16px;display:flex;gap:14px;align-items:flex-start}.pc b{display:block;font-size:16px}.pc .t{font-size:12px;color:#d64545;font-weight:700;margin-top:2px}.pc .m{font-size:13px;color:var(--mut);margin-top:6px;line-height:1.5;word-break:break-all}.dh{grid-column:1/-1;margin:14px 0 0;font-size:13px;letter-spacing:.08em;color:var(--mut)}.jt{border-collapse:collapse;width:100%;font-size:14px;line-height:1.5}.jt th{text-align:left;padding:10px 12px;border-bottom:2px solid #7775;white-space:nowrap;font-size:12px;letter-spacing:.06em;color:var(--mut)}.jt td{padding:10px 12px;border-bottom:1px solid #7773;vertical-align:top}
 .jt tr.r{cursor:pointer}.jt tr.r:hover td{background:#7771}.jt td.dt{white-space:nowrap}.jt tr.d td{background:#7771;padding:16px 20px}.jt tr.d p{white-space:pre-wrap;margin:0 0 12px}.jt tr.d b{color:#d64545;font-size:12px;letter-spacing:.1em}
 .jbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}.jbar .btn{padding:8px 18px;font-size:14px}.jbar input{padding:8px 14px;min-width:200px}
 .mf{display:grid;gap:12px;max-width:760px}.mf label{display:grid;gap:6px;font-size:13px;color:var(--mut)}.mf input,.mf textarea{padding:10px 14px;font:inherit;border-radius:10px}.mf textarea{resize:vertical}
@@ -29,10 +29,10 @@
 <main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>Intranet</h1>
 <form id="login"><input id="em" type="text" placeholder="아이디 또는 이메일 (예: mina 또는 mina@rif-studio.com)" required autocomplete="username" autocapitalize="none"><input id="pw" type="password" placeholder="비밀번호" required autocomplete="current-password"><button class="btn mred">로그인</button><p class="note err" id="lmsg"></p></form>
 <details id="sg" class="sg"><summary>가입</summary>
-<form id="signup" class="sgf"><p class="note">입사 축하 메일의 8자리 사번을 입력하고, 로그인에 쓸 아이디(이름@rif-studio.com)와 비밀번호(8자 이상)를 직접 정해 주세요. 초대 메일을 받은 이메일도 확인용으로 한 번 적어 주세요.</p>
+<form id="signup" class="sgf"><p class="note">입사 축하 메일의 8자리 사번을 입력하고, 로그인에 쓸 아이디(이름@rif-studio.com)와 비밀번호(8자 이상)를 직접 정해 주세요.</p>
 <input id="sn" placeholder="사번 (숫자 8자리)" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="off" required>
-<input id="sna" placeholder="이름" autocomplete="name" required><input id="snk" placeholder="닉네임" autocomplete="nickname" required>
-<div class="idrow"><input id="sid" placeholder="아이디 (영문·숫자, 예: mina)" autocomplete="username" autocapitalize="none" required><span>@rif-studio.com</span></div><input id="sem" type="email" placeholder="초대 메일을 받은 이메일 (확인용)" autocomplete="email"><input id="sph" type="tel" placeholder="전화번호" autocomplete="tel" required>
+<input id="sna" placeholder="이름" autocomplete="name" required><input id="snk" placeholder="닉네임 (가능하면 영어로)" autocomplete="nickname" required>
+<div class="idrow"><input id="sid" placeholder="아이디 (영문·숫자, 예: mina)" autocomplete="username" autocapitalize="none" required><span>@rif-studio.com</span></div><input id="sph" type="tel" placeholder="전화번호" autocomplete="tel" required><input id="sdc" placeholder="디스코드 아이디 (선택)" autocomplete="off" maxlength="60"><input id="stw" placeholder="트위터(X) 계정 (선택, 예: @rif_studio)" autocomplete="off" maxlength="60">
 <input id="spw" type="password" placeholder="비밀번호 (8자 이상)" autocomplete="new-password" minlength="8" required><input id="spw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="8" required>
 <button class="btn mred" id="sgo">가입</button><p class="note err" id="smsg"></p></form></details>
 <div id="app" hidden><p class="lead"><span id="who"></span> · <a href="#" id="out">로그아웃</a></p>
@@ -51,8 +51,14 @@
 <div id="pd" hidden><form id="df" class="fr"><h2>자료 올리기</h2><label>제목<input id="dt" maxlength="200"></label><label>메모 (선택)<input id="dn" maxlength="1000"></label><label>파일 (20MB까지 · pdf, 사진, 오피스, 한글, zip 등)<input type="file" id="dfile"></label><div class="jbar"><button class="btn mred">올리기</button><span class="note" id="dmsg"></span></div></form>
 <div id="tw" style="overflow-x:auto;margin-top:20px;border:1px solid #7773;border-radius:12px"><table class="jt"><thead><tr><th>제목</th><th>파일</th><th>크기</th><th>올린 사람</th><th>날짜</th><th></th></tr></thead><tbody id="dtb"></tbody></table></div></div>
 
-<div id="ps" hidden><div id="tw3" style="overflow-x:auto;margin-top:12px;border:1px solid #7773;border-radius:12px"><table class="jt"><thead><tr><th>이름</th><th>닉네임</th><th>직책</th><th>부서</th><th>아이디</th></tr></thead><tbody id="stb2"></tbody></table></div></div>
+<div id="ps" hidden>
+<form id="pf" class="fr" style="max-width:560px"><h2>내 프로필</h2>
+<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap"><div class="av big" id="pfav"></div><div style="display:grid;gap:8px"><input type="file" id="pfile" accept="image/jpeg,image/png,image/webp" hidden><button class="btn small" type="button" id="pfpick">사진 바꾸기</button><button class="btn small" type="button" id="pfdel">사진 지우기</button><span class="note" id="pfm2"></span></div></div>
+<label>닉네임 (가능하면 영어)<input id="pfnk" maxlength="60"></label><label>디스코드 (선택)<input id="pfdc" maxlength="60"></label><label>트위터(X) (선택)<input id="pftw" maxlength="60"></label>
+<div class="jbar"><button class="btn mred">저장</button><span class="note" id="pfmsg"></span></div></form>
+<div id="dirg" class="dirg"></div>
+<div id="tw3" hidden style="overflow-x:auto;margin-top:12px;border:1px solid #7773;border-radius:12px"><table class="jt"><thead><tr><th>이름</th><th>닉네임</th><th>직책</th><th>부서</th><th>아이디</th></tr></thead><tbody id="stb2"></tbody></table></div></div>
 </div></div></section></main>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=2"></script><script src="app.js?v=3"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=2"></script><script src="app.js?v=4"></script><script src="../nav.js" defer></script></body></html>

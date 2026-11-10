@@ -8,7 +8,7 @@ const tab=n=>{$("p3").hidden=n!==3;$("t3").setAttribute("aria-pressed",n===3);
   if(n===3){$("p1").hidden=true;$("p2").hidden=true;$("t1").setAttribute("aria-pressed",false);$("t2").setAttribute("aria-pressed",false);$("mn").classList.add("wide")}};
 $("t3").onclick=()=>tab(3);
 $("t1").addEventListener("click",()=>tab(0));$("t2").addEventListener("click",()=>tab(0));
-const err=e=>/bad pin/.test(e.message)?"비밀번호가 맞지 않아요":/only unused/.test(e.message)?"이미 가입한 사번은 삭제할 수 없어요 (퇴사 처리를 쓰세요)":/8 digits/.test(e.message)?"사번은 숫자 8자리여야 해요":/already used/.test(e.message)?"이미 있는 사번이에요":/bad email/.test(e.message)?"이메일 형식이 올바르지 않아요":e.message;
+const err=e=>/bad pin/.test(e.message)?"비밀번호가 맞지 않아요":/only unused/.test(e.message)?"이미 가입한 사번은 삭제할 수 없어요 (퇴사 처리를 쓰세요)":/8 digits/.test(e.message)?"사번은 숫자 8자리여야 해요":/already used/.test(e.message)?"이미 있는 사번이에요":/bad division|bad team/.test(e.message)?"부서/팀 값이 올바르지 않아요":/bad email/.test(e.message)?"이메일 형식이 올바르지 않아요":e.message;
 async function load(){
   const {data,error}=await db.rpc("hr_list",{p_pin:PIN});
   if(error){alert("불러오지 못했어요: "+err(error));lock();return}
@@ -24,7 +24,7 @@ function draw(){
     const st=r.status==="left"?["퇴사","x"]:r.used_at?["가입 완료","on"]:expired(r)?["기간 만료","x"]:["가입 대기","wt"];
     const acts=[];
     const b1=el("button",{className:"btn small",textContent:"수정"});
-    b1.onclick=()=>{edit=r;$("hft").textContent="정보 수정 · "+r.emp_no;$("hno").value=r.emp_no;$("hn").value=r.name;$("hnk").value=r.nickname;$("he").value=r.email;$("hph").value=r.phone;$("hp").value=r.position;$("hd").value=r.dept;$("hm").value=r.memo;$("hform").hidden=false;$("hn").focus();$("hform").scrollIntoView({behavior:"smooth",block:"center"})};
+    b1.onclick=()=>{edit=r;$("hft").textContent="정보 수정 · "+r.emp_no;$("hno").value=r.emp_no;$("hn").value=r.name;$("hnk").value=r.nickname;$("he").value=r.email;$("hph").value=r.phone;$("hp").value=r.position;$("hrk").value=r.rank||"";$("hdv").value=r.division||"";$("htm").value=r.team||"";$("htm").onchange=()=>{if($("htm").value)$("hdv").value="프로덕션부"};$("hdc").value=r.discord||"";$("htw").value=r.twitter||"";$("hm").value=r.memo;$("hform").hidden=false;$("hn").focus();$("hform").scrollIntoView({behavior:"smooth",block:"center"})};
     acts.push(b1);
     if(!r.used_at&&r.status==="active"&&r.invite_email){const b=el("button",{className:"btn small",textContent:r.onboard_sent_at?"메일 재발송":"축하 메일 보내기"});
       b.onclick=async()=>{if(!confirm(r.invite_email+" 에게 입사 축하 메일(한/일/영, 사번 "+r.emp_no+" 포함)을 보낼까요?"))return;b.disabled=true;const m=await sendMail(r);b.disabled=false;if(m)alert("메일을 보내지 못했어요: "+m);else{alert("보냈어요.");load()}};acts.push(b)}
@@ -41,7 +41,7 @@ function draw(){
     const b3=el("button",{className:"btn small",textContent:"삭제"});b3.disabled=!!r.used_at;
     b3.onclick=async()=>{if(!confirm(r.emp_no+" 을 삭제할까요?"))return;const {error}=await db.rpc("hr_delete",{p_pin:PIN,p_id:r.id});if(error)return alert(err(error));load()};acts.push(b3);
     const mailTd=el("td",{textContent:r.email||""});if(!r.used_at&&r.invite_email){mailTd.textContent="초대: "+r.invite_email;mailTd.className="sm"}
-    tb.append(el("tr",{className:r.status==="left"?"lft":""},[el("td",{className:"en",textContent:r.emp_no}),el("td",{textContent:r.name}),el("td",{textContent:r.nickname}),mailTd,el("td",{textContent:r.phone}),el("td",{textContent:r.position}),el("td",{textContent:r.dept}),
+    tb.append(el("tr",{className:r.status==="left"?"lft":""},[el("td",{className:"en",textContent:r.emp_no}),el("td",{textContent:r.name}),el("td",{textContent:r.nickname}),mailTd,el("td",{textContent:r.phone}),el("td",{textContent:[r.position,r.rank].filter(Boolean).join(" / ")}),el("td",{},[document.createTextNode(r.dept||""),...((r.discord||r.twitter)?[el("div",{className:"sm",textContent:[r.discord&&"Discord "+r.discord,r.twitter&&"X "+r.twitter].filter(Boolean).join(" · ")})]:[])]),
       el("td",{},[el("span",{className:"hs "+st[1],textContent:st[0]}),...(r.onboard_sent_at&&!r.used_at?[el("div",{className:"sm",textContent:"축하 메일 발송 "+dt(r.onboard_sent_at)})]:[])]),el("td",{className:"sm",textContent:dt(r.issued_at)}),el("td",{textContent:r.memo}),el("td",{className:"ac"},acts)]))});
   if(!rows.length)tb.append(el("tr",{},[el("td",{colSpan:11,textContent:"아직 발급된 사번이 없어요."})]))}
 $("cshow").onchange=()=>{$("cpw").type=$("cshow").checked?"text":"password"};
@@ -67,7 +67,7 @@ $("iform").onsubmit=async e=>{e.preventDefault();
   const box=$("issued");box.hidden=false;box.replaceChildren(el("b",{textContent:"사번: "}),el("span",{className:"big",textContent:row.emp_no}),el("span",{className:"note",textContent:note||"  — 직원에게 전달해 주세요."}));
   load()};
 $("hform").onsubmit=async e=>{e.preventDefault();if(!edit)return;
-  const {error}=await db.rpc("hr_save",{p_pin:PIN,p_id:edit.id,p_emp_no:$("hno").value.trim(),p_name:$("hn").value,p_nick:$("hnk").value,p_email:$("he").value,p_phone:$("hph").value,p_position:$("hp").value,p_dept:$("hd").value,p_memo:$("hm").value});
+  const {error}=await db.rpc("hr_save2",{p_pin:PIN,p_id:edit.id,p_emp_no:$("hno").value.trim(),p_name:$("hn").value,p_nick:$("hnk").value,p_email:$("he").value,p_phone:$("hph").value,p_position:$("hp").value,p_rank:$("hrk").value,p_division:$("hdv").value,p_team:$("htm").value,p_discord:$("hdc").value,p_twitter:$("htw").value,p_memo:$("hm").value});
   if(error)return alert("저장하지 못했어요: "+err(error));
   edit=null;$("hform").hidden=true;load()};
 $("hcancel").onclick=()=>{edit=null;$("hform").hidden=true};
