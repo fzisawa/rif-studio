@@ -124,7 +124,7 @@ function drawMail(){
   const un=unreadN();$("ib").hidden=!un;$("ib").textContent=un;
   const trN=inbox.filter(m=>m.deleted_at).length;
   const mineN=inbox.filter(m=>!m.deleted_at&&!m.done&&(m.assignee_email||"").toLowerCase()===me&&!irds.has(m.id)).length;
-  const F=[["in","받은 편지함",un||""],["mine","내 담당",mineN||""],["out","보낸 편지함",""],["done","완료한 메일",""],["trash","휴지통",trN||""]];
+  const F=[["in","받은 편지함",un||""],["mine",ceo?"대표 관리":"내 담당",mineN||""],["out","보낸 편지함",""],["done","완료한 메일",""],["trash","휴지통",trN||""]];
   $("ofl").replaceChildren(...F.map(([k,l,c])=>{const d=el("div",{className:"ofi"+(fold===k?" on":"")},[el("span",{textContent:l}),el("span",{className:"c",textContent:c})]);d.onclick=()=>{fold=k;selId=null;composing=null;drawMail()};return d}));
   $("ol").classList.toggle("rd",!!(selId||composing));drawUsage();
   const q=$("oq").value.trim().toLowerCase(),box=$("oli");box.replaceChildren();
