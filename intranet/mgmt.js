@@ -143,19 +143,27 @@ function drawQ(){
 function showBody(m,box){
   db.from("inbox_messages").select("body_text,body_html").eq("id",m.id).single().then(({data,error})=>{
     box.replaceChildren();if(error||!data){box.textContent="본문을 불러오지 못했어요";return}
-    const html=data.body_html||"",txt=data.body_text||"";
-    if(!/<(table|img|style|a\s)/i.test(html)){
-      const full=(txt||html.replace(/<br\s*\/?>/gi,"\n").replace(/<\/(p|div|li)>/gi,"\n").replace(/<[^>]+>/g,"").replace(/&nbsp;/g," ").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&amp;/g,"&")).replace(/\r\n/g,"\n").trim();
-      const cut=cutQ(full),b=el("div",{className:"mbody",textContent:cut||full||"(내용 없음)"});box.append(b);
-      if(cut&&cut!==full){let on=false;const tg=el("button",{className:"mbtn mq",type:"button",textContent:"이전 내용 보기"});tg.onclick=()=>{on=!on;b.textContent=on?full:cut;tg.textContent=on?"이전 내용 접기":"이전 내용 보기"};box.append(tg)}}
-    else{
-      const f=document.createElement("iframe");f.setAttribute("sandbox","allow-same-origin");
-      const dm=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):{matches:true};f.className="mfr"+(dm.matches?" dark":"");
-      f.srcdoc='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: cid:; style-src \'unsafe-inline\'"><style>html,body{background:#fff}img,video{filter:invert(1) hue-rotate(180deg)}</style><body style="font:14px/1.6 sans-serif;margin:12px;color:#222">'+html;
-      f.onload=()=>{try{f.style.height=Math.min(640,Math.max(120,f.contentDocument.body.scrollHeight+28))+"px"}catch(_){}};
-      const tg=el("button",{className:"mbtn",type:"button",textContent:dm.matches?"원본 색으로 보기":"다크로 보기"});tg.style.marginBottom="8px";
-      tg.onclick=()=>{const d=f.classList.toggle("dark");tg.textContent=d?"원본 색으로 보기":"다크로 보기"};
-      box.append(tg,f)}
+    const fullHtml=data.body_html||"",txt=String(data.body_text||"").replace(/\r\n/g,"\n").trim();
+    let clean=fullHtml,hadQ=false;
+    if(fullHtml){try{const d=new DOMParser().parseFromString(fullHtml,"text/html");
+      const qs=d.querySelectorAll(".gmail_quote,.gmail_extra,blockquote[type=cite],.yahoo_quoted,#divRplyFwdMsg,#appendonsend,.moz-cite-prefix");
+      if(qs.length){hadQ=true;qs.forEach(n=>n.remove());clean=d.body.innerHTML}}catch(_){}}
+    const toText=h=>h.replace(/<br\s*\/?>/gi,"\n").replace(/<\/(p|div|li)>/gi,"\n").replace(/<[^>]+>/g,"").replace(/&nbsp;/g," ").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&amp;/g,"&").replace(/\n{3,}/g,"\n\n").trim();
+    const txtCut=cutQ(txt),canToggle=hadQ||(!fullHtml&&txtCut!==txt);
+    const body=el("div");box.append(body);let showFull=false;
+    const tg=el("button",{className:"mbtn mq",type:"button",textContent:"이전 내용 보기"});
+    const draw=()=>{body.replaceChildren();const h=showFull?fullHtml:clean;
+      if(h&&/<(table|img|style|a\s)/i.test(h)){
+        const f=document.createElement("iframe");f.setAttribute("sandbox","allow-same-origin");
+        const dm=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):{matches:true};f.className="mfr"+(dm.matches?" dark":"");
+        f.srcdoc='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: cid:; style-src \'unsafe-inline\'"><style>html,body{background:#fff}img,video{filter:invert(1) hue-rotate(180deg)}</style><body style="font:14px/1.6 sans-serif;margin:12px;color:#222">'+h;
+        f.onload=()=>{try{f.style.height=Math.min(640,Math.max(120,f.contentDocument.body.scrollHeight+28))+"px"}catch(_){}};
+        const cb=el("button",{className:"mbtn",type:"button",textContent:dm.matches?"원본 색으로 보기":"다크로 보기"});cb.style.marginBottom="8px";
+        cb.onclick=()=>{const d=f.classList.toggle("dark");cb.textContent=d?"원본 색으로 보기":"다크로 보기"};
+        body.append(cb,f)}
+      else{const t=h?toText(h):(showFull?txt:txtCut);body.append(el("div",{className:"mbody",textContent:t||txt||"(내용 없음)"}))}};
+    draw();
+    if(canToggle){tg.onclick=()=>{showFull=!showFull;tg.textContent=showFull?"이전 내용 접기":"이전 내용 보기";draw()};box.append(tg)}
     if((m.attachments||[]).length)box.append(el("div",{className:"mnote",textContent:"첨부 "+m.attachments.length+"개: "+m.attachments.map(x=>x.filename).join(", ")+" (파일은 Resend 대시보드에서 확인)"}))})}
 function buildQ(t,box){
   box.replaceChildren();
