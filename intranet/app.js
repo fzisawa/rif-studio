@@ -199,24 +199,44 @@ async function loadDir(){const {data}=await db.rpc("staff_directory");dir=data||
   const paths=[...new Set(dir.map(r=>r.avatar).filter(Boolean))];urls={};
   if(paths.length){const {data:u}=await db.storage.from("avatars").createSignedUrls(paths,3600);(u||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
   const mine=dir.find(r=>r.email.toLowerCase()===me)||{};
-  avatar($("pfav"),mine.avatar,mine.name);$("pfnk").value=mine.nickname||"";$("pfdc").value=mine.discord||"";$("pftw").value=mine.twitter||"";
-  drawDir()}
+  avatar($("pfav"),mine.avatar,mine.name);$("pfnk").value=mine.nickname||"";$("pfdc").value=mine.discord||"";$("pftw").value=mine.twitter||"";$("pfdu").value=mine.duties||"";
+  drawTree();drawDir()}
+const DIVS={"경영부":["경영지원팀"],"프로덕션부":["보컬팀","사운드제작팀","일러스트팀","매니지먼트팀"]};
+const TEAM_DIV={};Object.entries(DIVS).forEach(([d,ts])=>ts.forEach(t=>TEAM_DIV[t]=d));
+const divOf=r=>r.division||TEAM_DIV[r.team]||"";
+let osel={d:"",t:""},oopen={root:false};
+function drawTree(){const box=$("otree");box.replaceChildren();
+  const cnt=(f)=>dir.filter(f).length;
+  const row=(cls,label,n,on,open,fn)=>{const b=el("button",{type:"button",className:cls+(on?" on":"")},[el("span",{className:"cr",textContent:open===null?"":(open?"▾":"▸")}),el("span",{textContent:label}),el("span",{className:"oc",textContent:String(n)})]);b.onclick=fn;box.append(b)};
+  row("o0","RIF STUDIO",dir.length,!osel.d&&!osel.t,!!oopen.root,()=>{oopen.root=!oopen.root;osel={d:"",t:""};drawTree();drawDir()});
+  if(oopen.root)Object.entries(DIVS).forEach(([d,ts])=>{
+    row("o1",d,cnt(r=>divOf(r)===d),osel.d===d&&!osel.t,!!oopen[d],()=>{oopen[d]=!oopen[d];osel={d,t:""};drawTree();drawDir()});
+    if(oopen[d])ts.forEach(t=>row("o2",t,cnt(r=>r.team===t),osel.t===t,null,()=>{osel={d,t};drawTree();drawDir()}))})}
+function card(r){const has=r.avatar&&urls[r.avatar],av=el("span",{className:"av"});if(has)avatar(av,r.avatar,"");else av.textContent=ini(r.nickname||r.name);
+  const tags=[];if(r.pos)tags.push(el("i",{className:"k",textContent:r.pos}));if(r.rnk)tags.push(el("i",{textContent:r.rnk}));if(r.team)tags.push(el("i",{textContent:r.team}));
+  const ct=[];if(r.emp)ct.push(el("span",{textContent:"사번 "+r.emp}));if(r.discord)ct.push(el("span",{textContent:"Discord "+r.discord}));if(r.twitter)ct.push(el("span",{textContent:"X "+r.twitter}));
+  const c=el("div",{className:"pc"},[el("div",{className:"ph"},[av,el("div",{className:"nm"},[el("b",{textContent:r.nickname||r.name}),el("span",{textContent:r.nickname&&r.name?r.name:String(r.email).replace(/@rif-studio\.com$/i,"")})])]),
+    el("div",{className:"tg"},tags),el("div",{className:"du"+(r.duties?"":" e"),textContent:r.duties||"업무 내용을 아직 적지 않았어요."}),...(ct.length?[el("div",{className:"ct"},ct)]:[])]);
+  c.onclick=()=>showPerson(r);return c}
 function drawDir(){
-  const q=$("eq").value.trim().toLowerCase(),dv=$("ediv").value,tm=$("etm").value,tb=$("etb");tb.replaceChildren();
-  const l=dir.filter(r=>(!dv||r.division===dv)&&(!tm||r.team===tm)&&(!q||[r.name,r.nickname,r.emp,r.email].join(" ").toLowerCase().includes(q)));
-  $("ecnt").textContent="총 "+l.length+"명 · 이름을 누르면 연락처가 나와요";
-  l.forEach(r=>{const has=r.avatar&&urls[r.avatar],av=el("span",{className:"avs l"});if(has)avatar(av,r.avatar,"");else av.textContent=ini(r.nickname||r.name);
-    const nm=el("td",{},[el("b",{textContent:r.nickname||r.name}),...(r.nickname&&r.name?[el("span",{className:"note",textContent:" "+r.name})]:[])]);
-    const tr=el("tr",{},[el("td",{},[av]),el("td",{className:"dt",textContent:r.emp||"-"}),nm,el("td",{textContent:r.pos}),el("td",{textContent:r.rnk}),el("td",{textContent:r.division}),el("td",{textContent:r.team}),el("td",{textContent:String(r.email).replace(/@rif-studio\.com$/i,"")})]);
-    tr.onclick=()=>showPerson(r);tb.append(tr)});
-  if(!l.length)tb.append(el("tr",{},[el("td",{colSpan:8,textContent:"해당하는 사원이 없어요."})]))}
+  const q=$("eq").value.trim().toLowerCase(),g=$("ogrid");g.replaceChildren();
+  const l=dir.filter(r=>(!osel.t||r.team===osel.t)&&(!osel.d||divOf(r)===osel.d)&&(!q||[r.name,r.nickname,r.emp,r.email,r.duties,r.team,r.pos].join(" ").toLowerCase().includes(q)));
+  $("oti").textContent=osel.t?osel.d+" · "+osel.t:osel.d||"RIF STUDIO";
+  $("ecnt").textContent="총 "+l.length+"명 · 카드를 누르면 연락처와 업무 내용이 나와요";
+  const groups=new Map();const put=(k,r)=>{if(!groups.has(k))groups.set(k,[]);groups.get(k).push(r)};
+  l.forEach(r=>put(r.pos==="대표"?"대표":(r.team||divOf(r)||"기타"),r));
+  const order=["대표",...Object.values(DIVS).flat(),...Object.keys(DIVS)];
+  [...groups.keys()].sort((a,b)=>{const x=order.indexOf(a),y=order.indexOf(b);return (x<0?99:x)-(y<0?99:y)}).forEach(k=>{
+    const arr=groups.get(k);const showHead=!(osel.t)&&(groups.size>1||k!=="기타");
+    g.append(el("div",{className:"osec"},[...(showHead?[el("h3",{},[document.createTextNode(k),el("span",{textContent:arr.length+"명"})])]:[]),el("div",{className:"ogr"},arr.map(card))]))});
+  if(!l.length)g.append(el("p",{className:"note",textContent:"해당하는 사원이 없어요."}))}
 function showPerson(r){const has=r.avatar&&urls[r.avatar],av=el("div",{className:"av"});if(has)avatar(av,r.avatar,"");else av.textContent=ini(r.nickname||r.name);
-  const rows=[["사번",r.emp||"-"],["부서",[r.division,r.team].filter(Boolean).join(" · ")||"-"],["직책·직위",[r.pos,r.rnk].filter(Boolean).join(" · ")||"-"],["전화",r.phone||"-"],["이메일",r.email],["Discord",r.discord||"-"],["X",r.twitter||"-"]];
+  const rows=[["사번",r.emp||"-"],["부서",[r.division,r.team].filter(Boolean).join(" · ")||"-"],["직책·직위",[r.pos,r.rnk].filter(Boolean).join(" · ")||"-"],["전화",r.phone||"-"],["이메일",r.email],["Discord",r.discord||"-"],["X",r.twitter||"-"],["업무 내용",r.duties||"-"]];
   $("pmb").replaceChildren(el("div",{className:"pfx"},[av,el("div",{},[el("b",{textContent:r.nickname||r.name}),el("span",{textContent:r.nickname&&r.name?r.name:""})])]),el("dl",{className:"prl"},rows.flatMap(([k,v])=>[el("dt",{textContent:k}),el("dd",{textContent:v})])));
   $("pm").hidden=false}
 $("pmx").onclick=()=>{$("pm").hidden=true};$("pm").onclick=e=>{if(e.target===$("pm"))$("pm").hidden=true};document.addEventListener("keydown",e=>{if(e.key==="Escape")$("pm").hidden=true});
-$("eq").oninput=drawDir;$("ediv").onchange=drawDir;$("etm").onchange=()=>{if($("etm").value)$("ediv").value=$("etm").value==="경영지원팀"?"경영부":"프로덕션부";drawDir()};
-$("pf").onsubmit=async e=>{e.preventDefault();const {error}=await db.rpc("set_my_profile",{p_nick:$("pfnk").value,p_discord:$("pfdc").value,p_twitter:$("pftw").value});
+$("eq").oninput=drawDir;
+$("pf").onsubmit=async e=>{e.preventDefault();const {error}=await db.rpc("set_my_profile",{p_nick:$("pfnk").value,p_discord:$("pfdc").value,p_twitter:$("pftw").value,p_duties:$("pfdu").value});
   msg("pfmsg",error?"저장하지 못했어요":"저장했어요 ✓",!!error);if(!error)loadDir()};
 $("pfpick").onclick=()=>$("pfile").click();
 function shrink(f){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const S=512,k=Math.min(1,S/Math.min(im.width,im.height)),w=Math.round(im.width*k),h=Math.round(im.height*k);

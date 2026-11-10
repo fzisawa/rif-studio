@@ -24,7 +24,7 @@ function draw(){
     const st=r.status==="left"?["퇴사","x"]:r.used_at?["가입 완료","on"]:expired(r)?["기간 만료","x"]:["가입 대기","wt"];
     const acts=[];
     const b1=el("button",{className:"btn small",textContent:"수정"});
-    b1.onclick=()=>{edit=r;$("hft").textContent="정보 수정 · "+r.emp_no;$("hno").value=r.emp_no;$("hn").value=r.name;$("hnk").value=r.nickname;$("he").value=r.email;$("hph").value=r.phone;$("hp").value=r.position;$("hrk").value=r.rank||"";$("hdv").value=r.division||"";$("htm").value=r.team||"";$("hdc").value=r.discord||"";$("htw").value=r.twitter||"";$("hm").value=r.memo;$("hex").checked=!!r.is_exec;$("hform").hidden=false;$("hn").focus();$("hform").scrollIntoView({behavior:"smooth",block:"center"})};
+    b1.onclick=()=>{edit=r;$("hft").textContent="정보 수정 · "+r.emp_no;$("hno").value=r.emp_no;$("hn").value=r.name;$("hnk").value=r.nickname;$("he").value=r.email;$("hph").value=r.phone;$("hp").value=r.position;$("hrk").value=r.rank||"";setDT(r.division||"",r.team||"");$("hdc").value=r.discord||"";$("htw").value=r.twitter||"";$("hm").value=r.memo;$("hex").checked=!!r.is_exec;$("hform").hidden=false;$("hn").focus();$("hform").scrollIntoView({behavior:"smooth",block:"center"})};
     acts.push(b1);
     if(!r.used_at&&r.status==="active"&&r.invite_email){const b=el("button",{className:"btn small",textContent:r.onboard_sent_at?"메일 재발송":"축하 메일 보내기"});
       b.onclick=async()=>{if(!confirm(r.invite_email+" 에게 입사 축하 메일(한/일/영, 사번 "+r.emp_no+" 포함)을 보낼까요?"))return;b.disabled=true;const m=await sendMail(r);b.disabled=false;if(m)alert("메일을 보내지 못했어요: "+m);else{alert("보냈어요.");load()}};acts.push(b)}
@@ -77,7 +77,15 @@ $("hform").onsubmit=async e=>{e.preventDefault();if(!edit)return;
   if(!!edit.is_exec!==$("hex").checked){const {error:e2}=await db.rpc("hr_set_exec",{p_pin:PIN,p_id:edit.id,p_exec:$("hex").checked});if(e2)alert("임원 설정을 저장하지 못했어요")}
   edit=null;$("hform").hidden=true;load()};
 const TD={"경영지원팀":"경영부","보컬팀":"프로덕션부","사운드제작팀":"프로덕션부","일러스트팀":"프로덕션부","매니지먼트팀":"프로덕션부"};
-$("htm").onchange=()=>{const t=$("htm").value;if(t)$("hdv").value=TD[t]};$("hdv").onchange=()=>{const t=$("htm").value;if(t&&TD[t]!==$("hdv").value)$("htm").value=""};
+/* 부서를 고르면 그 부서의 팀만 팀 목록에 나와요 */
+function fillTeams(keep){const d=$("hdv").value,cur=keep===undefined?$("htm").value:keep,sel=$("htm");
+  sel.replaceChildren(el("option",{value:"",textContent:"없음"}),...Object.keys(TD).filter(t=>TD[t]===d).map(t=>el("option",{value:t,textContent:t})));
+  sel.value=Object.keys(TD).some(t=>t===cur&&TD[t]===d)?cur:""}
+function setDT(d,t){$("hdv").value=d;fillTeams(t)}
+$("hdv").addEventListener("change",()=>fillTeams());
+$("htm").addEventListener("mousedown",()=>fillTeams());$("htm").addEventListener("focus",()=>fillTeams());
+$("htm").onchange=()=>{const t=$("htm").value;if(t)$("hdv").value=TD[t]};
+fillTeams();
 $("hcancel").onclick=()=>{edit=null;$("hform").hidden=true};
 const pm=$("hpm");
 $("hrlock").onclick=()=>{if(PIN){lock();return}$("hpi").value="";$("hpe").textContent="";pm.hidden=false;$("hpi").focus()};
