@@ -111,7 +111,7 @@ const fmt=s=>{if(!s)return"";const d=new Date(s),n=new Date();return d.toDateStr
 const ftl=s=>s?new Date(s).toLocaleString("ko-KR",{dateStyle:"medium",timeStyle:"short"}):"";
 async function loadInbox(){
   const [a,b,c]=await Promise.all([db.from("inbox_messages").select("id,from_addr,from_name,to_addrs,subject,preview,received_at,assignee_email,done,attachments,deleted_at").order("received_at",{ascending:false}).limit(300),db.from("inbox_reads").select("msg_id,email"),db.from("mail_outbox").select("id,sender,sender_name,author_name,to_email,subject,body,created_at,opened_at,open_count").order("created_at",{ascending:false}).limit(300)]);
-  inbox=a.data||[];outbox=c.data||[];irds=new Set();irdBy={};
+  inbox=(a.data||[]).filter(m=>ceo||!/support@/i.test(m.to_addrs||"")||(m.to_addrs||"").toLowerCase().includes(me));outbox=c.data||[];irds=new Set();irdBy={};
   (b.data||[]).forEach(r=>{if(r.email.toLowerCase()===me)irds.add(r.msg_id);(irdBy[r.msg_id]=irdBy[r.msg_id]||[]).push(r.email)});
   drawMail()}
 const unreadN=()=>inbox.filter(m=>!m.deleted_at&&!irds.has(m.id)&&!m.done).length;
