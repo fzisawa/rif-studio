@@ -50,7 +50,7 @@ main.wide{max-width:1500px;padding-left:2vw;padding-right:2vw}
 <p class="note">직원 정보와 사번은 대표 비밀번호로 잠금을 풀어야 보이고, 서버에서도 비밀번호 없이는 읽을 수 없어요. 10분 뒤 자동으로 잠겨요.</p>
 <div id="hr-body" hidden>
 <form id="cform" class="hf"><h2>직원 계정 직접 만들기</h2><p class="note">사번 없이 대표님이 아이디와 비밀번호를 정해서 바로 만들어요. 만든 뒤 직원에게 아이디와 비밀번호를 직접 전달해 주세요. (비밀번호는 저장되거나 화면에 남지 않아요)</p>
-<div class="hg"><label>아이디<div class="idrow"><input id="cid" placeholder="mina" autocomplete="off" autocapitalize="none"><span>@rif-studio.com</span></div></label><label>이름<input id="cn" maxlength="60" autocomplete="off"></label><label>닉네임 (선택)<input id="cnk" maxlength="60" autocomplete="off"></label><label>전화 (선택)<input id="cph" maxlength="40" autocomplete="off"></label><label>비밀번호 (8자 이상)<input id="cpw" type="password" maxlength="72" autocomplete="new-password"></label></div>
+<div class="hg"><label>아이디<div class="idrow"><input id="cid" placeholder="mina" autocomplete="off" autocapitalize="none"></div></label><label>이름<input id="cn" maxlength="60" autocomplete="off"></label><label>닉네임 (선택)<input id="cnk" maxlength="60" autocomplete="off"></label><label>전화 (선택)<input id="cph" maxlength="40" autocomplete="off"></label><label>비밀번호 (8자 이상)<input id="cpw" type="password" maxlength="72" autocomplete="new-password"></label></div>
 <label class="ck2"><input type="checkbox" id="cshow"> 비밀번호 보이기</label>
 <div class="jbar"><button class="btn mred" id="cgo">계정 만들기</button><span class="note" id="cmsg"></span></div></form>
 <form id="iform" class="hf"><h2>사번 발급</h2><p class="note">사번은 날짜(YYMMDD)+무작위 2자리, 총 8자리 숫자로 자동 발급돼요. 발급일로부터 14일 동안 가입할 수 있어요.</p>
