@@ -104,7 +104,7 @@ let inbox=[],irds=new Set(),irdBy={},outbox=[],fold="in",selId=null,composing=nu
 const fmt=s=>{if(!s)return"";const d=new Date(s),n=new Date();return d.toDateString()===n.toDateString()?d.toLocaleTimeString("ko-KR",{hour:"numeric",minute:"2-digit"}):d.toLocaleDateString("ko-KR",{month:"numeric",day:"numeric"})};
 const ftl=s=>s?new Date(s).toLocaleString("ko-KR",{dateStyle:"medium",timeStyle:"short"}):"";
 async function loadInbox(){
-  const [a,b,c]=await Promise.all([db.from("inbox_messages").select("id,from_addr,from_name,to_addrs,subject,preview,received_at,assignee_email,done,attachments").order("received_at",{ascending:false}).limit(300),db.from("inbox_reads").select("msg_id,email"),db.from("mail_outbox").select("id,sender,sender_name,to_email,subject,body,created_at,opened_at,open_count").order("created_at",{ascending:false}).limit(300)]);
+  const [a,b,c]=await Promise.all([db.from("inbox_messages").select("id,from_addr,from_name,to_addrs,subject,preview,received_at,assignee_email,done,attachments").order("received_at",{ascending:false}).limit(300),db.from("inbox_reads").select("msg_id,email"),db.from("mail_outbox").select("id,sender,sender_name,author_name,to_email,subject,body,created_at,opened_at,open_count").order("created_at",{ascending:false}).limit(300)]);
   inbox=a.data||[];outbox=c.data||[];irds=new Set();irdBy={};
   (b.data||[]).forEach(r=>{if(r.email.toLowerCase()===me)irds.add(r.msg_id);(irdBy[r.msg_id]=irdBy[r.msg_id]||[]).push(r.email)});
   drawMail()}
@@ -120,7 +120,7 @@ function drawMail(){
   list.forEach(m=>{
     const out=fold==="out",un2=!out&&!irds.has(m.id);
     const row=el("div",{className:"omi"+(un2?" un":"")+(selId===m.id&&!composing?" sel":"")},[
-      el("div",{className:"r1"},[el("span",{className:"fr1",textContent:out?"받는 사람: "+m.to_email:(m.from_name||m.from_addr)}),el("span",{className:"dd",textContent:fmt(out?m.created_at:m.received_at)})]),
+      el("div",{className:"r1"},[el("span",{className:"fr1",textContent:out?(m.sender_name?m.sender_name+" → ":"")+m.to_email:(m.from_name||m.from_addr)}),el("span",{className:"dd",textContent:fmt(out?m.created_at:m.received_at)})]),
       el("div",{className:"sj",textContent:m.subject||"(제목 없음)"}),
       el("div",{className:"pv2"},out?[document.createTextNode((m.opened_at?"✓ 읽음 · ":"안 읽음 · ")+(m.body||"").replace(/\s+/g," ").slice(0,80))]:[document.createTextNode((m.assignee_email?"담당 "+nameOf(m.assignee_email)+" · ":"")+(m.preview||""))])]);
     row.onclick=()=>selectMsg(m.id);box.append(row)});
@@ -135,7 +135,7 @@ function drawPane(){
   if(!selId){p.append(el("div",{className:"empty",textContent:"읽을 메일을 선택하세요"}));return}
   if(fold==="out"){const r=outbox.find(x=>x.id===selId);if(!r)return;
     p.append(el("h2",{className:"eh",textContent:r.subject}),
-      el("div",{className:"who"},[el("div",{className:"ci",textContent:ini(r.sender_name||r.sender)}),el("div",{},[el("b",{textContent:(r.sender_name||r.sender)+" <"+r.sender+">"}),el("span",{textContent:"받는 사람: "+r.to_email+" · "+ftl(r.created_at)})])]),
+      el("div",{className:"who"},[el("div",{className:"ci",textContent:ini(r.sender_name||r.sender)}),el("div",{},[el("b",{textContent:(r.sender_name||r.sender)+" <"+r.sender+">"}),el("span",{textContent:"받는 사람: "+r.to_email+" · "+ftl(r.created_at)+(r.author_name&&r.sender!==me?" · 작성: "+r.author_name:"")})])]),
       el("div",{className:"acts"},[el("span",{className:"rb "+(r.opened_at?"on":"off"),textContent:r.opened_at?"읽음":"안 읽음"}),...(r.opened_at?[el("span",{className:"note",textContent:ftl(r.opened_at)+(r.open_count>1?" · "+r.open_count+"회":"")})]:[]),
         (()=>{const b=el("button",{className:"ob",type:"button",textContent:"다시 보내기"});b.onclick=()=>{composing={to:r.to_email,subject:r.subject,body:r.body};drawMail()};return b})()]),
       el("div",{textContent:r.body,style:"white-space:pre-wrap;line-height:1.7"}));return}
@@ -165,9 +165,10 @@ function drawPane(){
     if(error||!data){bodyBox.textContent="본문을 불러오지 못했어요";return null}bodies[id0]=data;return data};
   go().then(d=>{if(d&&selId===id0&&!composing)show(d)});
   rp.onclick=async()=>{const d=await go();if(!d)return;const t=(d.body_text||"").trim().slice(0,3000);
-    composing={to:m.from_addr,subject:/^re:/i.test(m.subject)?m.subject:"Re: "+m.subject,body:"\n\n----- "+ftl(m.received_at)+" "+(m.from_name||m.from_addr)+" -----\n"+t.replace(/^/gm,"> ")};drawMail()}}
+    composing={as:"support",to:m.from_addr,subject:/^re:/i.test(m.subject)?m.subject:"Re: "+m.subject,body:"\n\n----- "+ftl(m.received_at)+" "+(m.from_name||m.from_addr)+" -----\n"+t.replace(/^/gm,"> ")};drawMail()}}
 function drawCompose(p){
   const c=composing;
+  const fromSel=el("select",{style:"padding:9px 12px;border:1px solid #7775;border-radius:6px;font:inherit;background:var(--bg);color:var(--fg)"},[el("option",{value:"me",textContent:"내 이름으로 (서명 포함)"}),el("option",{value:"support",textContent:"support@rif-studio.com (공용 · 서명 없음)",selected:c.as==="support"})]);
   const to=el("input",{value:c.to||"",placeholder:"name@example.com (여러 명은 쉼표로, 최대 5명)"}),sj=el("input",{value:c.subject||"",maxLength:200}),bd=el("textarea",{value:c.body||""});
   const msgx=el("span",{className:"note"});const send=el("button",{className:"ob p",type:"button",textContent:"보내기"}),cancel=el("button",{className:"ob",type:"button",textContent:"취소"});
   cancel.onclick=()=>{composing=null;drawMail()};
@@ -175,11 +176,11 @@ function drawCompose(p){
     if(!t||!s||!b){msgx.className="note err";msgx.textContent="받는 사람·제목·내용을 모두 써 주세요.";return}
     if(!confirm(t+" 에게 메일을 보낼까요?\n보낸 뒤에는 취소할 수 없어요."))return;
     send.disabled=true;msgx.className="note";msgx.textContent="보내는 중…";let ok=false,m2="";
-    try{const {data,error}=await db.functions.invoke("send-mail",{body:{to:t,subject:s,body:b}});
+    try{const {data,error}=await db.functions.invoke("send-mail",{body:{to:t,subject:s,body:b,as:fromSel.value}});
       if(error){try{m2=(await error.context.json()).error}catch(_){m2=error.message}}else if(data&&data.ok)ok=true;else m2=(data&&data.error)||"알 수 없는 오류"}catch(x){m2=String(x.message||x)}
     send.disabled=false;if(!ok){msgx.className="note err";msgx.textContent="보내지 못했어요: "+m2;return}
     composing=null;fold="out";selId=null;await loadInbox()};
-  p.append(el("h2",{className:"eh",textContent:"새 메일"}),el("div",{className:"cf"},[el("label",{},[document.createTextNode("받는 사람"),to]),el("label",{},[document.createTextNode("제목"),sj]),bd,el("div",{className:"acts",style:"border:0;padding:0;margin:0"},[send,cancel,msgx,el("span",{className:"note",textContent:"서명은 자동으로 붙어요 (서명 설정에서 바꿀 수 있어요)"})])]));
+  p.append(el("h2",{className:"eh",textContent:"새 메일"}),el("div",{className:"cf"},[el("label",{},[document.createTextNode("보내는 사람"),fromSel]),el("label",{},[document.createTextNode("받는 사람"),to]),el("label",{},[document.createTextNode("제목"),sj]),bd,el("div",{className:"acts",style:"border:0;padding:0;margin:0"},[send,cancel,msgx,el("span",{className:"note",textContent:"서명은 자동으로 붙어요 (서명 설정에서 바꿀 수 있어요)"})])]));
   to.focus()}
 $("onew").onclick=()=>{composing={};drawMail()};$("oq").oninput=drawMail;$("orf").onclick=loadInbox;
 
