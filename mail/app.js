@@ -16,7 +16,32 @@ const esc=t=>t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 function setSig(){const h=(staff.signature_html||"").trim();$("sig").innerHTML=h||(staff.signature?esc(staff.signature).replace(/\n/g,"<br>"):"");selImg=null}
 let selImg=null;
 const ed=$("sig");
-ed.addEventListener("paste",e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData("text/plain");document.execCommand("insertText",false,t)});
+// 붙여넣기: Gmail처럼 서식(굵게·색·표·링크)은 살리고, 위험한 건 걸러서 넣어요. 실제 발송 때도 서버에서 한 번 더 걸러요.
+const OKT=new Set("b strong i em u s strike br p div span a img ul ol li h1 h2 h3 font blockquote hr table tbody tr td".split(" "));
+const OKS=new Set("color background-color font-size font-weight font-style font-family text-decoration text-align line-height letter-spacing white-space vertical-align display margin margin-top margin-bottom margin-left margin-right padding padding-top padding-bottom padding-left padding-right border border-left border-right border-top border-bottom border-collapse border-radius width height max-width".split(" "));
+const IMGOK=["https://noqtyhmgdfzziymfclnx.supabase.co/storage/v1/object/public/mail-assets/","https://rif-studio.com/img/"];
+function cleanNode(n,doc){
+  if(n.nodeType===3)return doc.createTextNode(n.nodeValue);
+  if(n.nodeType!==1)return null;
+  const t=n.tagName.toLowerCase();const kids=()=>{const f=doc.createDocumentFragment();n.childNodes.forEach(c=>{const x=cleanNode(c,doc);if(x)f.appendChild(x)});return f};
+  if(/^(script|style|head|title|meta|link|iframe|object|svg)$/.test(t))return null;
+  if(t==="th"){const td=doc.createElement("td");td.appendChild(kids());return td}
+  if(t==="thead"||t==="tfoot")return kids();
+  if(!OKT.has(t))return kids();
+  if(t==="img"&&!IMGOK.some(p=>(n.getAttribute("src")||"").startsWith(p)))return null;
+  if(t==="a"){const h=n.getAttribute("href")||"";if(!/^(https?:\/\/|mailto:)/i.test(h)&&!/^tel:[0-9+\-() ]{3,30}$/i.test(h))return kids()}
+  const el=doc.createElement(t);
+  const st=(n.getAttribute("style")||"").split(";").map(d=>{const i=d.indexOf(":");if(i<0)return"";const k=d.slice(0,i).trim().toLowerCase(),v=d.slice(i+1).trim();
+    if(!OKS.has(k)||!v||/[<>"'\\]|url\(|expression|javascript|@import/i.test(v))return"";return k+":"+v}).filter(Boolean).join(";");
+  if(st)el.setAttribute("style",st);
+  const keep={a:["href"],img:["src","alt","width","height"],font:["color"],table:["cellpadding","cellspacing","border"],td:["width","valign","colspan"]}[t]||[];
+  keep.forEach(a=>{const v=n.getAttribute(a);if(v!=null&&!/[<>"]/.test(v))el.setAttribute(a,v)});
+  el.appendChild(kids());return el}
+ed.addEventListener("paste",e=>{e.preventDefault();const cd=e.clipboardData||window.clipboardData;const h=cd.getData("text/html");
+  if(!h){document.execCommand("insertText",false,cd.getData("text/plain"));return}
+  const src=new DOMParser().parseFromString(h,"text/html").body;const box=document.createElement("div");
+  src.childNodes.forEach(c=>{const x=cleanNode(c,document);if(x)box.appendChild(x)});
+  document.execCommand("insertHTML",false,box.innerHTML)});
 ed.addEventListener("click",e=>{ed.querySelectorAll("img.sel").forEach(i=>i.classList.remove("sel"));selImg=null;if(e.target.tagName==="IMG"){selImg=e.target;selImg.classList.add("sel")}});
 document.querySelectorAll("#stb [data-c]").forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>{ed.focus();document.execCommand(b.dataset.c,false,null)}});
 $("scol").oninput=()=>{ed.focus();document.execCommand("foreColor",false,$("scol").value)};
