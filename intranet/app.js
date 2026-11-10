@@ -169,7 +169,7 @@ function drawPane(){
 function drawCompose(p){
   const c=composing;
   const fromSel=el("select",{style:"padding:9px 12px;border:1px solid #7775;border-radius:6px;font:inherit;background:var(--bg);color:var(--fg)"},[el("option",{value:"me",textContent:"내 이름으로 (서명 포함)"}),el("option",{value:"support",textContent:"support@rif-studio.com (공용 · 서명 없음)",selected:c.as==="support"})]);
-  const to=el("input",{value:c.to||"",placeholder:"name@example.com (여러 명은 쉼표로, 최대 5명)"}),sj=el("input",{value:c.subject||"",maxLength:200}),bd=el("textarea",{value:c.body||""});
+  const to=el("input",{value:c.to||"",placeholder:"name@example.com (쉼표로 여러 명)"}),sj=el("input",{value:c.subject||"",maxLength:200}),bd=el("textarea",{value:c.body||""});
   const msgx=el("span",{className:"note"});const send=el("button",{className:"ob p",type:"button",textContent:"보내기"}),cancel=el("button",{className:"ob",type:"button",textContent:"취소"});
   cancel.onclick=()=>{composing=null;drawMail()};
   send.onclick=async()=>{const t=to.value.trim(),s=sj.value.trim(),b=bd.value.trim();
