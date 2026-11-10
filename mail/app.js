@@ -1,5 +1,6 @@
 (()=>{
 const $=i=>document.getElementById(i);
+const toEmail=v=>{v=v.trim().toLowerCase();return v.includes("@")?v:v+"@rif-studio.com"};
 const dt=s=>{const d=new Date(s),p=n=>String(n).padStart(2,"0");return (d.getMonth()+1)+"/"+d.getDate()+" "+p(d.getHours())+":"+p(d.getMinutes())};
 let rows=[],timer=null,staff=null;
 async function render(){
@@ -67,17 +68,17 @@ $("mform").onsubmit=async e=>{e.preventDefault();
   b.disabled=false;
   if(ok){msg.textContent="보냈어요 ✓";$("msj").value="";$("mbd").value="";$("mto").value="";loadOut();setTimeout(()=>{if(msg.textContent==="보냈어요 ✓")msg.textContent=""},4000)}
   else{msg.className="note err";msg.textContent="보내지 못했어요: "+m}};
-$("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:$("em").value.trim(),password:$("pw").value});
+$("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:toEmail($("em").value),password:$("pw").value});
   $("lmsg").textContent=error?"로그인 실패 — 이메일과 비밀번호를 확인해 주세요":"";$("pw").value="";render()};
 $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
   if($("spw").value!==$("spw2").value){m.textContent="비밀번호 확인이 달라요";return}
   const b=$("sgo");b.disabled=true;m.className="note";m.textContent="가입 중…";
   let ok=false,msg="";
-  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value.trim(),name:$("sna").value,nickname:$("snk").value,phone:$("sph").value,email:$("sem").value,password:$("spw").value}});
+  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value.trim(),name:$("sna").value,nickname:$("snk").value,phone:$("sph").value,loginId:$("sid").value,inviteEmail:$("sem").value,password:$("spw").value}});
     if(error){try{msg=(await error.context.json()).error}catch(_){msg=error.message}}else if(data&&data.ok)ok=true;else msg=(data&&data.error)||"알 수 없는 오류"}catch(x){msg=String(x.message||x)}
   b.disabled=false;
   if(!ok){m.className="note err";m.textContent=msg;return}
-  const {error}=await db.auth.signInWithPassword({email:$("sem").value.trim(),password:$("spw").value});
+  const {error}=await db.auth.signInWithPassword({email:toEmail($("sid").value),password:$("spw").value});
   $("spw").value="";$("spw2").value="";m.textContent=error?"가입은 됐어요. 위에서 로그인해 주세요.":"";render()};
 $("out").onclick=async e=>{e.preventDefault();await db.auth.signOut();render()};
 const qn=new URLSearchParams(location.search).get("n");if(qn&&/^\d{8}$/.test(qn)){$("sn").value=qn;$("sg").open=true}

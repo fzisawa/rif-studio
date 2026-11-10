@@ -1,5 +1,6 @@
 (()=>{
 const $=i=>document.getElementById(i);
+const toEmail=v=>{v=v.trim().toLowerCase();return v.includes("@")?v:v+"@rif-studio.com"};
 const fd=s=>s?new Date(s).toLocaleDateString("ko-KR"):"";
 const sz=n=>n>1048576?(n/1048576).toFixed(1)+"MB":Math.max(1,Math.round(n/1024))+"KB";
 let me="",uid="",myName="",ceo=false,staff=[],reads=new Set(),notices=[],tasks=[],docs=[];
@@ -100,7 +101,7 @@ $("df").onsubmit=async e=>{e.preventDefault();const f=$("dfile").files[0],t=$("d
 
 /* 직원 */
 async function loadDir(){const {data}=await db.rpc("staff_directory");const tb=$("stb2");tb.replaceChildren();
-  (data||[]).forEach(r=>tb.append(el("tr",{},[el("td",{textContent:r.name}),el("td",{textContent:r.nickname}),el("td",{textContent:r.pos}),el("td",{textContent:r.dept}),el("td",{},[el("a",{href:"mailto:"+r.email,textContent:r.email})])])));
+  (data||[]).forEach(r=>tb.append(el("tr",{},[el("td",{textContent:r.name}),el("td",{textContent:r.nickname}),el("td",{textContent:r.pos}),el("td",{textContent:r.dept}),el("td",{textContent:r.email})])));
   if(!(data||[]).length)tb.append(el("tr",{},[el("td",{colSpan:5,textContent:"직원이 없어요."})]))}
 
 /* 탭 */
@@ -110,18 +111,18 @@ document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
   Object.entries(P).forEach(([k,id])=>$(id).hidden=k!==b.dataset.t)});
 
 /* 로그인·가입 */
-$("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:$("em").value.trim(),password:$("pw").value});
+$("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:toEmail($("em").value),password:$("pw").value});
   $("lmsg").textContent=error?"로그인 실패 — 이메일과 비밀번호를 확인해 주세요":"";$("pw").value="";render()};
 $("out").onclick=async e=>{e.preventDefault();await db.auth.signOut();render()};
 $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
   if($("spw").value!==$("spw2").value){m.textContent="비밀번호 확인이 달라요";return}
   const b=$("sgo");b.disabled=true;m.className="note";m.textContent="가입 중…";
   let ok=false,msg2="";
-  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value.trim(),name:$("sna").value,nickname:$("snk").value,phone:$("sph").value,email:$("sem").value,password:$("spw").value}});
+  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value.trim(),name:$("sna").value,nickname:$("snk").value,phone:$("sph").value,loginId:$("sid").value,inviteEmail:$("sem").value,password:$("spw").value}});
     if(error){try{msg2=(await error.context.json()).error}catch(_){msg2=error.message}}else if(data&&data.ok)ok=true;else msg2=(data&&data.error)||"알 수 없는 오류"}catch(x){msg2=String(x.message||x)}
   b.disabled=false;
   if(!ok){m.className="note err";m.textContent=msg2;return}
-  const {error}=await db.auth.signInWithPassword({email:$("sem").value.trim(),password:$("spw").value});
+  const {error}=await db.auth.signInWithPassword({email:toEmail($("sid").value),password:$("spw").value});
   $("spw").value="";$("spw2").value="";m.textContent=error?"가입은 됐어요. 위에서 로그인해 주세요.":"";render()};
 const qn=new URLSearchParams(location.search).get("n");if(qn&&/^\d{8}$/.test(qn)){$("sn").value=qn;$("sg").open=true}
 render();
