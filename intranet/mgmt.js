@@ -13,14 +13,23 @@ const css=document.createElement("style");
 css.textContent=`
 .msub{display:flex;gap:6px;margin:0 0 16px;border-bottom:1px solid #7773}.msub button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 16px;font:inherit;font-size:15px;color:var(--fg);cursor:pointer}.msub button[aria-pressed="true"]{border-bottom-color:#d64545;font-weight:700}
 .mbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}.mbar b{font-size:14px}.mbar input,.mbar select{padding:8px 10px;border:1px solid #7775;border-radius:4px;font:inherit;background:var(--bg);color:var(--fg)}.mbar input{min-width:240px}
-.mtw{overflow-x:auto;border:1px solid #7773;border-radius:6px}
-table.mt{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.5}
+.mtw{overflow:auto;max-height:calc(100vh - 230px);border:1px solid #7773;border-radius:6px}
+table.mt{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px;line-height:1.5}
+.mt thead th{position:sticky;top:0;z-index:3}.mt thead tr.gh+tr th{top:30px}
+.mt thead tr.gh th{height:30px;box-sizing:border-box;padding:0 10px;text-align:center;font-weight:700;color:var(--fg);border-bottom:1px dashed #7775}.mt thead tr.gh th.gt{color:#14b8a6}.mt thead tr.gh th.gb{color:#a78bfa;border-left:2px dashed #7778;border-right:2px dashed #7778}
+table.mt.mtj{width:max-content;min-width:0}.mt td.fd{width:220px;min-width:220px;max-width:220px}
+.mt th.mk.bs,.mt td.mk.bs{width:64px;min-width:64px}
+.mt th.mk,.mt td.mk{width:46px;min-width:46px;padding-left:2px;padding-right:2px;text-align:center}
+.mt .bs{background:#a78bfa0d}.mt .bl{border-left:2px dashed #7778}.mt .br{border-right:2px dashed #7778}.mt th.b1{color:#3b82f6}.mt th.b2{color:#8b5cf6}.mt th.b3{color:#ef4444}.mt .b1{--c:#3b82f6}.mt .b2{--c:#8b5cf6}.mt .b3{--c:#ef4444}
+.mt td.mk input.cb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin:0;border:2px dashed var(--c);border-radius:4px;background:transparent;vertical-align:middle;cursor:pointer}
+.mt td.mk input.cb:checked{border-style:solid;background:var(--c) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 5' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat}
+.mt td.mk input.cb:disabled{cursor:not-allowed;opacity:.45}
 .mt th{background:var(--bg);text-align:left;padding:9px 10px;border-bottom:2px solid #7775;white-space:nowrap;font-size:12px;color:var(--mut)}
 .mt td{padding:9px 10px;border-bottom:1px solid #7773;vertical-align:top}
 .mt tr.r{cursor:pointer}.mt tr.r:hover td{background:#7771}.mt tr.dup td{background:#ff2d2d1a}.mt tr.rej td{opacity:.6}
-.mt td.no{color:var(--mut);text-align:right;width:40px}.mt td.dt{white-space:nowrap}.mt td.mk{text-align:center;width:44px}.mt td.mk input{width:17px;height:17px;accent-color:#d64545;cursor:pointer}
+.mt td.no{color:var(--mut);text-align:right;width:40px}.mt td.dt{white-space:nowrap}.mt td.mk{text-align:center;width:44px}.mt td.mk input{width:17px;height:17px;accent-color:#14b8a6;cursor:pointer}
 .mt td.mk input:disabled{cursor:not-allowed;opacity:.55}
-.mt input.mm{width:100%;min-width:150px;padding:6px 8px;border:1px solid #7775;border-radius:4px;font:inherit;font-size:13px;background:var(--bg);color:var(--fg)}.mt input.mm[readonly]{background:#7771;cursor:not-allowed}.mt input.mm.ok{outline:2px solid #3bb273;outline-offset:-2px}
+.mt input.mm{width:100%;min-width:180px;padding:6px 8px;border:1px solid #7775;border-radius:4px;font:inherit;font-size:13px;background:var(--bg);color:var(--fg)}.mt input.mm[readonly]{background:#7771;cursor:not-allowed}.mt input.mm.ok{outline:2px solid #3bb273;outline-offset:-2px}
 .mt tr.d td{background:#7771;padding:16px 20px;cursor:default}.mt tr.d p{white-space:pre-wrap;margin:0 0 12px}.mt tr.d b.mlb{color:#d64545;font-size:12px;letter-spacing:.08em}
 .mbadge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;background:#999;white-space:nowrap}.mbadge.new{background:#d64545}.mbadge.rep{background:#0f6cbd}.mbadge.done{background:#3bb273}
 .mdupb{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;background:#e5332a;color:#fff;font-size:11px;font-weight:700}
@@ -62,17 +71,17 @@ function drawJ(){
       c.onclick=e=>e.stopPropagation();
       c.onchange=async()=>{const v=c.checked;c.disabled=true;const ok=await rpcSet("jr_set_check",{p_id:r.id,p_field:k,p_val:v},null,()=>{c.checked=!v});if(ok)r[k]=v;c.disabled=!!r.ceo_reject};
       return el("td",{className:"mk"},[c])});
-    const CK=[["ceo_interview","면접 의향"],["ceo_hire","채용 의향"],["ceo_reject","채용 거절"]].map(([k,t])=>{
-      const c=el("input",{type:"checkbox",checked:!!r[k],disabled:!boss,title:boss?t:"대표만 바꿀 수 있어요"});c.onclick=e=>e.stopPropagation();
+    const CK=[["ceo_interview","면접 의향"],["ceo_hire","채용 의향"],["ceo_reject","채용 거절"]].map(([k,t],i)=>{
+      const c=el("input",{className:"cb b"+(i+1),type:"checkbox",checked:!!r[k],disabled:!boss,title:boss?t:"대표만 바꿀 수 있어요"});c.onclick=e=>e.stopPropagation();
       c.onchange=async()=>{const v=c.checked;c.disabled=true;const ok=await rpcSet("jr_set_ceo_flag",{p_id:r.id,p_field:k,p_val:v},null,()=>{c.checked=!v});if(ok){r[k]=v;drawJ()}else c.disabled=!boss};
-      return el("td",{className:"mk"},[c])});
+      return el("td",{className:"mk bs b"+(i+1)+(i===0?" bl":"")},[c])});
     const bm=el("input",{className:"mm",value:r.memo||"",maxLength:500,placeholder:boss?"대표 메모":"🔒 대표만 작성",readOnly:!boss});
     bm.title=boss?"대표만 쓸 수 있는 메모":"대표만 쓸 수 있는 메모 (읽기 전용)";bm.onclick=e=>e.stopPropagation();
     if(boss)bm.onchange=()=>rpcSet("jr_set_boss_memo",{p_id:r.id,p_memo:bm.value.trim()},bm).then(ok=>{if(ok)r.memo=bm.value.trim()||null});
     const tm=el("input",{className:"mm",value:r.team_memo||"",maxLength:500,placeholder:"경영지원팀 메모",readOnly:!!r.ceo_reject});
     tm.onclick=e=>e.stopPropagation();if(r.ceo_reject)tm.title="채용 거절 처리된 지원자예요";
     tm.onchange=()=>rpcSet("jr_set_team_memo",{p_id:r.id,p_memo:tm.value.trim()},tm).then(ok=>{if(ok)r.team_memo=tm.value.trim()||null});
-    const tr=el("tr",{className:"r"+(dup?" dup":"")+(r.ceo_reject?" rej":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(R[r.region]||"-"),cell(flds(r)),...MC,...CK,el("td",{},[bm]),el("td",{},[tm])]);
+    const tr=el("tr",{className:"r"+(dup?" dup":"")+(r.ceo_reject?" rej":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(R[r.region]||"-"),cell(flds(r),"fd"),...MC,...CK,el("td",{className:"bs bm br"},[bm]),el("td",{},[tm])]);
     const d=el("div",{},[el("b",{className:"mlb",textContent:"이메일"}),el("p",{textContent:r.email||"-"}),el("b",{className:"mlb",textContent:"YouTube / Twitter"}),el("p",{textContent:[r.youtube,r.twitter].filter(Boolean).join("  ·  ")||"-"}),
       el("b",{className:"mlb",textContent:"경력"}),el("p",{textContent:r.career||"-"}),el("b",{className:"mlb",textContent:"자기소개"}),el("p",{textContent:r.intro||"-"}),el("b",{className:"mlb",textContent:"지원동기"}),el("p",{textContent:r.motive||"-"})]);
     if(boss){const x=el("button",{className:"mbtn",type:"button",textContent:"이 지원서 삭제"});
@@ -181,7 +190,9 @@ function build(){
   const defs=[["w","할 일"],["j","지원서"],["q","support@ 문의"]];
   const pj=el("div",{id:"pj",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mjc"}),el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("span",{className:"mnote",textContent:"클릭하면 상세 내용이 펼쳐져요 · 감사/면접/거절/채용은 표시만 하고 메일은 자동으로 나가지 않아요"})]),
-    el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","접수일시","닉네임","성명","출신","분야","감사","면접","거절","채용","대표 면접","대표 채용","대표 거절","대표 메모 🔒","경영지원팀 메모"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mjb"})])])]);
+    el("div",{className:"mtw"},[el("table",{className:"mt mtj"},[el("thead",{},[
+      el("tr",{className:"gh"},[["기본 정보",6,""],["경영지원팀 체크",4,"gt"],["대표 전용 · 대표만 수정",4,"gb"],["경영지원팀 메모",1,""]].map(([t,n,c])=>el("th",{textContent:t,colSpan:n,className:c}))),
+      el("tr",{},["No.","접수일시","닉네임","성명","출신","분야","감사","면접","거절","채용","대표 면접","대표 채용","대표 거절","대표 메모 🔒","경영지원팀 메모"].map((t,i)=>el("th",{textContent:t,className:["","","","","","","mk","mk","mk","mk","mk bs b1 bl","mk bs b2 b2h","mk bs b3","bs bm br",""][i].replace("b2h","")})))]),el("tbody",{id:"mjb"})])])]);
   const sel=el("select",{id:"mqs"},[["all","전체"],["new","읽지 않음"],["chk","확인함"],["rep","답장함"],["done","완료"]].map(([v,t])=>el("option",{value:v,textContent:t})));
   const pq=el("div",{id:"pq",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mqc"}),sel,el("input",{id:"mqq",placeholder:"검색 (제목·보낸 사람·내용)"}),el("button",{className:"mbtn",type:"button",id:"mqr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"support@rif-studio.com 으로 온 메일이에요. 답장은 기록으로 계속 남아요."})]),
