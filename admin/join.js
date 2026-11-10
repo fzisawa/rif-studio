@@ -47,7 +47,8 @@ function draw(){
       c.onchange=async()=>{const v=c.checked;c.disabled=true;const {error}=await db.rpc("set_ceo_intent",{p_id:r.id,p_field:k,p_val:v,p_pin:PIN});c.disabled=!PIN;if(error){c.checked=!v;alert("저장하지 못했어요: "+(/bad pin/.test(error.message)?"비밀번호가 맞지 않아요. 잠금을 풀고 다시 시도해 주세요.":error.message));return}r[k]=v;if(k==="ceo_reject"){draw();return}td.classList.add("ok");setTimeout(()=>td.classList.remove("ok"),900)};
       const td=el("td",{className:"mk ck "+cl},[c]);return td});
     const memo=el("input",{className:"memo",value:r.memo||"",placeholder:"메모",maxLength:500});memo.onclick=e=>e.stopPropagation();
-    if(r.ceo_reject){memo.readOnly=true;memo.title="채용 거절 처리됨 — 대표 비밀번호로 거절을 풀면 수정할 수 있어요"}
+    if(!PIN){memo.readOnly=true;memo.title="대표 잠금을 풀어야 메모를 쓸 수 있어요";memo.placeholder="🔒 대표만 작성"}
+    else if(r.ceo_reject){memo.readOnly=true;memo.title="채용 거절 처리됨 — 대표 비밀번호로 거절을 풀면 수정할 수 있어요"}
     memo.onchange=()=>save(r,{memo:memo.value.trim()||null},memo);
     const tr=el("tr",{className:"r"+(isDup?" dup":"")+(r.ceo_reject?" rej":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(r.email),cell(R[r.region]||"-"),cell(flds(r),"ch"),cell(r.discord),link(r.youtube,"ln"),link(r.twitter,"ln"),...chk,...CK,el("td",{className:"mm"},[memo])]);
     const dtl=el("tr",{className:"d",hidden:true},[el("td",{colSpan:18},[el("b",{textContent:"경력"}),el("p",{textContent:r.career||"-"}),el("b",{textContent:"자기소개"}),el("p",{textContent:r.intro||"-"}),el("b",{textContent:"지원동기"}),el("p",{textContent:r.motive||"-"})])]);
@@ -64,6 +65,8 @@ async function load(){
 $("q").oninput=draw;
 const tab=n=>{$("p1").hidden=n!==1;$("p2").hidden=n!==2;$("t1").setAttribute("aria-pressed",n===1);$("t2").setAttribute("aria-pressed",n===2);$("mn").classList.toggle("wide",n===2);if(n===2)load()};
 $("t1").onclick=()=>tab(1);$("t2").onclick=()=>tab(2);
+$("t1").hidden=true;/* 포트폴리오 올리기 탭은 숨김 */
+try{let first=true;const ap=$("app"),go=()=>{if(!ap.hidden&&first){first=false;tab(2)}};new MutationObserver(go).observe(ap,{attributes:true,attributeFilter:["hidden"]});go()}catch(_){}
 window.__jlist=load;
 $("csv").onclick=()=>{const h=["No","접수일시","닉네임","성명","이메일","출신","분야","Discord","YouTube","Twitter","감사메일","면접메일","거절메일","채용메일","면접의향(대표)","채용의향(대표)","채용거절(대표)","메모","재지원","자기소개","지원동기","경력"];
   const q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
