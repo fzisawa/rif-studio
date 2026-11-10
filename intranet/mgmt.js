@@ -103,7 +103,7 @@ async function loadQ(){
     db.rpc("staff_directory")]);
   if(a.error){$("mqc").textContent="불러오지 못했어요";return}
   who={};(c.data||[]).forEach(p=>{who[(p.email||"").toLowerCase()]=p});
-  msgs=a.data||[];reps={};(b.data||[]).forEach(x=>{(reps[x.inbox_id]=reps[x.inbox_id]||[]).push(x)});
+  msgs=(a.data||[]).filter(x=>!x.to_addrs||/support@/i.test(x.to_addrs));reps={};(b.data||[]).forEach(x=>{(reps[x.inbox_id]=reps[x.inbox_id]||[]).push(x)});
   const map=new Map();
   [...msgs].sort((x,y)=>new Date(x.received_at)-new Date(y.received_at)).forEach(m=>{const k=tkey(m);let t=map.get(k);
     if(!t){t={key:k,subject:m.subject,from:m.from_addr,fromName:m.from_name,ins:[],outs:[]};map.set(k,t)}
