@@ -172,7 +172,7 @@ function drawPane(){
     if(error||!data){bodyBox.textContent="본문을 불러오지 못했어요";return null}bodies[id0]=data;return data};
   go().then(d=>{if(d&&selId===id0&&!composing)show(d)});
   rp.onclick=async()=>{const d=await go();if(!d)return;const t=(d.body_text||"").trim().slice(0,3000);
-    composing={as:"support",to:m.from_addr,subject:/^re:/i.test(m.subject)?m.subject:"Re: "+m.subject,body:"\n\n----- "+ftl(m.received_at)+" "+(m.from_name||m.from_addr)+" -----\n"+t.replace(/^/gm,"> ")};drawMail()}}
+    composing={as:"support",inbox:m.id,to:m.from_addr,subject:/^re:/i.test(m.subject)?m.subject:"Re: "+m.subject,body:"\n\n----- "+ftl(m.received_at)+" "+(m.from_name||m.from_addr)+" -----\n"+t.replace(/^/gm,"> ")};drawMail()}}
 function drawCompose(p){
   const c=composing;
   const fromSel=el("select",{style:"padding:9px 12px;border:1px solid #7775;border-radius:6px;font:inherit;background:var(--bg);color:var(--fg)"},[el("option",{value:"me",textContent:"내 이름으로 (서명 포함)"}),el("option",{value:"support",textContent:"support@rif-studio.com (공용 · 서명 없음)",selected:c.as==="support"})]);
@@ -183,7 +183,7 @@ function drawCompose(p){
     if(!t||!s||!b){msgx.className="note err";msgx.textContent="받는 사람·제목·내용을 모두 써 주세요.";return}
     if(!confirm(t+" 에게 메일을 보낼까요?\n보낸 뒤에는 취소할 수 없어요."))return;
     send.disabled=true;msgx.className="note";msgx.textContent="보내는 중…";let ok=false,m2="";
-    try{const {data,error}=await db.functions.invoke("send-mail",{body:{to:t,subject:s,body:b,as:fromSel.value}});
+    try{const {data,error}=await db.functions.invoke("send-mail",{body:{to:t,subject:s,body:b,as:fromSel.value,...(c.inbox&&fromSel.value==="support"?{inbox_id:c.inbox}:{})}});
       if(error){try{m2=(await error.context.json()).error}catch(_){m2=error.message}}else if(data&&data.ok)ok=true;else m2=(data&&data.error)||"알 수 없는 오류"}catch(x){m2=String(x.message||x)}
     send.disabled=false;if(!ok){msgx.className="note err";msgx.textContent="보내지 못했어요: "+m2;return}
     composing=null;fold="out";selId=null;await loadInbox()};

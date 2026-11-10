@@ -65,8 +65,8 @@ async function load(){
 $("q").oninput=draw;
 const tab=n=>{$("p1").hidden=n!==1;$("p2").hidden=n!==2;$("t1").setAttribute("aria-pressed",n===1);$("t2").setAttribute("aria-pressed",n===2);$("mn").classList.toggle("wide",n===2);if(n===2)load()};
 $("t1").onclick=()=>tab(1);$("t2").onclick=()=>tab(2);
-$("t1").hidden=true;/* 포트폴리오 올리기 탭은 숨김 */
-try{let first=true;const ap=$("app"),go=()=>{if(!ap.hidden&&first){first=false;tab(2)}};new MutationObserver(go).observe(ap,{attributes:true,attributeFilter:["hidden"]});go()}catch(_){}
+$("t1").hidden=true;/* 포트폴리오 올리기 탭은 숨김 */$("t2").hidden=true;/* 지원서 보기는 인트라넷 > 업무(경영지원팀)로 이동 */
+try{let first=true;const ap=$("app"),go=()=>{if(!ap.hidden&&first){first=false;$("t3").click()}};new MutationObserver(go).observe(ap,{attributes:true,attributeFilter:["hidden"]});go()}catch(_){}
 window.__jlist=load;
 $("csv").onclick=()=>{const h=["No","접수일시","닉네임","성명","이메일","출신","분야","Discord","YouTube","Twitter","감사메일","면접메일","거절메일","채용메일","면접의향(대표)","채용의향(대표)","채용거절(대표)","메모","재지원","자기소개","지원동기","경력"];
   const q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
