@@ -171,8 +171,12 @@ function drawPane(){
     const {data,error}=await db.from("inbox_messages").select("body_text,body_html").eq("id",id0).single();
     if(error||!data){bodyBox.textContent="본문을 불러오지 못했어요";return null}bodies[id0]=data;return data};
   go().then(d=>{if(d&&selId===id0&&!composing)show(d)});
-  rp.onclick=async()=>{const d=await go();if(!d)return;const t=(d.body_text||"").trim().slice(0,3000);
-    composing={as:"support",inbox:m.id,to:m.from_addr,subject:/^re:/i.test(m.subject)?m.subject:"Re: "+m.subject,body:"\n\n----- "+ftl(m.received_at)+" "+(m.from_name||m.from_addr)+" -----\n"+t.replace(/^/gm,"> ")};drawMail()}}
+  const quoteOf=raw=>{let t=String(raw||"").replace(/\r\n/g,"\n").trim();
+    const i=t.search(/\n[^\n]*(wrote:|작성:)\s*(\n|$)|\n>|\n-{3,} ?(Original|원본|Forwarded)/i);if(i>0)t=t.slice(0,i);
+    t=t.split("\n").filter(l=>!/^\s*\[image:.*\]/i.test(l)&&!/^\s*(RIF STUDIO|PANGYO\s*[•·\/].*|rif-studio\.com|https?:\/\/rif-studio\.com\/?)\s*$/i.test(l)&&!/^\s*--\s*$/.test(l)).join("\n");
+    t=t.replace(/<https?:\/\/[^>\s]+>/g,"").replace(/\n{3,}/g,"\n\n").trim();return t.length>1200?t.slice(0,1200).trim()+" …":t};
+  rp.onclick=async()=>{const d=await go();if(!d)return;const q=quoteOf(d.body_text);
+    composing={as:"support",inbox:m.id,to:m.from_addr,subject:/^re:/i.test(m.subject)?m.subject:"Re: "+m.subject,body:"\n\n"+ftl(m.received_at)+" "+(m.from_name||m.from_addr)+" 님이 보냄:\n"+(q?q.replace(/^/gm,"> "):"")};drawMail()}}
 function drawCompose(p){
   const c=composing;
   const fromSel=el("select",{style:"padding:9px 12px;border:1px solid #7775;border-radius:6px;font:inherit;background:var(--bg);color:var(--fg)"},[el("option",{value:"me",textContent:"내 이름으로 (서명 포함)"}),el("option",{value:"support",textContent:"support@rif-studio.com (공용 · 서명 없음)",selected:c.as==="support"})]);
