@@ -25,6 +25,8 @@ table.mt{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.5}
 .mbadge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;background:#999;white-space:nowrap}.mbadge.new{background:#d64545}.mbadge.rep{background:#0f6cbd}.mbadge.done{background:#3bb273}
 .mdupb{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;background:#e5332a;color:#fff;font-size:11px;font-weight:700}
 .mrep{border-left:3px solid #0f6cbd;background:#0f6cbd12;border-radius:4px;padding:10px 14px;margin:0 0 10px}.mrep .h{font-size:12px;color:var(--mut);margin-bottom:4px}.mrep .t{white-space:pre-wrap}
+.mbody{white-space:pre-wrap;word-break:break-word;line-height:1.7;font-size:14px;padding:14px 16px;border:1px solid #7775;border-radius:8px;background:#7771;color:var(--fg);max-height:520px;overflow:auto}
+.mfr{width:100%;min-height:120px;border:1px solid #7775;border-radius:8px;background:#fff;display:block}.mfr.dark{filter:invert(1) hue-rotate(180deg)}
 .mfrm textarea{width:100%;min-height:110px;padding:10px;border:1px solid #7775;border-radius:6px;font:inherit;background:var(--bg);color:var(--fg);box-sizing:border-box}
 .mfrm .acts{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .mbtn{padding:8px 16px;border:1px solid #7775;border-radius:4px;background:var(--bg);color:var(--fg);font:inherit;cursor:pointer}.mbtn.p{background:#d64545;border-color:#d64545;color:#fff;font-weight:700}.mbtn:disabled{opacity:.5}
@@ -102,10 +104,17 @@ function buildQ(m,box){
   const bodyBox=el("div",{style:"margin-bottom:14px"},[el("span",{className:"mnote",textContent:"본문 불러오는 중…"})]);box.append(bodyBox);
   db.from("inbox_messages").select("body_text,body_html").eq("id",m.id).single().then(({data,error})=>{
     bodyBox.replaceChildren();if(error||!data){bodyBox.textContent="본문을 불러오지 못했어요";return}
-    const f=document.createElement("iframe");f.setAttribute("sandbox","");f.style.cssText="width:100%;min-height:180px;border:0;background:#fff;border-radius:6px";
-    if(data.body_html)f.srcdoc='<base target="_blank"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: cid:; style-src \'unsafe-inline\'"><body style="font:14px/1.6 sans-serif;margin:8px;color:#222">'+data.body_html;
-    else f.srcdoc='<body style="font:14px/1.6 sans-serif;margin:8px;white-space:pre-wrap;color:#222">'+(data.body_text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
-    f.onload=()=>{try{f.style.height=Math.max(180,f.contentDocument.documentElement.scrollHeight+20)+"px"}catch(_){}};bodyBox.append(f);
+    const html=data.body_html||"",txt=data.body_text||"";
+    if(!/<(table|img|style|a\s)/i.test(html)){
+      const t=(txt||html.replace(/<br\s*\/?>/gi,"\n").replace(/<\/(p|div|li)>/gi,"\n").replace(/<[^>]+>/g,"").replace(/&nbsp;/g," ").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&amp;/g,"&")).trim();
+      bodyBox.append(el("div",{className:"mbody",textContent:t||"(내용 없음)"}))}
+    else{
+      const f=document.createElement("iframe");f.setAttribute("sandbox","allow-same-origin");f.className="mfr dark";
+      f.srcdoc='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: cid:; style-src \'unsafe-inline\'"><style>html,body{background:#fff}img,video{filter:invert(1) hue-rotate(180deg)}</style><body style="font:14px/1.6 sans-serif;margin:12px;color:#222">'+html;
+      f.onload=()=>{try{f.style.height=Math.min(640,Math.max(120,f.contentDocument.body.scrollHeight+28))+"px"}catch(_){}};
+      const tg=el("button",{className:"mbtn",type:"button",textContent:"원본 색으로 보기"});tg.style.marginBottom="8px";
+      tg.onclick=()=>{const d=f.classList.toggle("dark");tg.textContent=d?"원본 색으로 보기":"다크로 보기"};
+      bodyBox.append(tg,f)}
     if((m.attachments||[]).length)bodyBox.append(el("div",{className:"mnote",textContent:"첨부 "+m.attachments.length+"개: "+m.attachments.map(x=>x.filename).join(", ")+" (파일은 Resend 대시보드에서 확인)"}))});
   const rl=reps[m.id]||[];
   box.append(el("b",{className:"mlb",textContent:"보낸 답장 "+rl.length+"건"}));
