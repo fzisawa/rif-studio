@@ -234,33 +234,51 @@ $("pfdel").onclick=async()=>{const mine=dir.find(r=>r.email.toLowerCase()===me)|
   await db.rpc("set_my_avatar",{p_path:""});await db.storage.from("avatars").remove([mine.avatar]);loadDir()};
 
 /* 채팅 */
-let chatMsgs=[],chatSub=null,chatOpen=false,chatTimer=null,chatStarted=false;
-const seenKey=()=>"rif_chat_seen_"+me;
-const getSeen=()=>{try{return Number(localStorage.getItem(seenKey()))||0}catch(_){return 0}};
-const setSeen=n=>{try{localStorage.setItem(seenKey(),String(n))}catch(_){}};
+let chatMsgs=[],chatSub=null,chatOpen=false,chatTimer=null,chatStarted=false,chatTo="";
+const seenKey=()=>"rif_chat_seen2_"+me;
+const getSeenMap=()=>{try{return JSON.parse(localStorage.getItem(seenKey())||"{}")||{}}catch(_){return {}}};
+const setSeenFor=(k,n)=>{try{const m=getSeenMap();m[k]=n;localStorage.setItem(seenKey(),JSON.stringify(m))}catch(_){}};
 const dispName=e=>{const r=dir.find(x=>x.email.toLowerCase()===String(e).toLowerCase());return r?(r.nickname||r.name):e};
 const dayStr=s=>new Date(s).toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"short"});
-function chatBadge(){const last=chatMsgs.length?chatMsgs[chatMsgs.length-1].id:0;const un=chatOpen?0:chatMsgs.filter(m=>m.id>getSeen()&&m.author_email.toLowerCase()!==me).length;$("cb").hidden=!un;$("cb").textContent=un>99?"99+":un}
+const convKey=m=>{if(!m.to_email)return "";return m.author_email.toLowerCase()===me?m.to_email.toLowerCase():m.author_email.toLowerCase()};
+const convMsgs=k=>chatMsgs.filter(m=>convKey(m)===k);
+const convUnread=k=>{const sn=Number(getSeenMap()[k])||0;return convMsgs(k).filter(m=>m.id>sn&&m.author_email.toLowerCase()!==me).length};
+function chatBadge(){let un=0;const keys=new Set(chatMsgs.map(convKey));keys.forEach(k=>{if(chatOpen&&k===chatTo)return;un+=convUnread(k)});$("cb").hidden=!un;$("cb").textContent=un>99?"99+":un}
+function markSeen(){const l=convMsgs(chatTo);setSeenFor(chatTo,l.length?l[l.length-1].id:0)}
+function drawPeople(){const box=$("cp");box.replaceChildren();
+  const q=($("cq").value||"").trim().toLowerCase();
+  const items=[{k:"",name:"전체 채팅",sub:"모든 사원"}].concat(dir.filter(r=>r.email.toLowerCase()!==me&&(!q||[r.name,r.nickname,r.email].join(" ").toLowerCase().includes(q))).map(r=>({k:r.email.toLowerCase(),name:r.nickname||r.name,sub:[r.pos,r.rnk].filter(Boolean).join(" · "),r})));
+  items.forEach(it=>{const av=el("span",{className:"avs l"});
+    if(it.r&&it.r.avatar&&urls[it.r.avatar])avatar(av,it.r.avatar,"");else av.textContent=it.r?ini(it.name):"#";
+    const un=convUnread(it.k);
+    const b=el("button",{type:"button",className:"cpi"+(chatTo===it.k?" on":"")},[av,el("span",{className:"cpt"},[el("b",{textContent:it.name}),el("span",{className:"note",textContent:it.sub})]),...(un&&!(chatOpen&&chatTo===it.k)?[el("span",{className:"cbd",textContent:un>99?"99+":un})]:[])]);
+    b.onclick=()=>{chatTo=it.k;markSeen();drawPeople();drawChat(true);$("ci").focus()};box.append(b)})}
 function drawChat(stick){const box=$("cl"),near=box.scrollHeight-box.scrollTop-box.clientHeight<80;box.replaceChildren();let lastDay="";
-  chatMsgs.forEach(m=>{const d=dayStr(m.created_at);if(d!==lastDay){lastDay=d;box.append(el("div",{className:"cday",textContent:d}))}
+  const to=chatTo?dir.find(x=>x.email.toLowerCase()===chatTo):null;
+  $("ch2").textContent=chatTo?(to?(to.nickname||to.name):chatTo)+" 님과의 1:1 대화":"전체 채팅 · 모든 사원이 볼 수 있어요";
+  $("ci").placeholder=chatTo?"이 사원에게만 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)":"전체에게 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)";
+  const list=convMsgs(chatTo);
+  if(!list.length)box.append(el("div",{className:"cday",textContent:chatTo?"아직 대화가 없어요. 먼저 말을 걸어 보세요.":"아직 메시지가 없어요."}));
+  list.forEach(m=>{const d=dayStr(m.created_at);if(d!==lastDay){lastDay=d;box.append(el("div",{className:"cday",textContent:d}))}
     const mine=m.author_email.toLowerCase()===me,rr=dir.find(x=>x.email.toLowerCase()===m.author_email.toLowerCase());
     const av=el("span",{className:"avs l"});if(rr&&rr.avatar&&urls[rr.avatar])avatar(av,rr.avatar,"");else av.textContent=ini(rr?(rr.nickname||rr.name):m.author_name);
     const tm=new Date(m.created_at).toLocaleTimeString("ko-KR",{hour:"numeric",minute:"2-digit"});
     const body=el("div",{},[...(mine?[]:[el("div",{className:"cn",textContent:rr?(rr.nickname||rr.name):m.author_name})]),el("div",{className:"cb2",textContent:m.body})]);
     const row=el("div",{className:"cm"+(mine?" me":"")},[...(mine?[]:[av]),body,el("span",{className:"ct",textContent:tm})]);
-    if(mine||ceo){row.title="더블클릭하면 삭제";row.ondblclick=async()=>{if(!confirm("이 메시지를 삭제할까요?"))return;await db.from("chat_messages").delete().eq("id",m.id);chatMsgs=chatMsgs.filter(x=>x.id!==m.id);drawChat()}}
+    if(mine||(ceo&&!m.to_email)){row.title="더블클릭하면 삭제";row.ondblclick=async()=>{if(!confirm("이 메시지를 삭제할까요?"))return;await db.from("chat_messages").delete().eq("id",m.id);chatMsgs=chatMsgs.filter(x=>x.id!==m.id);drawChat()}}
     box.append(row)});
   if(stick||near)box.scrollTop=box.scrollHeight;chatBadge()}
-async function loadChat(stick){const {data}=await db.from("chat_messages").select("id,author_email,author_name,body,created_at").order("id",{ascending:false}).limit(200);
-  if(!data)return;const prev=chatMsgs.length?chatMsgs[chatMsgs.length-1].id:0;chatMsgs=data.reverse();drawChat(stick);
-  if(chatOpen){setSeen(chatMsgs.length?chatMsgs[chatMsgs.length-1].id:0);chatBadge()}}
+async function loadChat(stick){const {data}=await db.from("chat_messages").select("id,author_email,author_name,body,created_at,to_email").order("id",{ascending:false}).limit(500);
+  if(!data)return;chatMsgs=data.reverse();if(chatOpen)markSeen();drawPeople();drawChat(stick)}
 function startChat(){if(chatStarted)return;chatStarted=true;loadChat(true);
   try{chatSub=db.channel("chat-room").on("postgres_changes",{event:"*",schema:"public",table:"chat_messages"},()=>loadChat(false)).subscribe()}catch(_){}
   chatTimer=setInterval(()=>loadChat(false),8000)}
-function openChat(){chatOpen=true;setSeen(chatMsgs.length?chatMsgs[chatMsgs.length-1].id:0);chatBadge();const b=$("cl");setTimeout(()=>{b.scrollTop=b.scrollHeight},30);$("ci").focus()}
-document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.t!=="c"){chatOpen=false}}));
+function openChat(){chatOpen=true;markSeen();drawPeople();drawChat(true);chatBadge();const b=$("cl");setTimeout(()=>{b.scrollTop=b.scrollHeight},30);$("ci").focus()}
+document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.t!=="c"){chatOpen=false;chatBadge()}}));
+$("cq").oninput=drawPeople;
 async function sendChat(){const t=$("ci").value.trim();if(!t)return;$("ci").value="";
-  const {error}=await db.from("chat_messages").insert({author_email:me,author_name:myName,body:t.slice(0,2000)});
+  const row={author_email:me,author_name:myName,body:t.slice(0,2000)};if(chatTo)row.to_email=chatTo;
+  const {error}=await db.from("chat_messages").insert(row);
   if(error){$("ci").value=t;alert("보내지 못했어요");return}await loadChat(true)}
 $("cf2").onsubmit=e=>{e.preventDefault();sendChat()};
 $("ci").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendChat()}};
