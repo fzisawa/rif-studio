@@ -3,7 +3,7 @@ const $=i=>document.getElementById(i);
 const toEmail=v=>{v=v.trim().toLowerCase();return v.includes("@")?v:v+"@rif-studio.com"};
 const fd=s=>s?new Date(s).toLocaleDateString("ko-KR"):"";
 const sz=n=>n>1048576?(n/1048576).toFixed(1)+"MB":Math.max(1,Math.round(n/1024))+"KB";
-let me="",uid="",myName="",ceo=false,staff=[],reads=new Set(),notices=[],tasks=[],docs=[];
+let me="",uid="",myName="",ceo=false,exec=false,staff=[],reads=new Set(),notices=[],tasks=[],docs=[];
 const CEO="takanashi@rif-studio.com";
 const msg=(id,t,bad)=>{const m=$(id);m.className="note"+(bad?" err":"");m.textContent=t};
 const nameOf=e=>(staff.find(s=>s.email.toLowerCase()===String(e).toLowerCase())||{}).name||e;
@@ -14,11 +14,11 @@ async function render(){
   me=(s.user.email||"").toLowerCase();uid=s.user.id;ceo=me===CEO;$("who").textContent=s.user.email;
   const {data:st}=await db.from("mail_staff").select("email,name").maybeSingle();
   $("box").hidden=!st;$("nomail").hidden=!!st;if(!st)return;
-  myName=st.name;$("nf").hidden=!ceo;
+  myName=st.name;{const {data:ex}=await db.rpc("is_exec");exec=!!ex||ceo}$("nf").hidden=!exec;
   await loadStaff();await loadAll()}
 async function loadStaff(){const {data}=await db.rpc("staff_list");staff=data||[];
   $("ta").replaceChildren(el("option",{value:"",textContent:"미지정"}),...staff.map(x=>el("option",{value:x.email,textContent:x.name||x.email})))}
-async function loadAll(){await Promise.all([loadNotices(),loadTasks(),loadDocs(),loadDir(),loadInbox()])}
+async function loadAll(){await Promise.all([loadNotices(),loadTasks(),loadDocs(),loadDir(),loadInbox()]);startChat()}
 
 /* 공지 */
 async function loadNotices(){
@@ -36,7 +36,7 @@ function drawNotices(byN){
     const body=el("div",{className:"bodyx",hidden:true,textContent:n.body||"(내용 없음)"});
     const meta=el("div",{className:"meta",textContent:fd(n.created_at)+" · "+n.author_name+(ceo?" · 읽음 "+((byN[n.id]||[]).length)+"/"+staff.length+"명":"")});
     const card=el("div",{className:"card"+(isNew?" unread":"")},[h,meta,body]);
-    if(ceo){
+    if(ceo||(exec&&(n.author_email||"").toLowerCase()===me)){
       const who=(byN[n.id]||[]).map(nameOf).join(", ")||"아직 없음";
       body.append(el("div",{className:"meta",textContent:"읽은 사람: "+who,style:"margin-top:12px"}));
       const x=el("button",{className:"btn small",textContent:"삭제",style:"margin-top:10px"});x.onclick=async()=>{if(!confirm("이 공지를 삭제할까요?"))return;await db.from("notices").delete().eq("id",n.id);loadNotices()};body.append(x)}
@@ -47,7 +47,7 @@ function drawNotices(byN){
     box.append(card)});
   if(!notices.length)box.append(el("p",{className:"note",textContent:"아직 공지가 없어요."}))}
 $("nf").onsubmit=async e=>{e.preventDefault();const t=$("nt").value.trim();if(!t)return msg("nmsg","제목을 써 주세요.",1);
-  const {error}=await db.from("notices").insert({title:t,body:$("nbd").value.trim(),pinned:$("npin").checked,author_name:myName});
+  const {error}=await db.from("notices").insert({title:t,body:$("nbd").value.trim(),pinned:$("npin").checked,author_name:myName,author_email:me});
   if(error)return msg("nmsg","올리지 못했어요",1);$("nt").value="";$("nbd").value="";$("npin").checked=false;msg("nmsg","올렸어요 ✓");loadNotices()};
 
 /* 업무 */
@@ -198,11 +198,17 @@ async function loadDir(){const {data}=await db.rpc("staff_directory");dir=data||
 function drawDir(){
   const q=$("eq").value.trim().toLowerCase(),dv=$("ediv").value,tm=$("etm").value,tb=$("etb");tb.replaceChildren();
   const l=dir.filter(r=>(!dv||r.division===dv)&&(!tm||r.team===tm)&&(!q||[r.name,r.nickname,r.emp,r.email].join(" ").toLowerCase().includes(q)));
-  $("ecnt").textContent="총 "+l.length+"명";
-  l.forEach(r=>{const has=r.avatar&&urls[r.avatar];const av=el("span",{className:"avs"});if(has)avatar(av,r.avatar,"");
-    const nm=el("td",{},[...(has?[av]:[]),el("b",{textContent:r.nickname||r.name}),...(r.nickname&&r.name?[el("span",{className:"note",textContent:" "+r.name})]:[])]);
-    tb.append(el("tr",{},[el("td",{className:"dt",textContent:r.emp||"-"}),nm,el("td",{textContent:r.pos}),el("td",{textContent:r.rnk}),el("td",{textContent:r.division}),el("td",{textContent:r.team}),el("td",{textContent:String(r.email).replace(/@rif-studio\.com$/i,"")}),el("td",{textContent:r.discord}),el("td",{textContent:r.twitter})]))});
-  if(!l.length)tb.append(el("tr",{},[el("td",{colSpan:9,textContent:"해당하는 사원이 없어요."})]))}
+  $("ecnt").textContent="총 "+l.length+"명 · 이름을 누르면 연락처가 나와요";
+  l.forEach(r=>{const has=r.avatar&&urls[r.avatar],av=el("span",{className:"avs l"});if(has)avatar(av,r.avatar,"");else av.textContent=ini(r.nickname||r.name);
+    const nm=el("td",{},[el("b",{textContent:r.nickname||r.name}),...(r.nickname&&r.name?[el("span",{className:"note",textContent:" "+r.name})]:[])]);
+    const tr=el("tr",{},[el("td",{},[av]),el("td",{className:"dt",textContent:r.emp||"-"}),nm,el("td",{textContent:r.pos}),el("td",{textContent:r.rnk}),el("td",{textContent:r.division}),el("td",{textContent:r.team}),el("td",{textContent:String(r.email).replace(/@rif-studio\.com$/i,"")})]);
+    tr.onclick=()=>showPerson(r);tb.append(tr)});
+  if(!l.length)tb.append(el("tr",{},[el("td",{colSpan:8,textContent:"해당하는 사원이 없어요."})]))}
+function showPerson(r){const has=r.avatar&&urls[r.avatar],av=el("div",{className:"av"});if(has)avatar(av,r.avatar,"");else av.textContent=ini(r.nickname||r.name);
+  const rows=[["사번",r.emp||"-"],["부서",[r.division,r.team].filter(Boolean).join(" · ")||"-"],["직책·직위",[r.pos,r.rnk].filter(Boolean).join(" · ")||"-"],["전화",r.phone||"-"],["이메일",r.email],["Discord",r.discord||"-"],["X",r.twitter||"-"]];
+  $("pmb").replaceChildren(el("div",{className:"pfx"},[av,el("div",{},[el("b",{textContent:r.nickname||r.name}),el("span",{textContent:r.nickname&&r.name?r.name:""})])]),el("dl",{className:"prl"},rows.flatMap(([k,v])=>[el("dt",{textContent:k}),el("dd",{textContent:v})])));
+  $("pm").hidden=false}
+$("pmx").onclick=()=>{$("pm").hidden=true};$("pm").onclick=e=>{if(e.target===$("pm"))$("pm").hidden=true};document.addEventListener("keydown",e=>{if(e.key==="Escape")$("pm").hidden=true});
 $("eq").oninput=drawDir;$("ediv").onchange=drawDir;$("etm").onchange=()=>{if($("etm").value)$("ediv").value=$("etm").value==="경영지원팀"?"경영부":"프로덕션부";drawDir()};
 $("pf").onsubmit=async e=>{e.preventDefault();const {error}=await db.rpc("set_my_profile",{p_nick:$("pfnk").value,p_discord:$("pfdc").value,p_twitter:$("pftw").value});
   msg("pfmsg",error?"저장하지 못했어요":"저장했어요 ✓",!!error);if(!error)loadDir()};
@@ -221,11 +227,44 @@ $("pfile").onchange=async()=>{const f=$("pfile").files[0];$("pfile").value="";if
 $("pfdel").onclick=async()=>{const mine=dir.find(r=>r.email.toLowerCase()===me)||{};if(!mine.avatar)return;if(!confirm("프로필 사진을 지울까요?"))return;
   await db.rpc("set_my_avatar",{p_path:""});await db.storage.from("avatars").remove([mine.avatar]);loadDir()};
 
+/* 채팅 */
+let chatMsgs=[],chatSub=null,chatOpen=false,chatTimer=null,chatStarted=false;
+const seenKey=()=>"rif_chat_seen_"+me;
+const getSeen=()=>{try{return Number(localStorage.getItem(seenKey()))||0}catch(_){return 0}};
+const setSeen=n=>{try{localStorage.setItem(seenKey(),String(n))}catch(_){}};
+const dispName=e=>{const r=dir.find(x=>x.email.toLowerCase()===String(e).toLowerCase());return r?(r.nickname||r.name):e};
+const dayStr=s=>new Date(s).toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"short"});
+function chatBadge(){const last=chatMsgs.length?chatMsgs[chatMsgs.length-1].id:0;const un=chatOpen?0:chatMsgs.filter(m=>m.id>getSeen()&&m.author_email.toLowerCase()!==me).length;$("cb").hidden=!un;$("cb").textContent=un>99?"99+":un}
+function drawChat(stick){const box=$("cl"),near=box.scrollHeight-box.scrollTop-box.clientHeight<80;box.replaceChildren();let lastDay="";
+  chatMsgs.forEach(m=>{const d=dayStr(m.created_at);if(d!==lastDay){lastDay=d;box.append(el("div",{className:"cday",textContent:d}))}
+    const mine=m.author_email.toLowerCase()===me,rr=dir.find(x=>x.email.toLowerCase()===m.author_email.toLowerCase());
+    const av=el("span",{className:"avs l"});if(rr&&rr.avatar&&urls[rr.avatar])avatar(av,rr.avatar,"");else av.textContent=ini(rr?(rr.nickname||rr.name):m.author_name);
+    const tm=new Date(m.created_at).toLocaleTimeString("ko-KR",{hour:"numeric",minute:"2-digit"});
+    const body=el("div",{},[...(mine?[]:[el("div",{className:"cn",textContent:rr?(rr.nickname||rr.name):m.author_name})]),el("div",{className:"cb2",textContent:m.body})]);
+    const row=el("div",{className:"cm"+(mine?" me":"")},[...(mine?[]:[av]),body,el("span",{className:"ct",textContent:tm})]);
+    if(mine||ceo){row.title="더블클릭하면 삭제";row.ondblclick=async()=>{if(!confirm("이 메시지를 삭제할까요?"))return;await db.from("chat_messages").delete().eq("id",m.id);chatMsgs=chatMsgs.filter(x=>x.id!==m.id);drawChat()}}
+    box.append(row)});
+  if(stick||near)box.scrollTop=box.scrollHeight;chatBadge()}
+async function loadChat(stick){const {data}=await db.from("chat_messages").select("id,author_email,author_name,body,created_at").order("id",{ascending:false}).limit(200);
+  if(!data)return;const prev=chatMsgs.length?chatMsgs[chatMsgs.length-1].id:0;chatMsgs=data.reverse();drawChat(stick);
+  if(chatOpen){setSeen(chatMsgs.length?chatMsgs[chatMsgs.length-1].id:0);chatBadge()}}
+function startChat(){if(chatStarted)return;chatStarted=true;loadChat(true);
+  try{chatSub=db.channel("chat-room").on("postgres_changes",{event:"*",schema:"public",table:"chat_messages"},()=>loadChat(false)).subscribe()}catch(_){}
+  chatTimer=setInterval(()=>loadChat(false),8000)}
+function openChat(){chatOpen=true;setSeen(chatMsgs.length?chatMsgs[chatMsgs.length-1].id:0);chatBadge();const b=$("cl");setTimeout(()=>{b.scrollTop=b.scrollHeight},30);$("ci").focus()}
+document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.t!=="c"){chatOpen=false}}));
+async function sendChat(){const t=$("ci").value.trim();if(!t)return;$("ci").value="";
+  const {error}=await db.from("chat_messages").insert({author_email:me,author_name:myName,body:t.slice(0,2000)});
+  if(error){$("ci").value=t;alert("보내지 못했어요");return}await loadChat(true)}
+$("cf2").onsubmit=e=>{e.preventDefault();sendChat()};
+$("ci").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendChat()}};
+
 /* 탭 */
-const P={n:"pn",t:"pt",i:"pi",d:"pd",e:"pe",s:"ps"};
+const P={b:"pb",t:"pt",i:"pi",c:"pc",e:"pe",s:"ps"};
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));
-  Object.entries(P).forEach(([k,id])=>$(id).hidden=k!==b.dataset.t)});
+  Object.entries(P).forEach(([k,id])=>$(id).hidden=k!==b.dataset.t);if(b.dataset.t==="c")openChat()});
+document.querySelectorAll("#sub button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#sub button").forEach(x=>x.setAttribute("aria-pressed",x===b));$("pn").hidden=b.dataset.s!=="pn";$("pd").hidden=b.dataset.s!=="pd"});
 
 /* 로그인·가입 */
 $("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:toEmail($("em").value),password:$("pw").value});
