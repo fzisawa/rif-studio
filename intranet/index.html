@@ -57,7 +57,13 @@ main.wide{max-width:1480px}.shell{display:grid;grid-template-columns:170px minma
 .pc .ct{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mut);border-top:1px solid #7772;padding-top:10px}
 @media(max-width:760px){.org{grid-template-columns:1fr}.otree{position:static}}
 #etbl tbody tr{cursor:pointer}#etbl tbody tr:hover td{background:#7771}.avs.l{width:40px;height:40px;margin:0;display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:var(--mut);font-size:15px}
-.fr[hidden],.sg[hidden],#app[hidden],#box[hidden]{display:none}</style></head><body>
+.fr[hidden],.sg[hidden],#app[hidden],#box[hidden]{display:none}.ol.rd{grid-template-columns:210px minmax(0,1fr)}.ol.rd .olist{display:none}
+.ousg{margin:auto 4px 0;padding:10px 8px;border-top:1px solid #7773;font-size:12px;color:var(--mut)}.ousg .ub{height:6px;border-radius:3px;background:#7773;overflow:hidden;margin-bottom:6px}.ousg .ub i{display:block;height:100%;background:#0f6cbd}.ousg .ut{font-weight:700;color:var(--fg);font-size:13px}.ol .of .osg{margin-top:0}
+.orp .bk{display:inline-flex;align-items:center;gap:6px;border:1px solid #7775;border-radius:20px;background:none;color:var(--fg);font:inherit;font-size:22px;line-height:1;padding:2px 14px 4px 10px;cursor:pointer;margin-bottom:14px}.orp .bk span{font-size:13px}.orp .bk:hover{background:#7772}
+.ol.rd .orp{padding:24px clamp(20px,6%,72px)}.ol.rd .orp .eh{font-size:24px}.ol.rd .orp .who{padding-bottom:14px;border-bottom:1px solid #7773}
+#oli>.tb{display:block;margin:10px;width:calc(100% - 20px);border:1px solid #7775;border-radius:6px;background:none;color:var(--fg);padding:8px;font:inherit;cursor:pointer}
+@media(max-width:900px){.ol.rd{grid-template-columns:1fr}.ol.rd .of{display:none}}
+</style></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.vocal">Vocal</button><div class="nm"><a href="../rif/">RIF</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.sound">Sound</button><div class="nm"><a href="../charmbung/">Charmbung</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.art">Art</button><div class="nm"><a href="../woljae/">Woljae</a></div></div><div class="ng on"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.content">Content</button><div class="nm"><a href="../join/" class=on data-i18n=nav.cj>Join Us</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.mgmt">Management</button><div class="nm"><a href="../rif-management/">RIF</a></div></div><a class="nl" href="../join/">Join Us</a><a class="nl" href="../contact/">Contact</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
 <main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>Intranet</h1>
 <form id="login"><div class="idrow"><input id="em" type="text" placeholder="아이디 (예: mina)" required autocomplete="username" autocapitalize="none"></div><input id="pw" type="password" placeholder="비밀번호" required autocomplete="current-password"><button class="btn mred">로그인</button><p class="note err" id="lmsg"></p></form>
@@ -82,7 +88,7 @@ main.wide{max-width:1480px}.shell{display:grid;grid-template-columns:170px minma
 <label class="ck3" style="margin-top:20px"><input type="checkbox" id="tmine"> 내 업무만 보기</label><div class="kb" id="kb"></div></div>
 
 <div id="pi" hidden><div class="ol" id="ol">
-<div class="of"><button class="onew" id="onew" type="button">✉ 새 메일</button><div id="ofl"></div><a class="osg" href="../mail/">⚙ 서명 설정</a></div>
+<div class="of"><button class="onew" id="onew" type="button">✉ 새 메일</button><div id="ofl"></div><div id="ousg" class="ousg"></div><a class="osg" href="../mail/">⚙ 서명 설정</a></div>
 <div class="olist"><div class="obar"><input id="oq" type="search" placeholder="메일 검색"><button type="button" id="orf" title="새로고침">⟳</button></div><div id="oli"></div></div>
 <div class="orp" id="orp"></div></div></div>
 
@@ -100,4 +106,4 @@ main.wide{max-width:1480px}.shell{display:grid;grid-template-columns:170px minma
 <div id="pm" class="mod" hidden><div class="mbox"><button type="button" class="mx" id="pmx" aria-label="닫기">×</button><div id="pmb"></div></div></div>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO<a class="adm admr" id="admlink" href="../admin/" aria-label="admin" rel="nofollow" hidden><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><g fill="#9a7ee6"><circle cx="12.0" cy="6.7" r="4.6"/><circle cx="17.0" cy="10.4" r="4.6"/><circle cx="15.1" cy="16.3" r="4.6"/><circle cx="8.9" cy="16.3" r="4.6"/><circle cx="7.0" cy="10.4" r="4.6"/></g><circle cx="12" cy="12" r="1.9" fill="#e4d9ff"/></svg></a></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=2"></script><script src="app.js?v=110"></script><script src="mgmt.js?v=10"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=2"></script><script src="app.js?v=111"></script><script src="mgmt.js?v=11"></script><script src="../nav.js" defer></script></body></html>

@@ -98,7 +98,7 @@ const label=e=>{const p=who[(e||"").toLowerCase()];return p?[p.name||p.nickname,
 const cutQ=s=>{s=String(s||"").replace(/\r\n/g,"\n");const i=s.search(/\n[^\n]*(wrote:|작성:)\s*(\n|$)|\n>/);return i>0?s.slice(0,i).trim():s.trim()};
 async function loadQ(){
   const [a,b,c]=await Promise.all([
-    db.from("inbox_messages").select("id,from_addr,from_name,to_addrs,subject,received_at,assignee_email,done,preview,attachments,first_read_by,first_read_at").order("received_at",{ascending:false}).limit(500),
+    db.from("inbox_messages").select("id,from_addr,from_name,to_addrs,subject,received_at,assignee_email,done,preview,attachments,first_read_by,first_read_at").is("deleted_at",null).order("received_at",{ascending:false}).limit(500),
     db.from("mail_outbox").select("id,inbox_id,author_name,author_email,to_email,subject,body,created_at").not("inbox_id","is",null).order("created_at",{ascending:true}),
     db.rpc("staff_directory")]);
   if(a.error){$("mqc").textContent="불러오지 못했어요";return}
