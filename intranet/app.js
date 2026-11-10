@@ -202,7 +202,7 @@ function drawDir(){
     const nm=el("td",{},[...(has?[av]:[]),el("b",{textContent:r.nickname||r.name}),...(r.nickname&&r.name?[el("span",{className:"note",textContent:" "+r.name})]:[])]);
     tb.append(el("tr",{},[el("td",{className:"dt",textContent:r.emp||"-"}),nm,el("td",{textContent:r.pos}),el("td",{textContent:r.rnk}),el("td",{textContent:r.division}),el("td",{textContent:r.team}),el("td",{textContent:String(r.email).replace(/@rif-studio\.com$/i,"")}),el("td",{textContent:r.discord}),el("td",{textContent:r.twitter})]))});
   if(!l.length)tb.append(el("tr",{},[el("td",{colSpan:9,textContent:"해당하는 사원이 없어요."})]))}
-$("eq").oninput=drawDir;$("ediv").onchange=drawDir;$("etm").onchange=()=>{if($("etm").value)$("ediv").value="프로덕션부";drawDir()};
+$("eq").oninput=drawDir;$("ediv").onchange=drawDir;$("etm").onchange=()=>{if($("etm").value)$("ediv").value=$("etm").value==="경영지원팀"?"경영부":"프로덕션부";drawDir()};
 $("pf").onsubmit=async e=>{e.preventDefault();const {error}=await db.rpc("set_my_profile",{p_nick:$("pfnk").value,p_discord:$("pfdc").value,p_twitter:$("pftw").value});
   msg("pfmsg",error?"저장하지 못했어요":"저장했어요 ✓",!!error);if(!error)loadDir()};
 $("pfpick").onclick=()=>$("pfile").click();
