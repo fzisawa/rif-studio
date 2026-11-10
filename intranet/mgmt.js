@@ -149,7 +149,7 @@ async function start(){
   const {data:s}=await db.auth.getSession();if(!s.session)return;
   started=true;
   const [m,b]=await Promise.all([db.rpc("is_mgmt"),db.rpc("is_boss")]);
-  mgmt=!!m.data;boss=!!b.data;if(!mgmt)return;build()}
-function teardown(){started=false;mgmt=boss=false;rows=[];msgs=[];reps={};const pt=$("pt"),w=$("ptw");if(w&&pt){[...w.childNodes].forEach(n=>pt.insertBefore(n,w));w.remove()}["msub","pj","pq"].forEach(i=>{const e=$(i);if(e)e.remove()})}
+  mgmt=!!m.data;boss=!!b.data;{const l=$("admlink");if(l)l.hidden=!boss}if(!mgmt)return;build()}
+function teardown(){{const l=$("admlink");if(l)l.hidden=true}started=false;mgmt=boss=false;rows=[];msgs=[];reps={};const pt=$("pt"),w=$("ptw");if(w&&pt){[...w.childNodes].forEach(n=>pt.insertBefore(n,w));w.remove()}["msub","pj","pq"].forEach(i=>{const e=$(i);if(e)e.remove()})}
 try{const ap=$("app");new MutationObserver(()=>{if(ap.hidden)teardown();else start()}).observe(ap,{attributes:true,attributeFilter:["hidden"]});if(!ap.hidden)start()}catch(_){}
 })();
