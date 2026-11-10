@@ -21,7 +21,7 @@ table.mt{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.5}
 .mt td.no{color:var(--mut);text-align:right;width:40px}.mt td.dt{white-space:nowrap}.mt td.mk{text-align:center;width:44px}.mt td.mk input{width:17px;height:17px;accent-color:#d64545;cursor:pointer}
 .mt td.mk input:disabled{cursor:not-allowed;opacity:.55}
 .mt input.mm{width:100%;min-width:150px;padding:6px 8px;border:1px solid #7775;border-radius:4px;font:inherit;font-size:13px;background:var(--bg);color:var(--fg)}.mt input.mm[readonly]{background:#7771;cursor:not-allowed}.mt input.mm.ok{outline:2px solid #3bb273;outline-offset:-2px}
-.mt tr.d td{background:#7771;padding:16px 20px;cursor:default}.mt tr.d p{white-space:pre-wrap;margin:0 0 12px}.mt tr.d b.lb{color:#d64545;font-size:12px;letter-spacing:.08em}
+.mt tr.d td{background:#7771;padding:16px 20px;cursor:default}.mt tr.d p{white-space:pre-wrap;margin:0 0 12px}.mt tr.d b.mlb{color:#d64545;font-size:12px;letter-spacing:.08em}
 .mbadge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;background:#999;white-space:nowrap}.mbadge.new{background:#d64545}.mbadge.rep{background:#0f6cbd}.mbadge.done{background:#3bb273}
 .mdupb{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;background:#e5332a;color:#fff;font-size:11px;font-weight:700}
 .mrep{border-left:3px solid #0f6cbd;background:#0f6cbd12;border-radius:4px;padding:10px 14px;margin:0 0 10px}.mrep .h{font-size:12px;color:var(--mut);margin-bottom:4px}.mrep .t{white-space:pre-wrap}
@@ -66,8 +66,8 @@ function drawJ(){
     tm.onclick=e=>e.stopPropagation();if(r.ceo_reject)tm.title="채용 거절 처리된 지원자예요";
     tm.onchange=()=>rpcSet("jr_set_team_memo",{p_id:r.id,p_memo:tm.value.trim()},tm).then(ok=>{if(ok)r.team_memo=tm.value.trim()||null});
     const tr=el("tr",{className:"r"+(dup?" dup":"")+(r.ceo_reject?" rej":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(R[r.region]||"-"),cell(flds(r)),...MC,...CK,el("td",{},[bm]),el("td",{},[tm])]);
-    const d=el("div",{},[el("b",{className:"lb",textContent:"이메일"}),el("p",{textContent:r.email||"-"}),el("b",{className:"lb",textContent:"YouTube / Twitter"}),el("p",{textContent:[r.youtube,r.twitter].filter(Boolean).join("  ·  ")||"-"}),
-      el("b",{className:"lb",textContent:"경력"}),el("p",{textContent:r.career||"-"}),el("b",{className:"lb",textContent:"자기소개"}),el("p",{textContent:r.intro||"-"}),el("b",{className:"lb",textContent:"지원동기"}),el("p",{textContent:r.motive||"-"})]);
+    const d=el("div",{},[el("b",{className:"mlb",textContent:"이메일"}),el("p",{textContent:r.email||"-"}),el("b",{className:"mlb",textContent:"YouTube / Twitter"}),el("p",{textContent:[r.youtube,r.twitter].filter(Boolean).join("  ·  ")||"-"}),
+      el("b",{className:"mlb",textContent:"경력"}),el("p",{textContent:r.career||"-"}),el("b",{className:"mlb",textContent:"자기소개"}),el("p",{textContent:r.intro||"-"}),el("b",{className:"mlb",textContent:"지원동기"}),el("p",{textContent:r.motive||"-"})]);
     if(boss){const x=el("button",{className:"mbtn",type:"button",textContent:"이 지원서 삭제"});
       x.onclick=async()=>{if(!confirm((r.nickname||r.name)+" 지원서를 삭제할까요? 되돌릴 수 없어요."))return;const ok=await rpcSet("jr_delete",{p_id:r.id});if(ok){rows=rows.filter(z=>z.id!==r.id);drawJ()}};d.append(x)}
     const dtl=el("tr",{className:"d",hidden:openJ!==r.id},[el("td",{colSpan:17},[d])]);
@@ -108,7 +108,7 @@ function buildQ(m,box){
     f.onload=()=>{try{f.style.height=Math.max(180,f.contentDocument.documentElement.scrollHeight+20)+"px"}catch(_){}};bodyBox.append(f);
     if((m.attachments||[]).length)bodyBox.append(el("div",{className:"mnote",textContent:"첨부 "+m.attachments.length+"개: "+m.attachments.map(x=>x.filename).join(", ")+" (파일은 Resend 대시보드에서 확인)"}))});
   const rl=reps[m.id]||[];
-  box.append(el("b",{className:"lb",textContent:"보낸 답장 "+rl.length+"건"}));
+  box.append(el("b",{className:"mlb",textContent:"보낸 답장 "+rl.length+"건"}));
   const rbox=el("div",{style:"margin:8px 0 14px"});box.append(rbox);
   if(!rl.length)rbox.append(el("div",{className:"mnote",textContent:"아직 답장이 없어요."}));
   rl.forEach(x=>rbox.append(el("div",{className:"mrep"},[el("div",{className:"h",textContent:(x.author_name||x.author_email)+" → "+x.to_email+" · "+dt(x.created_at)}),el("div",{className:"t",textContent:x.body})])));
