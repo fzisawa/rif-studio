@@ -38,13 +38,15 @@
 <div id="app" hidden><p class="lead"><span id="who"></span> · <a href="#" id="out">로그아웃</a></p>
 <p class="note err" id="nomail" hidden>이 계정에는 접근 권한이 없어요. 대표님께 문의해 주세요.</p>
 <div id="box" hidden>
-<div class="tabs2" id="tabs"><button data-t="n" aria-pressed="true">공지 <span class="bd" id="nb" hidden></span></button><button data-t="t" aria-pressed="false">업무</button><button data-t="d" aria-pressed="false">자료</button><button data-t="s" aria-pressed="false">직원</button><a class="ml2" href="../mail/">메일</a></div>
+<div class="tabs2" id="tabs"><button data-t="n" aria-pressed="true">공지 <span class="bd" id="nb" hidden></span></button><button data-t="t" aria-pressed="false">업무</button><button data-t="i" aria-pressed="false">받은편지함 <span class="bd" id="ib" hidden></span></button><button data-t="d" aria-pressed="false">자료</button><button data-t="s" aria-pressed="false">직원</button><a class="ml2" href="../mail/">메일</a></div>
 
 <div id="pn"><form id="nf" class="fr" hidden><h2>공지 올리기</h2><label>제목<input id="nt" maxlength="200"></label><label>내용<textarea id="nbd" rows="6" maxlength="20000"></textarea></label><label class="ck3"><input type="checkbox" id="npin"> 맨 위에 고정</label><div class="jbar"><button class="btn mred">올리기</button><span class="note" id="nmsg"></span></div></form><div id="nl"></div></div>
 
 <div id="pt" hidden><form id="tf" class="fr"><h2>업무 추가</h2><label>제목<input id="tt" maxlength="200"></label><label>상세<textarea id="td" rows="3" maxlength="5000"></textarea></label>
 <div class="row2"><label>담당자<select id="ta"></select></label><label>마감일<input id="tdue" type="date"></label></div><div class="jbar"><button class="btn mred">추가</button><span class="note" id="tmsg"></span></div></form>
 <label class="ck3" style="margin-top:20px"><input type="checkbox" id="tmine"> 내 업무만 보기</label><div class="kb" id="kb"></div></div>
+
+<div id="pi" hidden><p class="note">support@rif-studio.com 으로 들어온 메일이에요. 답장은 '답장' 버튼으로 메일 쓰기 화면에서 보내요.</p><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px"><label class="ck3"><input type="checkbox" id="ihide" checked> 완료한 메일 숨기기</label><button class="btn small" id="irf" type="button">새로고침</button></div><div id="il"></div></div>
 
 <div id="pd" hidden><form id="df" class="fr"><h2>자료 올리기</h2><label>제목<input id="dt" maxlength="200"></label><label>메모 (선택)<input id="dn" maxlength="1000"></label><label>파일 (20MB까지 · pdf, 사진, 오피스, 한글, zip 등)<input type="file" id="dfile"></label><div class="jbar"><button class="btn mred">올리기</button><span class="note" id="dmsg"></span></div></form>
 <div id="tw" style="overflow-x:auto;margin-top:20px;border:1px solid #7773;border-radius:12px"><table class="jt"><thead><tr><th>제목</th><th>파일</th><th>크기</th><th>올린 사람</th><th>날짜</th><th></th></tr></thead><tbody id="dtb"></tbody></table></div></div>
@@ -53,4 +55,4 @@
 </div></div></section></main>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=2"></script><script src="app.js?v=2"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=2"></script><script src="app.js?v=3"></script><script src="../nav.js" defer></script></body></html>

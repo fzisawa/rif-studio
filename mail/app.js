@@ -81,6 +81,7 @@ $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
   const {error}=await db.auth.signInWithPassword({email:toEmail($("sid").value),password:$("spw").value});
   $("spw").value="";$("spw2").value="";m.textContent=error?"가입은 됐어요. 위에서 로그인해 주세요.":"";render()};
 $("out").onclick=async e=>{e.preventDefault();await db.auth.signOut();render()};
+{const q=new URLSearchParams(location.search),t=q.get("to"),sj=q.get("s");if(t&&/^[^@\s<>,;]+@[^@\s<>,;]+$/.test(t))$("mto").value=t;if(sj)$("msj").value=sj.slice(0,200);const rb=q.get("q");if(rb)$("mbd").value="\n\n----- 받은 메일 -----\n"+rb.slice(0,3000).replace(/^/gm,"> ")}
 const qn=new URLSearchParams(location.search).get("n");if(qn&&/^\d{8}$/.test(qn)){$("sn").value=qn;$("sg").open=true}
 render();
 })();

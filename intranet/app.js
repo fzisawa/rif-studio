@@ -18,7 +18,7 @@ async function render(){
   await loadStaff();await loadAll()}
 async function loadStaff(){const {data}=await db.rpc("staff_list");staff=data||[];
   $("ta").replaceChildren(el("option",{value:"",textContent:"미지정"}),...staff.map(x=>el("option",{value:x.email,textContent:x.name||x.email})))}
-async function loadAll(){await Promise.all([loadNotices(),loadTasks(),loadDocs(),loadDir()])}
+async function loadAll(){await Promise.all([loadNotices(),loadTasks(),loadDocs(),loadDir(),loadInbox()])}
 
 /* 공지 */
 async function loadNotices(){
@@ -99,13 +99,58 @@ $("df").onsubmit=async e=>{e.preventDefault();const f=$("dfile").files[0],t=$("d
   if(e2){await db.storage.from("intranet-docs").remove([path]);return msg("dmsg","기록하지 못했어요",1)}
   $("dt").value="";$("dn").value="";$("dfile").value="";msg("dmsg","올렸어요 ✓");loadDocs()};
 
+/* 받은편지함 (support@) */
+let inbox=[],irds=new Set(),irdBy={};
+const ft=s=>s?new Date(s).toLocaleString("ko-KR",{dateStyle:"short",timeStyle:"short"}):"";
+async function loadInbox(){
+  const [a,b]=await Promise.all([db.from("inbox_messages").select("id,from_addr,from_name,to_addrs,subject,received_at,assignee_email,done,attachments").order("received_at",{ascending:false}).limit(300),db.from("inbox_reads").select("msg_id,email")]);
+  inbox=a.data||[];irds=new Set();irdBy={};
+  (b.data||[]).forEach(r=>{if(r.email.toLowerCase()===me)irds.add(r.msg_id);(irdBy[r.msg_id]=irdBy[r.msg_id]||[]).push(r.email)});
+  drawInbox()}
+function ibadge(){const n=inbox.filter(m=>!irds.has(m.id)&&!m.done).length;$("ib").hidden=!n;$("ib").textContent=n}
+function drawInbox(){
+  const box=$("il");box.replaceChildren();ibadge();
+  const list=inbox.filter(m=>!($("ihide").checked&&m.done));
+  list.forEach(m=>{
+    const isNew=!irds.has(m.id);
+    const h=el("h3",{},[document.createTextNode((m.subject||"(제목 없음)")),...(isNew?[el("span",{className:"new",textContent:"NEW"})]:[]),...(m.done?[el("span",{className:"rb off",textContent:"완료",style:"margin-left:8px"})]:[])]);
+    const meta=el("div",{className:"meta",textContent:(m.from_name?m.from_name+" ":"")+"<"+m.from_addr+"> · "+ft(m.received_at)+(m.assignee_email?" · 담당 "+nameOf(m.assignee_email):"")});
+    const body=el("div",{hidden:true});
+    const card=el("div",{className:"card"+(isNew?" unread":"")},[h,meta,body]);
+    let loaded=false;
+    h.onclick=async()=>{body.hidden=!body.hidden;if(body.hidden)return;
+      if(!loaded){loaded=true;body.textContent="불러오는 중…";
+        const {data,error}=await db.from("inbox_messages").select("body_text,body_html").eq("id",m.id).single();
+        body.replaceChildren();if(error||!data){body.textContent="본문을 불러오지 못했어요";loaded=false;return}
+        const f=document.createElement("iframe");f.setAttribute("sandbox","");f.style.cssText="width:100%;min-height:320px;border:1px solid #7773;border-radius:10px;background:#fff";
+        if(data.body_html){f.srcdoc='<base target="_blank"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: cid:; style-src \'unsafe-inline\'"><body style="font:14px/1.6 sans-serif;margin:12px;color:#222">'+data.body_html}
+        else f.srcdoc='<body style="font:14px/1.6 sans-serif;margin:12px;white-space:pre-wrap;color:#222">'+(data.body_text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+        f.onload=()=>{try{f.style.height=Math.min(900,f.contentDocument.documentElement.scrollHeight+20)+"px"}catch(_){}};
+        body.append(f);
+        if((m.attachments||[]).length)body.append(el("div",{className:"note",textContent:"첨부 "+m.attachments.length+"개: "+m.attachments.map(a=>a.filename).join(", ")+" (첨부 파일은 Resend 대시보드에서 확인)"}));
+        const acts=el("div",{className:"jbar"});
+        const rp=el("a",{className:"btn small mred",textContent:"답장",href:"../mail/?to="+encodeURIComponent(m.from_addr)+"&s="+encodeURIComponent(/^re:/i.test(m.subject)?m.subject:"Re: "+m.subject)+"&q="+encodeURIComponent((data.body_text||"").trim().slice(0,1500))});
+        const as=el("select",{},[el("option",{value:"",textContent:"담당자 미지정"}),...staff.map(x=>el("option",{value:x.email,textContent:x.name||x.email,selected:x.email.toLowerCase()===(m.assignee_email||"").toLowerCase()}))]);
+        as.onchange=async()=>{const {error}=await db.from("inbox_messages").update({assignee_email:as.value}).eq("id",m.id);if(error)alert("바꾸지 못했어요");else{m.assignee_email=as.value;meta.textContent=meta.textContent.replace(/ · 담당 .*$/,"")+(as.value?" · 담당 "+nameOf(as.value):"")}};
+        const dn=el("button",{className:"btn small",type:"button",textContent:m.done?"완료 취소":"완료 처리"});
+        dn.onclick=async()=>{const v=!m.done;const {error}=await db.from("inbox_messages").update({done:v}).eq("id",m.id);if(error)return alert("바꾸지 못했어요");m.done=v;drawInbox()};
+        acts.append(rp,as,dn);
+        if(ceo){const x=el("button",{className:"btn small",type:"button",textContent:"삭제"});x.onclick=async()=>{if(!confirm("이 메일을 삭제할까요? 되돌릴 수 없어요."))return;await db.from("inbox_messages").delete().eq("id",m.id);loadInbox()};acts.append(x);
+          acts.append(el("span",{className:"note",textContent:"읽은 사람: "+((irdBy[m.id]||[]).map(nameOf).join(", ")||"아직 없음")}))}
+        body.append(acts)}
+      if(!irds.has(m.id)){irds.add(m.id);card.classList.remove("unread");const nw=h.querySelector(".new");if(nw)nw.remove();ibadge();
+        await db.from("inbox_reads").upsert({msg_id:m.id,email:me},{onConflict:"msg_id,email",ignoreDuplicates:true})}};
+    box.append(card)});
+  if(!list.length)box.append(el("p",{className:"note",textContent:"받은 메일이 없어요."}))}
+$("ihide").onchange=drawInbox;$("irf").onclick=loadInbox;
+
 /* 직원 */
 async function loadDir(){const {data}=await db.rpc("staff_directory");const tb=$("stb2");tb.replaceChildren();
   (data||[]).forEach(r=>tb.append(el("tr",{},[el("td",{textContent:r.name}),el("td",{textContent:r.nickname}),el("td",{textContent:r.pos}),el("td",{textContent:r.dept}),el("td",{textContent:r.email})])));
   if(!(data||[]).length)tb.append(el("tr",{},[el("td",{colSpan:5,textContent:"직원이 없어요."})]))}
 
 /* 탭 */
-const P={n:"pn",t:"pt",d:"pd",s:"ps"};
+const P={n:"pn",t:"pt",i:"pi",d:"pd",s:"ps"};
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));
   Object.entries(P).forEach(([k,id])=>$(id).hidden=k!==b.dataset.t)});
