@@ -16,10 +16,11 @@ async function prefill(em){
   $("mk1").value=staff.name||"";$("mk7").value=em;
   try{const {data}=await db.rpc("staff_directory");const me=(data||[]).find(r=>(r.email||"").toLowerCase()===em.toLowerCase());if(me){if(me.name)$("mk1").value=me.name;$("mk6").value=(typeof fmtPhone==="function"?fmtPhone(me.phone):me.phone)||""}}catch(_){}}
 const eh=t=>esc(t||"").replace(/"/g,"&quot;");
-$("mkgo").onclick=()=>{const v=i=>$(i).value.trim(),m=$("sigmsg");
+$("mkgo").onclick=async()=>{const v=i=>$(i).value.trim(),m=$("sigmsg");
   if(!v("mk1")){m.className="note err";m.textContent="이름(한글)을 적어 주세요";return}
   const L=(k,x,c)=>x?'<tr><td style="padding:0 10px 0 0;color:#5b8f6e;font-weight:bold;font-size:11px">'+k+'</td><td>'+c+'</td></tr>':"";
   const tel=n=>'<a href="tel:'+eh(n)+'" style="color:#333333;text-decoration:none">'+eh(n)+'</a>';
+  $("mk5").value="031-707-2702";$("mk7").value=(await db.auth.getSession()).data.session.user.email;
   const html='<div style="font-family:Arial,Helvetica,sans-serif"><div style="border-left:2px solid #9a7ee6;padding-left:12px"><div style="font-size:15px;font-weight:bold;color:#222222;line-height:20px">'+eh(v("mk1"))+(v("mk2")?' <span style="font-weight:normal;color:#666666">'+eh(v("mk2"))+'</span>':"")+'</div>'
    +(v("mk3")?'<div style="font-size:12px;color:#888888;line-height:18px">'+eh(v("mk3"))+'</div>':"")
    +(v("mk4")?'<div style="font-size:12px;font-weight:bold;color:#6b4fbb;line-height:18px">'+eh(v("mk4"))+'</div>':"")
