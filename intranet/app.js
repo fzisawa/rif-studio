@@ -83,6 +83,20 @@ function drawTasks(){
       el("td",{textContent:t.assignee_name||"미지정"}),el("td",{className:"dt tdue"},[el("span",{className:od?"od":"",textContent:t.due?t.due+(od?" · 지남":""):"-"})]),el("td",{textContent:(t.created_by_name||"")+" · "+fd(t.created_at)}),el("td",{className:"ac"},acts)]);
     const rbox=el("div",{className:"refs"});
     const dtl=el("tr",{className:"d",hidden:openT!==t.id},[el("td",{colSpan:6},[el("p",{textContent:t.detail||"(상세 내용이 없어요)"}),rbox,el("span",{className:"note",textContent:"등록 "+(t.created_by_name||"")+" · "+fd(t.created_at)+(t.assignee_name?" · 담당 "+t.assignee_name:"")})])]);
+    if(can){const pdet=dtl.querySelector("p"),eb=el("button",{type:"button",className:"btn small",textContent:"✎ 제목·내용 수정"});
+      eb.onclick=e=>{e.stopPropagation();
+        const it=el("input",{value:t.title,maxLength:200}),idt=el("textarea",{rows:5,maxLength:5000,value:t.detail||""}),ia=el("select",{},[el("option",{value:"",textContent:"미지정"}),...staff.map(x=>el("option",{value:x.email,textContent:x.name||x.email,selected:(x.email||"").toLowerCase()===(t.assignee_email||"").toLowerCase()}))]),idu=el("input",{type:"date",value:t.due||""});
+        const sv=el("button",{type:"button",className:"btn small",textContent:"저장"}),cx=el("button",{type:"button",className:"btn small ghost",textContent:"취소"}),mm=el("span",{className:"note"});
+        const f=el("div",{className:"fr tedit"},[el("label",{textContent:"제목"},[it]),el("label",{textContent:"상세"},[idt]),el("div",{className:"row2"},[el("label",{textContent:"담당자"},[ia]),el("label",{textContent:"마감일"},[idu])]),el("div",{className:"jbar"},[sv,cx,mm])]);
+        f.onclick=ev=>ev.stopPropagation();
+        cx.onclick=()=>drawTasks();
+        sv.onclick=async()=>{const nt=it.value.trim();if(!nt){mm.className="note err";mm.textContent="제목을 써 주세요.";return}
+          sv.disabled=true;const as=ia.value;
+          const {error}=await db.from("intra_tasks").update({title:nt,detail:idt.value.trim(),assignee_email:as,assignee_name:as?nameOf(as):"",due:idu.value||null,updated_at:new Date().toISOString()}).eq("id",t.id);
+          if(error){sv.disabled=false;mm.className="note err";mm.textContent="저장하지 못했어요";return}
+          toast("수정했어요 ✓");loadTasks()};
+        pdet.replaceWith(f);eb.hidden=true;it.focus()};
+      pdet.after(eb)}
     if(openT===t.id)fillRefs(t,rbox,can);
     tr.onclick=()=>{dtl.hidden=!dtl.hidden;openT=dtl.hidden?null:t.id;if(!dtl.hidden)fillRefs(t,rbox,can)};
     tb.append(tr,dtl)});
