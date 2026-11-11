@@ -8,7 +8,7 @@ const tab=n=>{$("p3").hidden=n!==3;$("t3").setAttribute("aria-pressed",n===3);
   if(n===3){$("p1").hidden=true;$("p2").hidden=true;$("t1").setAttribute("aria-pressed",false);$("t2").setAttribute("aria-pressed",false);$("mn").classList.add("wide")}};
 $("t3").onclick=()=>tab(3);
 $("t1").addEventListener("click",()=>tab(0));$("t2").addEventListener("click",()=>tab(0));
-const err=e=>/bad pin/.test(e.message)?"비밀번호가 맞지 않아요":/only unused/.test(e.message)?"이미 가입한 사번은 삭제할 수 없어요 (퇴사 처리를 쓰세요)":/8 digits/.test(e.message)?"사번은 숫자 8자리여야 해요":/already used/.test(e.message)?"이미 있는 사번이에요":/bad division|bad team/.test(e.message)?"부서/팀 값이 올바르지 않아요":/bad email/.test(e.message)?"이메일 형식이 올바르지 않아요":e.message;
+const err=e=>/bad pin/.test(e.message)?"비밀번호가 맞지 않아요":/only unused/.test(e.message)?"이미 가입한 사번은 삭제할 수 없어요 (퇴사 처리를 쓰세요)":/8 digits|emp_no invalid/.test(e.message)?"사번은 공백 없이 1~20자여야 해요":/already used/.test(e.message)?"이미 있는 사번이에요":/bad division|bad team/.test(e.message)?"부서/팀 값이 올바르지 않아요":/bad email/.test(e.message)?"이메일 형식이 올바르지 않아요":e.message;
 async function load(){
   const {data,error}=await db.rpc("hr_list",{p_pin:PIN});
   if(error){alert("불러오지 못했어요: "+err(error));lock();return}

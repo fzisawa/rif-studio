@@ -19,8 +19,8 @@
 <main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>서명 설정</h1>
 <form id="login"><div class="idrow"><input id="em" type="text" placeholder="아이디 (예: mina)" required autocomplete="username" autocapitalize="none"></div><input id="pw" type="password" placeholder="비밀번호" required autocomplete="current-password"><button class="btn mred">로그인</button><p class="note err" id="lmsg"></p></form>
 <details id="sg" class="sg"><summary>가입</summary>
-<form id="signup" class="sgf"><p class="note">입사 축하 메일의 8자리 사번을 입력하고, 로그인에 쓸 아이디(이름@rif-studio.com)와 비밀번호(8자 이상)를 직접 정해 주세요. 초대 메일을 받은 이메일도 확인용으로 한 번 적어 주세요.</p>
-<input id="sn" placeholder="사번 (숫자 8자리)" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="off" required>
+<form id="signup" class="sgf"><p class="note">입사 축하 메일의 사번을 입력하고, 로그인에 쓸 아이디(이름@rif-studio.com)와 비밀번호(8자 이상)를 직접 정해 주세요. 초대 메일을 받은 이메일도 확인용으로 한 번 적어 주세요.</p>
+<input id="sn" placeholder="사번" pattern="\S{1,20}" maxlength="20" autocomplete="off" required>
 <input id="sna" placeholder="이름" autocomplete="name" required><input id="snk" placeholder="닉네임" autocomplete="nickname" required>
 <div class="idrow"><input id="sid" placeholder="아이디 (영문·숫자, 예: mina)" autocomplete="username" autocapitalize="none" required></div><input id="sem" type="email" placeholder="초대 메일을 받은 이메일 (확인용)" autocomplete="email"><input id="sph" type="tel" placeholder="전화번호" autocomplete="tel" required>
 <input id="spw" type="password" placeholder="비밀번호 (8자 이상)" autocomplete="new-password" minlength="8" required><input id="spw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="8" required>
@@ -38,4 +38,4 @@
 </div></section></main>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=2"></script><script src="app.js?v=8"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=2"></script><script src="app.js?v=9"></script><script src="../nav.js" defer></script></body></html>
