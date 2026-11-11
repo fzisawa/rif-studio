@@ -259,7 +259,7 @@ function drawCompose(p){
       if(error){try{m2=(await error.context.json()).error}catch(_){m2=error.message}}else if(data&&data.ok)ok=true;else m2=(data&&data.error)||"알 수 없는 오류"}catch(x){m2=String(x.message||x)}
     send.disabled=false;if(!ok){msgx.className="note err";msgx.textContent="보내지 못했어요: "+m2;return}
     composing=null;fold="out";selId=null;await loadInbox()};
-  p.append(el("h2",{className:"eh",textContent:"새 메일"}),el("div",{className:"cf"},[el("label",{},[document.createTextNode("보내는 사람"),fromSel]),el("label",{},[document.createTextNode("받는 사람"),to]),el("label",{},[document.createTextNode("제목"),sj]),bd,afl,fi,el("div",{className:"acts",style:"border:0;padding:0;margin:0"},[send,ab,cancel,msgx,el("span",{className:"note",textContent:"엑셀 표를 복사해 붙여넣을 수 있어요 · 서명은 자동으로 붙어요 (서명 설정에서 바꿀 수 있어요)"})])]));
+  p.append(el("h2",{className:"eh",textContent:"새 메일"}),el("div",{className:"cf"},[el("label",{},[document.createTextNode("보내는 사람"),fromSel]),el("label",{},[document.createTextNode("받는 사람"),to]),el("label",{},[document.createTextNode("제목"),sj]),bd,afl,fi,el("div",{className:"acts",style:"border:0;padding:0;margin:0"},[send,ab,cancel,msgx,el("span",{className:"note",textContent:"엑셀 표를 복사해 붙여넣을 수 있어요 · 개인 메일은 제목 앞에 [RIF STUDIO]가 자동으로 붙어요 · 서명은 자동으로 붙어요 (서명 설정에서 바꿀 수 있어요)"})])]));
   to.focus()}
 $("onew").onclick=()=>{composing={};drawMail()};$("oq").oninput=drawMail;$("osl").onclick=()=>{selMode=!selMode;picked.clear();drawMail()};$("orf").onclick=()=>{loadInbox();loadUsage()};loadUsage();
 
