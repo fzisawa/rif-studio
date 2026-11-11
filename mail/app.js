@@ -83,4 +83,4 @@ const qn=new URLSearchParams(location.search).get("n");if(qn&&/^\S{1,20}$/.test(
 render();
 })();
 
-bindPhone($("sph"));
+bindPhone(document.getElementById("sph"));

@@ -1,0 +1,30 @@
+/* admin(인사정보) 전용 배치 — 색·버튼·표·입력칸·팝업은 ../app.css 공통 디자인을 그대로 씁니다 */
+[hidden]{display:none!important}
+.tbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}.tbar .sp{flex:1}.tbar .note{margin:0}.tbar b{font-size:15px}
+#app .tbar h2{margin:0}
+.tbar input[type=search]{min-width:240px}
+.cards2{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px;margin:0 0 22px;align-items:start}
+.pad{padding:20px 22px}
+#app .pad h2{margin:0 0 4px}.pad .note{margin:0 0 4px}
+.pad .fr{max-width:none}
+.issued{padding:12px 16px;border-radius:12px;background:var(--soft);border:1px solid var(--soft2)}
+.issued .big{font-size:20px;font-weight:800;letter-spacing:.08em;color:var(--ac)}
+.ck2{align-items:flex-start!important}.ck2 input{margin:3px 0 0}
+
+/* 직원 표 — 한 줄로 보이게, 줄을 누르면 아래에 자세히 */
+#hrtb td.en{font-weight:700;letter-spacing:.05em}
+#hrtb td.sm{color:var(--mut);font-size:13px}
+#hrtb tr.lft td{opacity:.55}#hrtb tr.lft.d td{opacity:1}
+#hrtb td.ac{width:1%;text-align:right}
+.dg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 24px;margin:0 0 14px}
+.dg div{display:grid;gap:2px;min-width:0}.dg b{font-size:12px}.dg span{overflow-wrap:anywhere;font-size:14px;line-height:1.5}
+.dg .mo{display:none}
+.dact{display:flex;flex-wrap:wrap;gap:8px}
+
+/* 팝업 안 */
+.mbox .pin{width:100%;text-align:center;letter-spacing:.3em;padding:11px 14px}
+.mbox .note{margin:0 0 10px}.mbox .note.err{min-height:1.4em;margin:8px 0 0}
+.mbox h2{font-size:20px}
+
+@media(max-width:900px){.cards2{grid-template-columns:1fr}}
+@media(max-width:700px){#tw2 .jt th,#tw2 .jt td{padding-left:8px;padding-right:8px}#hrtb td.en{letter-spacing:0}.hm{display:none}.dg .mo{display:grid}#hrcnt{flex:1 1 100%}.tbar .sp{display:none}.tbar input[type=search]{min-width:0;flex:1 1 100%}}

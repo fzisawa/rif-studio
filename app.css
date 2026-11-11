@@ -1,0 +1,77 @@
+/* ===== RIF app UI · intranet / mail / admin 공통 디자인 =====
+   사이트와 같은 색(--ac 핑크)·같은 모양(알약 버튼 · 둥근 카드)을 쓰고,
+   빨강(--bad)은 오류·마감 지남·삭제처럼 "위험"일 때만 씁니다. */
+:root{--ok:#2fa36b;--bad:#d64545;--ln:#7773;--ln2:#7775;--hv:#7771;--soft:color-mix(in srgb,var(--ac) 12%,transparent);--soft2:color-mix(in srgb,var(--ac) 20%,transparent)}
+main.wide{max-width:1480px;padding:4vh 3vw 6vh}
+main.wide h1{font-size:clamp(28px,4vw,38px);margin:.1em 0 .5em;letter-spacing:-.02em}
+main.wide .lead{font-size:14px;margin:-.2em 0 1.2em}
+main.wide h2{font-size:18px;margin:0 0 12px;color:var(--fg);letter-spacing:0}
+main.wide .tag{font-size:11px}
+.note{color:var(--mut);font-size:13px;line-height:1.5}.note.err,.err{color:var(--bad)}.tag.red{color:var(--ac)}
+a{color:inherit}
+#app h2{font-size:18px;letter-spacing:0;color:var(--fg);margin:0 0 12px;text-transform:none}
+#app h3{font-size:15px;margin:0 0 8px}
+
+/* 버튼 — 어디서나 같은 알약 모양 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 20px;border-radius:99px;border:1px solid var(--ac);background:var(--ac);color:#fff;font:inherit;font-size:14px;font-weight:700;line-height:1.3;white-space:nowrap;cursor:pointer;text-decoration:none;transition:filter .15s,border-color .15s,background .15s}
+.btn:hover{filter:brightness(1.08)}.btn:disabled{opacity:.5;cursor:default;filter:none}
+.btn.small{padding:5px 14px;font-size:13px;background:transparent;color:var(--fg);border-color:var(--ln2);justify-self:start}
+.btn.small:hover{border-color:var(--ac);color:var(--ac);filter:none}
+.btn.small.p{background:var(--ac);border-color:var(--ac);color:#fff}.btn.small.p:hover{color:#fff;filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--ln2)}.btn.ghost:hover{border-color:var(--ac);color:var(--ac);filter:none}
+.btn.danger,.btn.small.danger{background:transparent;color:var(--bad);border-color:color-mix(in srgb,var(--bad) 55%,transparent)}.btn.danger:hover,.btn.small.danger:hover{background:var(--bad);color:#fff;border-color:var(--bad);filter:none}
+
+/* 입력칸 (:not() 를 쓰지 않아 다른 규칙이 쉽게 덮어쓸 수 있어요) */
+main.wide input,main.wide select,main.wide textarea,.mod input,.mod select,.mod textarea{padding:9px 14px;border:1px solid var(--ln2);border-radius:10px;background:var(--bg);color:var(--fg);font:inherit;font-size:14px;line-height:1.5;min-width:0}
+main.wide input[type=checkbox],main.wide input[type=radio],.mod input[type=checkbox],.mod input[type=radio]{padding:0;border:0;background:none;border-radius:0;width:17px;height:17px;accent-color:var(--ac);cursor:pointer;margin:0;flex:none}
+main.wide input[type=file],.mod input[type=file],main.wide input[type=color],.mod input[type=color]{padding:0;border:0;background:none;border-radius:0}
+main.wide input:focus,main.wide select:focus,main.wide textarea:focus,.mod input:focus,.mod select:focus,.mod textarea:focus{outline:2px solid color-mix(in srgb,var(--ac) 45%,transparent);outline-offset:0;border-color:var(--ac)}
+main.wide input[type=checkbox]:focus,main.wide input[type=radio]:focus,.mod input[type=checkbox]:focus{outline:2px solid color-mix(in srgb,var(--ac) 45%,transparent);outline-offset:2px}
+main.wide textarea,.mod textarea{resize:vertical}
+.fr,.mf,.hf{display:grid;gap:12px;max-width:760px}.fr label,.mf label,.hf label{display:grid;gap:6px;font-size:13px;color:var(--mut)}
+.fr label,.mf label,.hf label,.hg label{min-width:0}.fr .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.hg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.ck3,.ck2{display:flex!important;grid-template-columns:none;gap:8px;align-items:center;color:var(--fg)!important;font-size:14px!important}
+.idrow{display:flex;align-items:center;gap:8px;min-width:0}.idrow input{flex:1;min-width:0;width:100%}.idrow span{color:var(--mut);font-size:14px;white-space:nowrap}
+.jbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}.wr{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+#login{display:grid;gap:10px;max-width:360px}#login[hidden]{display:none}
+.sg{margin-top:22px;max-width:360px}.sg summary{cursor:pointer;color:var(--mut);font-size:14px}.sgf{display:grid;gap:10px;margin-top:12px}
+
+/* 탭 — 오른쪽 사이드(인트라넷) · 위쪽 알약(관리자) · 소메뉴 */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.tabs button,.sub button,.msub button,.chip{padding:7px 18px;border-radius:99px;border:1px solid var(--ln2);background:none;color:var(--fg);font:inherit;font-size:14px;line-height:1.4;cursor:pointer;white-space:nowrap}
+.tabs button:hover,.sub button:hover,.msub button:hover,.chip:hover{border-color:var(--ac);color:var(--ac)}
+.tabs button[aria-pressed="true"],.sub button[aria-pressed="true"],.msub button[aria-pressed="true"],.chip.on{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:700}
+.sub,.msub{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;border:0}
+.shell{display:grid;grid-template-columns:176px minmax(0,1fr);gap:26px;align-items:start;margin-top:4px}.pane{min-width:0}
+.tabs2{display:flex;flex-direction:column;gap:4px;position:sticky;top:14px;margin:0;padding:0}
+.tabs2 button{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;padding:10px 16px;border-radius:12px;border:1px solid transparent;background:none;color:var(--fg);font:inherit;font-size:15px;text-align:left;cursor:pointer}
+.tabs2 button:hover{background:var(--hv)}.tabs2 button[aria-pressed="true"]{background:var(--ac);color:#fff;font-weight:700}.tabs2 button[hidden]{display:none}
+@media(max-width:800px){.shell{grid-template-columns:1fr}.tabs2{flex-direction:row;flex-wrap:wrap;position:static}.tabs2 button{width:auto}}
+
+/* 배지 */
+.bd,.new,.cbd{display:inline-block;background:var(--ac);color:#fff;border-radius:99px;font-size:11px;font-weight:800;line-height:1.5;padding:0 8px;white-space:nowrap}
+.tabs2 button[aria-pressed="true"] .bd{background:#fff;color:var(--ac)}
+.rb,.hs,.mbadge,.dupb{display:inline-block;padding:1px 10px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap;line-height:1.6}
+.rb.on,.hs.on{background:var(--ok);color:#fff}.rb.off,.hs.x{background:#7775;color:var(--mut)}.hs.wt{background:#e8a33a33;color:#b8741a}
+
+/* 표 — 한 줄 보기 (긴 글은 칸 안에서 … 처리, 눌러서 자세히) */
+.tbw{overflow:auto;border:1px solid var(--ln);border-radius:12px;background:var(--bg)}
+table.jt,table.mt{border-collapse:separate;border-spacing:0;width:100%;font-size:14px;line-height:1.4}
+.jt th,.mt th{position:sticky;top:0;z-index:2;background:var(--bg);text-align:left;padding:10px 14px;border-bottom:2px solid var(--ln2);white-space:nowrap;font-size:12px;letter-spacing:.04em;color:var(--mut);font-weight:700}
+.jt td,.mt td{padding:10px 14px;border-bottom:1px solid var(--ln);vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+.jt tbody tr:last-child td,.mt tbody tr:last-child td{border-bottom:0}
+.jt tr.r,.mt tr.r{cursor:pointer}.jt tr.r:hover td,.mt tr.r:hover td{background:var(--hv)}
+.jt td.no,.mt td.no{color:var(--mut);text-align:right;width:44px;max-width:none}.jt td.dt,.mt td.dt{max-width:none}
+.jt td.ac,.mt td.ac{max-width:none;overflow:visible}.jt td.wd,.mt td.wd{max-width:420px}
+.jt tr.d td{background:var(--hv);padding:16px 20px;white-space:normal;max-width:none}.jt tr.d p{white-space:pre-wrap;margin:0 0 12px}.jt tr.d b{color:var(--ac);font-size:12px;letter-spacing:.1em}
+
+/* 카드 · 모달 */
+.pnl{border:1px solid var(--ln);border-radius:12px;background:var(--bg)}
+.mod{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}.mod[hidden]{display:none}
+.mbox{position:relative;text-align:left;display:block;justify-items:stretch;gap:0;background:var(--bg);color:var(--fg);border:1px solid var(--ln);border-radius:16px;padding:26px 28px;max-width:440px;width:100%;max-height:92vh;overflow:auto;box-shadow:0 18px 50px #0007}
+.mbox.wd{max-width:700px}.mbox h2{margin:0 0 14px}.mbox h2 .note,#app h2 .note{font-weight:400;font-size:13px;letter-spacing:0}.mbox .fr{max-width:none}.mbox .fr h2{margin-top:0}
+.mx{position:absolute;right:14px;top:10px;background:none;border:0;font-size:26px;line-height:1;cursor:pointer;color:var(--mut)}.mx:hover{color:var(--ac)}
+
+/* 아바타 */
+.av{width:56px;height:56px;border-radius:50%;background:#7773 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--mut);flex:none;overflow:hidden}.av.big{width:96px;height:96px;font-size:30px}
+.avs{width:28px;height:28px;border-radius:50%;background:#7773 center/cover no-repeat;display:inline-block;vertical-align:middle;margin-right:8px}

@@ -1,77 +1,43 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Admin · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=57"><link rel="icon" href="../img/favicon.png" type="image/png">
-<style>
-main.wide{max-width:1400px}
-.tabs{display:flex;gap:8px;margin:0 0 20px}.tabs button{padding:10px 20px;border-radius:99px;border:1px solid #7775;background:none;color:var(--mut);font:inherit;cursor:pointer}.tabs button[aria-pressed="true"]{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:700}
-#tw{overflow-x:auto;margin-top:16px;border:1px solid #7773;border-radius:12px}
-table.jt{border-collapse:collapse;width:100%;font-size:14px;line-height:1.5}
-.jt th{position:sticky;top:0;background:var(--bg);text-align:left;padding:10px 12px;border-bottom:2px solid #7775;white-space:nowrap;font-size:12px;letter-spacing:.06em;color:var(--mut)}
-.jt td{padding:10px 12px;border-bottom:1px solid #7773;vertical-align:top}
-.jt tr.r{cursor:pointer}.jt tr.r:hover td{background:#7771}
-.jt td.no{color:var(--mut);text-align:right;width:44px}.jt td.dt{white-space:nowrap}
-.jt td.ch{max-width:240px}.jt td.ln{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.jt tr.d td{background:#7771;padding:16px 20px}.jt tr.d p{white-space:pre-wrap;margin:0 0 12px}.jt tr.d b{color:var(--ac);font-size:12px;letter-spacing:.1em}
-.jbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}.jbar .btn{padding:8px 18px;font-size:14px}.jbar input{padding:8px 14px;min-width:200px}
-.btn.small{padding:6px 14px;font-size:13px;background:#7776}
-.jt tr.dup td{background:#ff2d2d22}.jt tr.dup:hover td{background:#ff2d2d33}
-.dupb{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:99px;background:#e5332a;color:#fff;font-size:11px;font-weight:700;vertical-align:middle}
-.jt td.mk{text-align:center;width:48px}.jt td.mk input{width:18px;height:18px;padding:0;accent-color:var(--ac);cursor:pointer}
-.jt td.ck{width:44px;padding:8px 2px}.cth.ci{background:#2f80ed33;color:#2f80ed}.cth.ch{background:#7c5cd633;color:#7c5cd6}.jt td.ci{background:#2f80ed14}.jt td.ch{background:#7c5cd614}.cth.cr{background:#d6454533;color:#d64545}.jt td.cr{background:#d6454514}.jt td.cr input{accent-color:#d64545}.jt td.ci input{accent-color:#2f80ed}.jt td.ch input{accent-color:#7c5cd6}.jt td.ck input:disabled{opacity:.55;cursor:not-allowed}.jt td.mm{min-width:180px}.jt input.memo{width:100%;padding:6px 10px;border-radius:8px;font-size:13px}
-.jt td.ok,.jt input.memo.ok{outline:2px solid #3bb273;outline-offset:-2px}
-#mf[hidden]{display:none!important}
-#tw{overflow:visible;border:0}
-table.jt{font-size:13px;table-layout:auto}
-.jt th{padding:8px 6px;font-size:11px;letter-spacing:0;white-space:normal}
-.jt td{padding:8px 6px;overflow-wrap:anywhere;word-break:normal}
-.jt td.no{width:28px}.jt td.dt{white-space:normal;min-width:70px}
-.jt td.ch{max-width:none}.jt td.ln{max-width:90px;white-space:normal;overflow-wrap:anywhere;overflow:visible}
-.jt td.mk{width:34px;padding:8px 2px}.jt td.mm{min-width:120px}
-main.wide{max-width:1500px;padding-left:2vw;padding-right:2vw}
-.jt td.mk input{-webkit-appearance:none;appearance:none;width:20px;height:20px;border:2px solid #8a8794;border-radius:5px;background:transparent;cursor:pointer;position:relative;vertical-align:middle;margin:0}
-.jt td.mk input:checked{background:#2fa36b;border-color:#2fa36b}.jt td.mk input:checked::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
-.jt td.mk input:disabled{cursor:default;opacity:1}.jt td.mk input.mc:disabled:not(:checked){opacity:.5}
-.jt td.ck input{border-color:currentColor}.jt td.ci input{color:#2f80ed;border-color:#2f80ed}.jt td.ci input:checked{background:#2f80ed;border-color:#2f80ed}.jt td.ch input{color:#7c5cd6;border-color:#7c5cd6}.jt td.ch input:checked{background:#7c5cd6;border-color:#7c5cd6}.jt td.cr input{border-color:#d64545}.jt td.cr input:checked{background:#d64545;border-color:#d64545}
-.jt td.ck input:disabled:not(:checked){opacity:.85;border-style:dashed}
-.jt tr.rej td.nick,.jt tr.rej{box-shadow:inset 3px 0 0 #d64545}.jt td.mk input.mr{border-color:#d64545}.jt td.mk input.mr:checked{background:#d64545;border-color:#d64545}
-.hf{display:grid;gap:12px;max-width:900px;margin-top:16px}.hf label{display:grid;gap:6px;font-size:13px;color:var(--mut)}.hf input{padding:10px 14px;font:inherit;border-radius:10px}.hg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.btn.mred{background:#d64545;border-color:#d64545;color:#fff}.issued{padding:14px 18px;border-radius:12px;background:#d6454518;border:1px solid #d6454555}.issued .big{font-size:22px;font-weight:800;letter-spacing:.08em;color:#d64545}
-.hs{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}.hs.on{background:#2fa36b;color:#fff}.hs.wt{background:#e8a33a33;color:#b8741a}.hs.x{background:#7775;color:var(--mut)}
-.jt td.en{font-weight:700;letter-spacing:.05em;white-space:nowrap}.jt tr.lft td{opacity:.55}.jt td.ac{white-space:nowrap}#hrtb td:nth-child(2),#hrtb td:nth-child(3),#hrtb td:nth-child(4){white-space:nowrap;min-width:64px}.jt td.ac .btn{margin-right:4px}
-.hf[hidden]{display:none!important}.idrow{display:flex;align-items:center;gap:8px}.idrow input{flex:1;min-width:0}.idrow span{color:var(--mut);font-size:13px;white-space:nowrap}.ck2{display:flex!important;grid-template-columns:none;gap:8px;align-items:center;color:var(--fg)!important;font-size:14px!important}.ck2 input{width:18px;height:18px;padding:0}.jt td.sm{font-size:12px;color:var(--mut)}.jt td.ac .btn{color:var(--fg)}
-#tw2 .jt th,#tw2 .jt td{white-space:nowrap}#tw2 .jt td:last-child{white-space:nowrap}
-</style></head><body>
+<title>Admin · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=58"><link rel="icon" href="../img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../app.css?v=1"><link rel="stylesheet" href="admin.css?v=1"></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.vocal">Vocal</button><div class="nm"><a href="../rif/">RIF</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.sound">Sound</button><div class="nm"><a href="../charmbung/">Charmbung</a><a href="../se1c/">SE1C</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.art">Art</button><div class="nm"><a href="../woljae/">Woljae</a><a href="../gugugong/">gugugong</a></div></div><div class="ng on"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.content">Content</button><div class="nm"><a href="../join/" class=on data-i18n=nav.cj>Join Us</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.mgmt">Management</button><div class="nm"><a href="../rif-management/">RIF</a></div></div><a class="nl" href="../join/">Join Us</a><a class="nl" href="../contact/">Contact</a><a class="nl" href="../board/">Board</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
-<main id="mn"><section class="hero"><p class="tag">ADMIN</p><h1>Admin</h1>
-<form id="login"><input id="em" type="email" value="takanashi@rif-studio.com" hidden autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password"><button class="btn">로그인</button><p class="note" id="lmsg"></p></form>
-<div id="app" hidden><p class="lead"><a href="#" id="out">로그아웃</a></p>
-<div class="tabs"><button type="button" id="t1" aria-pressed="true">포트폴리오 올리기</button><button type="button" id="t2" aria-pressed="false">지원서 보기</button><button type="button" id="t3" aria-pressed="false">인사정보</button></div>
-<div id="p1"><h2>새로 추가</h2><div id="mount"></div><h2 style="margin-top:48px">올린 목록</h2><div id="items"></div></div>
-<div id="p3" hidden><div class="jbar"><b id="hrcnt"></b><button class="btn ghost" id="hrlock" type="button">🔒 대표 잠금 해제</button></div>
-<p class="note">직원 정보와 사번은 대표 비밀번호로 잠금을 풀어야 보이고, 서버에서도 비밀번호 없이는 읽을 수 없어요. 10분 뒤 자동으로 잠겨요.</p>
+<main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>Admin</h1>
+<form id="login"><input id="em" type="email" value="takanashi@rif-studio.com" hidden autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password"><button class="btn">로그인</button><p class="note err" id="lmsg"></p></form>
+<div id="app" hidden><p class="lead"><a href="../intranet/">Intranet</a> · <a href="#" id="out">로그아웃</a></p>
+<div class="tabs" hidden><button type="button" id="t1" aria-pressed="true">포트폴리오 올리기</button><button type="button" id="t2" aria-pressed="false">지원서 보기</button><button type="button" id="t3" aria-pressed="false">인사정보</button></div>
+<div id="p1" hidden><h2>새로 추가</h2><div id="mount"></div><h2 style="margin-top:48px">올린 목록</h2><div id="items"></div></div>
+<div id="p3" hidden><div class="tbar"><h2>인사정보</h2><span class="sp"></span><button class="btn ghost" id="hrlock" type="button">🔒 대표 잠금 해제</button></div>
+<p class="note" style="margin:0 0 16px">직원 정보와 사번은 대표 비밀번호로 잠금을 풀어야 보이고, 서버에서도 비밀번호 없이는 읽을 수 없어요. 10분 뒤 자동으로 잠겨요.</p>
 <div id="hr-body" hidden>
-<form id="cform" class="hf"><h2>직원 계정 직접 만들기</h2><p class="note">사번 없이 대표님이 아이디와 비밀번호를 정해서 바로 만들어요. 만든 뒤 직원에게 아이디와 비밀번호를 직접 전달해 주세요. (비밀번호는 저장되거나 화면에 남지 않아요)</p>
-<div class="hg"><label>아이디<div class="idrow"><input id="cid" placeholder="mina" autocomplete="off" autocapitalize="none"></div></label><label>이름<input id="cn" maxlength="60" autocomplete="off"></label><label>닉네임 (선택)<input id="cnk" maxlength="60" autocomplete="off"></label><label>전화 (선택)<input id="cph" maxlength="40" autocomplete="off"></label><label>비밀번호 (8자 이상)<input id="cpw" type="password" maxlength="72" autocomplete="new-password"></label></div>
-<label class="ck2"><input type="checkbox" id="cshow"> 비밀번호 보이기</label>
-<div class="jbar"><button class="btn mred" id="cgo">계정 만들기</button><span class="note" id="cmsg"></span></div></form>
-<form id="iform" class="hf"><h2>사번 발급</h2><p class="note">사번은 날짜(YYMMDD)+무작위 2자리, 총 8자리 숫자로 자동 발급돼요. 발급일로부터 14일 동안 가입할 수 있어요.</p>
+<div class="cards2">
+<form id="cform" class="fr pnl pad"><h2>직원 계정 직접 만들기</h2><p class="note">사번 없이 대표님이 아이디와 비밀번호를 정해서 바로 만들어요. 만든 뒤 직원에게 아이디와 비밀번호를 직접 전달해 주세요. (비밀번호는 저장되거나 화면에 남지 않아요)</p>
+<div class="hg"><label>아이디 (@rif-studio.com 앞부분)<div class="idrow"><input id="cid" placeholder="mina" autocomplete="off" autocapitalize="none"></div></label><label>이름<input id="cn" maxlength="60" autocomplete="off"></label><label>닉네임 (선택)<input id="cnk" maxlength="60" autocomplete="off"></label><label>전화 (선택)<input id="cph" maxlength="40" autocomplete="off"></label><label>비밀번호 (8자 이상)<input id="cpw" type="password" maxlength="72" autocomplete="new-password"></label></div>
+<label class="ck2"><input type="checkbox" id="cshow"><span>비밀번호 보이기</span></label>
+<div class="jbar"><button class="btn" id="cgo">계정 만들기</button><span class="note" id="cmsg"></span></div></form>
+<form id="iform" class="fr pnl pad"><h2>사번 발급</h2><p class="note">사번은 날짜(YYMMDD)+무작위 2자리, 총 8자리 숫자로 자동 발급돼요. 발급일로부터 14일 동안 가입할 수 있어요.</p>
 <label>온보딩 메일을 받을 개인 이메일 (선택)<input id="iem" type="email" maxlength="120" placeholder="name@gmail.com"></label>
-<label class="ck2"><input type="checkbox" id="isend" checked> 입사 축하 메일(한국어/일본어/영어)을 <b>support@</b> 이름으로 지금 바로 보내기</label>
-<div class="jbar"><button class="btn mred" id="iissue">사번 발급</button></div>
+<label class="ck2"><input type="checkbox" id="isend" checked><span>입사 축하 메일(한국어/일본어/영어)을 <b>support@</b> 이름으로 지금 바로 보내기</span></label>
+<div class="jbar"><button class="btn" id="iissue">사번 발급</button></div>
 <div id="issued" class="issued" hidden></div></form>
-<form id="hform" class="hf" hidden><h2 id="hft">정보 수정</h2>
-<div class="hg"><label>사번 (공백 없이 1~20자)<input id="hno" maxlength="20"></label><label>이름<input id="hn" maxlength="60"></label><label>닉네임<input id="hnk" maxlength="60"></label><label>이메일<input id="he" type="email" maxlength="120"></label><label>전화<input id="hph" maxlength="40"></label><label>직책<select id="hp"><option value="">없음</option><option>대표이사</option><option>이사</option><option>팀장</option><option>팀원</option></select></label><label>직위<select id="hrk"><option value="">없음</option><option>수석</option><option>차석</option><option>책임</option><option>사원</option></select></label><label>부서<select id="hdv"><option value="">미배정</option><option>경영부</option><option>프로덕션부</option></select></label><label>팀<select id="htm"><option value="">없음</option><optgroup label="경영부"><option>경영지원팀</option></optgroup><optgroup label="프로덕션부"><option>보컬팀</option><option>사운드제작팀</option><option>일러스트팀</option><option>매니지먼트팀</option></optgroup></select></label><label>디스코드<input id="hdc" maxlength="60"></label><label>트위터(X)<input id="htw" maxlength="60"></label></div>
-<label>메모<input id="hm" maxlength="300"></label>
-<div class="jbar"><button class="btn mred" id="hsave">저장</button><button class="btn ghost" id="hcancel" type="button">취소</button></div></form>
-<div id="tw2" style="overflow-x:auto;margin-top:20px;border:1px solid #7773;border-radius:12px"><table class="jt"><thead><tr><th>사번</th><th>이름</th><th>닉네임</th><th>아이디</th><th>전화</th><th>직책 · 직위</th><th>부서</th><th>팀</th><th>Discord</th><th>X</th><th>상태</th><th>발급일</th><th>메모</th><th></th></tr></thead><tbody id="hrtb"></tbody></table></div>
+</div>
+<div class="tbar"><b id="hrcnt"></b><span class="sp"></span><input id="hrq" type="search" placeholder="이름·닉네임·사번·부서 검색" autocomplete="off"></div>
+<div class="tbw" id="tw2"><table class="jt"><thead><tr><th>사번</th><th>이름</th><th class="hm">아이디</th><th class="hm">전화</th><th class="hm">직책 · 직위</th><th class="hm">부서 · 팀</th><th>상태</th><th class="hm">발급일</th><th></th></tr></thead><tbody id="hrtb"></tbody></table></div>
+<p class="note" style="margin-top:10px">줄을 누르면 Discord·X·메모와 메일 발송·비밀번호 재설정·퇴사·삭제 버튼이 펼쳐져요.</p>
 </div></div>
-<div id="p2" hidden><div class="jbar"><b id="cnt"></b><input id="q" placeholder="검색 (이름·이메일·분야…)"><button class="btn" id="csv" type="button">CSV 받기</button><button class="btn ghost" id="ceo" type="button">🔒 대표 잠금 해제</button></div>
-<div id="tw"><table class="jt"><thead><tr><th>No.</th><th>접수일시</th><th>닉네임</th><th>성명</th><th>이메일</th><th>출신</th><th>분야</th><th>Discord</th><th>YouTube</th><th>Twitter</th><th>감사</th><th>면접</th><th>거절</th><th>채용</th><th class="cth ci">면접<br>의향</th><th class="cth ch">채용<br>의향</th><th class="cth cr">채용<br>거절</th><th>메모</th></tr></thead><tbody id="tb"></tbody></table></div>
+<div id="p2" hidden><div class="tbar"><b id="cnt"></b><input id="q" type="search" placeholder="검색 (이름·이메일·분야…)"><button class="btn" id="csv" type="button">CSV 받기</button><button class="btn ghost" id="ceo" type="button">🔒 대표 잠금 해제</button></div>
+<div class="tbw" id="tw"><table class="jt"><thead><tr><th>No.</th><th>접수일시</th><th>닉네임</th><th>성명</th><th>이메일</th><th>출신</th><th>분야</th><th>Discord</th><th>YouTube</th><th>Twitter</th><th>감사</th><th>면접</th><th>거절</th><th>채용</th><th class="cth ci">면접<br>의향</th><th class="cth ch">채용<br>의향</th><th class="cth cr">채용<br>거절</th><th>메모</th></tr></thead><tbody id="tb"></tbody></table></div>
 <p class="note">줄을 누르면 자기소개·지원동기·경력이 펼쳐져요.</p></div></div>
 </section></main>
-<div id="pm" class="mdl" role="dialog" aria-modal="true" aria-labelledby="pt" hidden><div class="mbox"><h2 id="pt">대표 확인</h2><p>면접·채용 의향은 대표만 바꿀 수 있어요.<br>대표 비밀번호를 입력해 주세요.</p><input id="pi" type="password" inputmode="numeric" autocomplete="off" maxlength="20" style="padding:12px 14px;text-align:center;letter-spacing:.3em;width:100%"><p id="pe" style="color:#d64545;min-height:1.4em;margin:0"></p><div class="mrow"><button type="button" class="btn ghost" id="pc">취소</button><button type="button" class="btn" id="po">확인</button></div></div></div>
-<div id="mm" class="mdl" role="dialog" aria-modal="true" aria-labelledby="mt" hidden><div class="mbox" style="text-align:left;justify-items:stretch"><h2 id="mt"></h2><p id="mp"></p><div id="mf" hidden style="display:grid;gap:10px"><label>일시<input id="md" maxlength="200" placeholder="예: 11월 15일(토) 오후 3시 (KST)"></label><label>방식·장소 또는 링크<input id="ml" maxlength="300" placeholder="예: Zoom 링크 / 판교 사무실"></label></div><p id="mw" style="color:#e5332a;font-weight:700"></p><div class="mrow" style="justify-content:flex-end"><button type="button" class="btn ghost" id="mc">취소</button><button type="button" class="btn" id="mg">보내기</button></div></div></div>
-<div id="hpm" class="mdl" role="dialog" aria-modal="true" hidden><div class="mbox"><h2>대표 확인</h2><p>인사정보는 대표만 볼 수 있어요.<br>대표 비밀번호를 입력해 주세요.</p><input id="hpi" type="password" inputmode="numeric" autocomplete="off" maxlength="20" style="padding:12px 14px;text-align:center;letter-spacing:.3em;width:100%"><p class="note err" id="hpe" style="color:#d64545;margin:0"></p><div style="display:flex;gap:10px"><button class="btn" id="hpo" type="button">확인</button><button class="btn ghost" id="hpc" type="button">취소</button></div></div></div>
+<div id="hmod" class="mod" role="dialog" aria-modal="true" aria-labelledby="hft" hidden><div class="mbox wd"><button type="button" class="mx" id="hmx" aria-label="닫기">×</button>
+<form id="hform" class="fr"><h2 id="hft">정보 수정</h2>
+<div class="hg"><label>사번 (공백 없이 1~20자)<input id="hno" maxlength="20"></label><label>이름<input id="hn" maxlength="60"></label><label>닉네임<input id="hnk" maxlength="60"></label><label>이메일<input id="he" type="email" maxlength="120"></label><label>전화<input id="hph" maxlength="40"></label><label>직책<select id="hp"><option value="">없음</option><option>대표이사</option><option>이사</option><option>팀장</option><option>팀원</option></select></label><label>직위<select id="hrk"><option value="">없음</option><option>수석</option><option>차석</option><option>책임</option><option>사원</option></select></label><label>부서<select id="hdv"><option value="">미배정</option><option>경영부</option><option>프로덕션부</option></select></label><label>팀<select id="htm"><option value="">없음</option><optgroup label="경영부"><option>경영지원팀</option></optgroup><optgroup label="프로덕션부"><option>보컬팀</option><option>사운드제작팀</option><option>일러스트팀</option><option>매니지먼트팀</option></optgroup></select></label><label>디스코드<input id="hdc" maxlength="60"></label><label>트위터(X)<input id="htw" maxlength="60"></label></div>
+<label>메모<input id="hm" maxlength="300"></label>
+<div class="wr"><button class="btn ghost" id="hcancel" type="button">취소</button><button class="btn" id="hsave">저장</button></div></form></div></div>
+<div id="hpm" class="mod" role="dialog" aria-modal="true" aria-labelledby="hpt" hidden><div class="mbox"><button type="button" class="mx" id="hpx" aria-label="닫기">×</button><h2 id="hpt">대표 확인</h2><p class="note">인사정보는 대표만 볼 수 있어요. 대표 비밀번호를 입력해 주세요.</p><input id="hpi" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="20" aria-label="대표 비밀번호"><p class="note err" id="hpe"></p><div class="wr"><button class="btn ghost" id="hpc" type="button">취소</button><button class="btn" id="hpo" type="button">확인</button></div></div></div>
+<div id="pm" class="mod" role="dialog" aria-modal="true" aria-labelledby="pt" hidden><div class="mbox"><h2 id="pt">대표 확인</h2><p class="note">면접·채용 의향은 대표만 바꿀 수 있어요. 대표 비밀번호를 입력해 주세요.</p><input id="pi" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="20"><p class="note err" id="pe"></p><div class="wr"><button type="button" class="btn ghost" id="pc">취소</button><button type="button" class="btn" id="po">확인</button></div></div></div>
+<div id="mm" class="mod" role="dialog" aria-modal="true" aria-labelledby="mt" hidden><div class="mbox"><h2 id="mt"></h2><p id="mp"></p><div id="mf" class="fr" hidden><label>일시<input id="md" maxlength="200" placeholder="예: 11월 15일(토) 오후 3시 (KST)"></label><label>방식·장소 또는 링크<input id="ml" maxlength="300" placeholder="예: Zoom 링크 / 판교 사무실"></label></div><p id="mw" class="note err"></p><div class="wr"><button type="button" class="btn ghost" id="mc">취소</button><button type="button" class="btn" id="mg">보내기</button></div></div></div>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=3"></script><script src="app.js"></script><script src="join.js?v=57"></script><script src="hr.js?v=13"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=3"></script><script src="app.js"></script><script src="join.js?v=57"></script><script src="hr.js?v=14"></script><script src="../nav.js" defer></script></body></html>

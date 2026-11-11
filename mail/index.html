@@ -1,34 +1,31 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>서명 설정 · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=57"><link rel="icon" href="../img/favicon.png" type="image/png">
-<style>.jt{border-collapse:collapse;width:100%;font-size:14px;line-height:1.5}.jt th{text-align:left;padding:10px 12px;border-bottom:2px solid #7775;white-space:nowrap;font-size:12px;letter-spacing:.06em;color:var(--mut)}.jt td{padding:10px 12px;border-bottom:1px solid #7773;vertical-align:top}
-.jt tr.r{cursor:pointer}.jt tr.r:hover td{background:#7771}.jt td.dt{white-space:nowrap}.jt tr.d td{background:#7771;padding:16px 20px}.jt tr.d p{white-space:pre-wrap;margin:0 0 12px}.jt tr.d b{color:#d64545;font-size:12px;letter-spacing:.1em}
-.jbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}.jbar .btn{padding:8px 18px;font-size:14px}.jbar input{padding:8px 14px;min-width:200px}
-.mf{display:grid;gap:12px;max-width:760px}.mf label{display:grid;gap:6px;font-size:13px;color:var(--mut)}.mf input,.mf textarea{padding:10px 14px;font:inherit;border-radius:10px}.mf textarea{resize:vertical}
-.btn.mred{background:#d64545;border-color:#d64545;color:#fff}.note.err{color:#d64545}.tag.red{color:#d64545}
-.rb{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700}.rb.on{background:#2fa36b;color:#fff}.rb.off{background:#7775;color:var(--mut)}
-#tw{overflow-x:auto;margin-top:16px;border:1px solid #7773;border-radius:12px}main.wide{max-width:1100px}
-.sigbox{max-width:760px;margin-top:40px;display:grid;gap:10px}.sigbox textarea{padding:10px 14px;font:inherit;border-radius:10px;resize:vertical}
-.pv{border:1px dashed #7775;border-radius:10px;padding:12px 16px;font-size:14px;line-height:1.6;white-space:pre-wrap;color:var(--mut)}
-.sg{margin-top:22px;max-width:360px}.sg summary{cursor:pointer;color:var(--mut);font-size:14px}.sgf{display:grid;gap:10px;margin-top:12px}.sgf input{padding:12px 14px}
-.tb{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.tb button,.tb .cl{padding:6px 12px;border:1px solid #7775;border-radius:8px;background:none;color:var(--fg);font:inherit;font-size:13px;cursor:pointer;line-height:1.2}.tb button:hover{background:#7771}.tb .cl{display:inline-flex;gap:6px;align-items:center;font-weight:700}.tb .cl input{width:22px;height:22px;padding:0;border:0;background:none;cursor:pointer}
-.ed{min-height:140px;padding:12px 16px;border:1px solid #7775;border-radius:10px;background:var(--bg);font-size:15px;line-height:1.6;outline:none}.ed:focus{border-color:#7c5cd6}.ed:empty:before{content:attr(data-ph);color:var(--mut)}.ed img{max-width:100%;cursor:pointer}.ed img.sel{outline:2px solid #7c5cd6}
-.idrow{display:flex;align-items:center;gap:8px}.idrow input{flex:1;min-width:0}.idrow span{color:var(--mut);font-size:14px;white-space:nowrap}
-#login{display:grid;gap:10px;max-width:360px}#login input{padding:12px 14px}</style></head><body>
+<title>서명 설정 · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=58"><link rel="icon" href="../img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../app.css?v=1"><style>
+.sigbox{max-width:760px;margin-top:22px;display:grid;gap:12px}#app .sigbox h2{margin:0}.sigbox .note{margin:0}
+.tb{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tb button,.tb .cl{padding:5px 14px;border:1px solid var(--ln2);border-radius:99px;background:none;color:var(--fg);font:inherit;font-size:13px;cursor:pointer;line-height:1.3}
+.tb button:hover{border-color:var(--ac);color:var(--ac)}
+.tb .cl{display:inline-flex;gap:6px;align-items:center;font-weight:700}.tb .cl input{width:22px;height:22px;cursor:pointer}
+/* 메일을 받는 사람 화면(흰 종이)에 가깝게 — 서명은 항상 밝은 바탕에 어두운 글씨로 보여요 */
+.ed{min-height:160px;padding:12px 16px;border:1px solid var(--ln2);border-radius:10px;background:#fffdf8;color:#1d1b22;font-size:15px;line-height:1.6;outline:none}
+.ed:focus{border-color:var(--ac);outline:2px solid color-mix(in srgb,var(--ac) 35%,transparent)}
+.ed:empty:before{content:attr(data-ph);color:#8a8794}.ed img{max-width:100%;cursor:pointer}.ed img.sel{outline:2px solid var(--ac)}
+</style></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.vocal">Vocal</button><div class="nm"><a href="../rif/">RIF</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.sound">Sound</button><div class="nm"><a href="../charmbung/">Charmbung</a><a href="../se1c/">SE1C</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.art">Art</button><div class="nm"><a href="../woljae/">Woljae</a><a href="../gugugong/">gugugong</a></div></div><div class="ng on"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.content">Content</button><div class="nm"><a href="../join/" class=on data-i18n=nav.cj>Join Us</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.mgmt">Management</button><div class="nm"><a href="../rif-management/">RIF</a></div></div><a class="nl" href="../join/">Join Us</a><a class="nl" href="../contact/">Contact</a><a class="nl" href="../board/">Board</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
 <main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>서명 설정</h1>
-<form id="login"><div class="idrow"><input id="em" type="text" placeholder="아이디 (예: mina)" required autocomplete="username" autocapitalize="none"></div><input id="pw" type="password" placeholder="비밀번호" required autocomplete="current-password"><button class="btn mred">로그인</button><p class="note err" id="lmsg"></p></form>
+<form id="login"><div class="idrow"><input id="em" type="text" placeholder="아이디 (예: mina)" required autocomplete="username" autocapitalize="none"></div><input id="pw" type="password" placeholder="비밀번호" required autocomplete="current-password"><button class="btn">로그인</button><p class="note err" id="lmsg"></p></form>
 <details id="sg" class="sg"><summary>가입</summary>
 <form id="signup" class="sgf"><p class="note">입사 축하 메일의 사번을 입력하고, 로그인에 쓸 아이디(이름@rif-studio.com)와 비밀번호(8자 이상)를 직접 정해 주세요. 초대 메일을 받은 이메일도 확인용으로 한 번 적어 주세요.</p>
 <input id="sn" placeholder="사번" pattern="\S{1,20}" maxlength="20" autocomplete="off" required>
 <input id="sna" placeholder="이름" autocomplete="name" required><input id="snk" placeholder="닉네임" autocomplete="nickname" required>
 <div class="idrow"><input id="sid" placeholder="아이디 (영문·숫자, 예: mina)" autocomplete="username" autocapitalize="none" required></div><input id="sem" type="email" placeholder="초대 메일을 받은 이메일 (확인용)" autocomplete="email"><input id="sph" type="tel" placeholder="전화번호" autocomplete="tel" required>
 <input id="spw" type="password" placeholder="비밀번호 (8자 이상)" autocomplete="new-password" minlength="8" required><input id="spw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" minlength="8" required>
-<button class="btn mred" id="sgo">가입</button><p class="note err" id="smsg"></p></form></details>
+<button class="btn" id="sgo">가입</button><p class="note err" id="smsg"></p></form></details>
 <div id="app" hidden><p class="lead"><span id="who"></span> · <a href="../intranet/">Intranet</a> · <a href="#" id="out">로그아웃</a></p>
 <p class="note err" id="nomail" hidden>이 계정에는 메일 권한이 없어요. 대표님께 요청해 주세요.</p>
 <div id="box" hidden>
-<div class="sigbox"><h2>내 서명</h2><p class="note">내 이름으로 보내는 메일 맨 아래에 붙는 서명이에요. support@ 공용 답장에는 개인 서명이 붙지 않아요. Gmail처럼 글자 꾸미기·링크·사진을 넣을 수 있어요. 메일 맨 아래, RIF STUDIO 로고 아래에 붙습니다. 사진은 png·jpg·gif·webp, 2MB까지.</p>
+<div class="sigbox"><h2>내 서명</h2><p class="note">내 이름으로 보내는 메일 맨 아래에 붙는 서명이에요. 공용 메일함(support@ 등)으로 보내는 메일에는 개인 서명이 붙지 않아요. Gmail처럼 글자 꾸미기·링크·사진을 넣을 수 있어요. 메일 맨 아래, RIF STUDIO 로고 아래에 붙습니다. 사진은 png·jpg·gif·webp, 2MB까지.</p>
 <div class="tb" id="stb"><button type="button" data-c="bold" title="굵게"><b>B</b></button><button type="button" data-c="italic" title="기울임"><i>I</i></button><button type="button" data-c="underline" title="밑줄"><u>U</u></button>
 <label class="cl" title="글자색">A<input type="color" id="scol" value="#1d1b22"></label><button type="button" id="slink" title="링크">링크</button><button type="button" id="simg" title="사진 넣기">사진</button>
 <button type="button" id="sminus" title="사진 작게">사진 −</button><button type="button" id="splus" title="사진 크게">사진 +</button><button type="button" data-c="removeFormat" title="서식 지우기">서식 지우기</button><input type="file" id="sfile" accept="image/png,image/jpeg,image/gif,image/webp" hidden></div>
@@ -38,4 +35,4 @@
 </div></section></main>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=3"></script><script src="app.js?v=10"></script><script src="../nav.js" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=3"></script><script src="app.js?v=11"></script><script src="../nav.js" defer></script></body></html>
