@@ -7,7 +7,7 @@
   g.before(bar);if(tracks)tracks.before(topBar);
   const form=addForm(()=>page,s=>{if(s)active=s;form.hidden=true;load()},[],()=>active);form.hidden=true;g.after(form);
   const card=it=>{const c=el("figure",{className:"item"},[media(it)]);
-    if(it.caption)c.append(el("figcaption",{textContent:it.caption}));
+    if(it.caption)c.append(el("figcaption",{textContent:it.caption,title:it.caption}));
     if(admin){const x=el("button",{className:"del",textContent:"×",ariaLabel:"삭제"});x.onclick=async()=>{if(confirm("삭제할까요?")){await delItem(it);load()}};c.append(x)}
     return c};
   const tabs=(box,names,cur,pick)=>box.replaceChildren(...names.map(n=>{const b=el("button",{className:"tab"+(n===cur?" on":""),type:"button",textContent:n});b.onclick=()=>pick(n);return b}));
@@ -25,7 +25,7 @@
     if(!form.hidden)form.fill();
     its.forEach(i=>g.append(card(i)));
     if(!its.length&&!admin)g.append(el("p",{className:"empty",textContent:"Coming soon"}));
-    if(its.length&&its.every(i=>i.kind==="image"))g.classList.add("imgs");
+    if(its.length&&its.every(i=>i.kind==="image"))g.classList.add("imgs");else if(its.length&&its.every(i=>i.kind!=="image"))g.classList.add("vids");
     if(tracks){
       tabs(topBar,["Tracks","Portfolio"],top,n=>{top=n;go(n);render()});
       tracks.hidden=top!=="Tracks";sec.hidden=top!=="Portfolio";main.classList.add("tabbed");
