@@ -191,12 +191,32 @@ function buildQ(t,box){
   dn.onclick=async()=>{const v=!t.done;const {error}=await db.from("inbox_messages").update({done:v}).in("id",t.ins.map(m=>m.id));if(error)return alert("바꾸지 못했어요");t.ins.forEach(m=>m.done=v);t.done=v;openQ=t.key;drawQ()};
   box.append(el("div",{className:"mfrm"},[ta,el("div",{className:"acts"},[send,dn,note])]))}
 
+/* ---------- 사이트 문의 게시판 (공개 /board/ 에 올라온 글) ---------- */
+let inq=[],openB=null;
+async function loadB(){const {data,error}=await db.from("inquiries").select("id,name,email,title,body,secret,hidden,reply,replied_by,replied_at,created_at").order("id",{ascending:false}).limit(300);if(error)return alert("문의 글을 불러오지 못했어요");inq=data||[];drawB()}
+function drawB(){const tb=$("mbb");if(!tb)return;const k=($("mbq").value||"").trim().toLowerCase();tb.replaceChildren();
+  $("mbc").textContent="문의 "+inq.length+"건 · 미답변 "+inq.filter(x=>!x.reply&&!x.hidden).length+"건";
+  inq.filter(r=>!k||[r.name,r.email,r.title,r.body].join(" ").toLowerCase().includes(k)).forEach(r=>{
+    const st=r.hidden?"숨김":r.reply?"답변 완료":"미답변";
+    const tr=el("tr",{className:"r"},[el("td",{className:"no",textContent:r.id}),el("td",{className:"dt",textContent:dt(r.created_at)}),el("td",{textContent:r.name}),el("td",{textContent:r.email}),el("td",{textContent:(r.secret?"🔒 ":"")+r.title}),el("td",{textContent:st,style:"white-space:nowrap;font-weight:700;color:"+(r.hidden?"var(--mut)":r.reply?"#14b8a6":"#d64545")})]);
+    tr.onclick=()=>{openB=openB===r.id?null:r.id;drawB()};tb.append(tr);
+    if(openB!==r.id)return;
+    const ta=el("textarea",{value:r.reply||"",rows:5,maxLength:3000,placeholder:"답변을 쓰면 비밀글이 아닌 글은 게시판에 공개돼요. 비밀글은 공개되지 않으니 아래 '메일로 답장'을 이용해 주세요.",style:"width:100%;box-sizing:border-box;padding:10px;border:1px solid #7775;border-radius:6px;font:inherit;background:var(--bg);color:var(--fg)"});
+    const msg=el("span",{className:"mnote"});
+    const sv=el("button",{className:"mbtn",type:"button",textContent:"답변 저장"});
+    sv.onclick=async()=>{const t=ta.value.trim(),u=(await db.auth.getSession()).data.session;const {error}=await db.from("inquiries").update({reply:t||null,replied_by:t?u.user.email:null,replied_at:t?new Date().toISOString():null}).eq("id",r.id);if(error){msg.textContent="저장하지 못했어요";return}r.reply=t||null;r.replied_at=t?new Date().toISOString():null;msg.textContent="저장했어요";drawB()};
+    const hd=el("button",{className:"mbtn",type:"button",textContent:r.hidden?"다시 보이기":"게시판에서 숨기기"});
+    hd.onclick=async()=>{const {error}=await db.from("inquiries").update({hidden:!r.hidden}).eq("id",r.id);if(error)return alert("바꾸지 못했어요");r.hidden=!r.hidden;drawB()};
+    const dl=el("button",{className:"mbtn",type:"button",textContent:"삭제"});
+    dl.onclick=async()=>{if(!confirm("이 문의 글을 삭제할까요?\n되돌릴 수 없어요."))return;const {error}=await db.from("inquiries").delete().eq("id",r.id);if(error)return alert("삭제하지 못했어요");inq=inq.filter(x=>x.id!==r.id);openB=null;drawB()};
+    const ml=el("a",{className:"mbtn",textContent:"✉ 메일로 답장",href:"mailto:"+encodeURIComponent(r.email).replace(/%40/g,"@")+"?subject="+encodeURIComponent("Re: "+r.title),style:"text-decoration:none;display:inline-block"});
+    tb.append(el("tr",{},[el("td",{colSpan:6,style:"background:#7771;padding:14px 18px"},[el("div",{textContent:r.body,style:"white-space:pre-wrap;line-height:1.7;margin-bottom:12px"}),ta,el("div",{style:"display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px"},[sv,ml,hd,dl,msg])])]))})}
 /* ---------- 탭 틀 ---------- */
 function build(){
   const pt=$("pt");if(!pt||$("msub"))return;
   const w=el("div",{id:"ptw"});[...pt.childNodes].forEach(n=>w.append(n));pt.append(w);
   const bar=el("div",{className:"msub",id:"msub"});
-  const defs=[["w","할 일"],["j","지원서"],["q","support@ 문의"]];
+  const defs=[["w","할 일"],["j","지원서"],["q","support@ 문의"],["b","사이트 문의"]];
   const pj=el("div",{id:"pj",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mjc"}),el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("span",{className:"mnote",textContent:"클릭하면 상세 내용이 펼쳐져요 · 감사/면접/거절/채용은 표시만 하고 메일은 자동으로 나가지 않아요"})]),
     el("div",{className:"mtw"},[el("table",{className:"mt mtj"},[el("thead",{},[
@@ -206,11 +226,14 @@ function build(){
   const pq=el("div",{id:"pq",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mqc"}),sel,el("input",{id:"mqq",placeholder:"검색 (제목·보낸 사람·내용)"}),el("button",{className:"mbtn",type:"button",id:"mqr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"support@rif-studio.com 으로 온 메일이에요. 답장은 기록으로 계속 남아요."})]),
     el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","상태","제목","보낸 사람","먼저 확인","답장한 사원","최근 활동"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mqb"})])])]);
-  const panes={w:w,j:pj,q:pq};
+  const pbq=el("div",{id:"pbq",hidden:true},[
+    el("div",{className:"mbar"},[el("b",{id:"mbc"}),el("input",{id:"mbq",placeholder:"검색 (이름·이메일·제목·내용)"}),el("button",{className:"mbtn",type:"button",id:"mbr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"사이트의 공개 문의 게시판(rif-studio.com/board/)에 올라온 글이에요. 이메일은 운영진만 볼 수 있어요."})]),
+    el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","작성일시","이름","이메일","제목","상태"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mbb"})])])]);
+  const panes={w:w,j:pj,q:pq,b:pbq};
   defs.forEach(([k,t],i)=>{const b=el("button",{type:"button",textContent:t});b.setAttribute("aria-pressed",i===0?"true":"false");
-    b.onclick=()=>{[...bar.children].forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));Object.entries(panes).forEach(([kk,p])=>p.hidden=kk!==k);if(k==="j")loadJ();if(k==="q")loadQ()};bar.append(b)});
-  pt.prepend(bar);pt.append(pj,pq);
-  $("mjq").oninput=drawJ;$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;
+    b.onclick=()=>{[...bar.children].forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));Object.entries(panes).forEach(([kk,p])=>p.hidden=kk!==k);if(k==="j")loadJ();if(k==="q")loadQ();if(k==="b")loadB()};bar.append(b)});
+  pt.prepend(bar);pt.append(pj,pq,pbq);
+  $("mjq").oninput=drawJ;$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;$("mbq").oninput=drawB;$("mbr").onclick=loadB;
 }
 async function start(){
   if(started)return;
@@ -218,6 +241,6 @@ async function start(){
   started=true;
   const [m,b]=await Promise.all([db.rpc("is_mgmt"),db.rpc("is_boss")]);
   mgmt=!!m.data;boss=!!b.data;{const l=$("admlink");if(l)l.hidden=!boss}if(!mgmt)return;build()}
-function teardown(){{const l=$("admlink");if(l)l.hidden=true}started=false;mgmt=boss=false;rows=[];msgs=[];reps={};const pt=$("pt"),w=$("ptw");if(w&&pt){[...w.childNodes].forEach(n=>pt.insertBefore(n,w));w.remove()}["msub","pj","pq"].forEach(i=>{const e=$(i);if(e)e.remove()})}
+function teardown(){{const l=$("admlink");if(l)l.hidden=true}started=false;mgmt=boss=false;rows=[];msgs=[];reps={};const pt=$("pt"),w=$("ptw");if(w&&pt){[...w.childNodes].forEach(n=>pt.insertBefore(n,w));w.remove()}["msub","pj","pq","pbq"].forEach(i=>{const e=$(i);if(e)e.remove()})}
 try{const ap=$("app");new MutationObserver(()=>{if(ap.hidden)teardown();else start()}).observe(ap,{attributes:true,attributeFilter:["hidden"]});if(!ap.hidden)start()}catch(_){}
 })();
