@@ -216,7 +216,7 @@ function build(){
   const pt=$("pt");if(!pt||$("msub"))return;
   const w=el("div",{id:"ptw"});[...pt.childNodes].forEach(n=>w.append(n));pt.append(w);
   const bar=el("div",{className:"msub",id:"msub"});
-  const defs=[["w","할 일"],["j","지원서"],["q","support@ 문의"],["b","사이트 문의"]];
+  const defs=[["w","할 일"],["j","지원서"],["q","support@ 문의"]];
   const pj=el("div",{id:"pj",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mjc"}),el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("span",{className:"mnote",textContent:"클릭하면 상세 내용이 펼쳐져요 · 감사/면접/거절/채용은 표시만 하고 메일은 자동으로 나가지 않아요"})]),
     el("div",{className:"mtw"},[el("table",{className:"mt mtj"},[el("thead",{},[
@@ -229,10 +229,14 @@ function build(){
   const pbq=el("div",{id:"pbq",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mbc"}),el("input",{id:"mbq",placeholder:"검색 (이름·이메일·제목·내용)"}),el("button",{className:"mbtn",type:"button",id:"mbr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"사이트의 공개 문의 게시판(rif-studio.com/board/)에 올라온 글이에요. 이메일은 운영진만 볼 수 있어요."})]),
     el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","작성일시","이름","이메일","제목","상태"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mbb"})])])]);
-  const panes={w:w,j:pj,q:pq,b:pbq};
+  const panes={w:w,j:pj,q:pq};
   defs.forEach(([k,t],i)=>{const b=el("button",{type:"button",textContent:t});b.setAttribute("aria-pressed",i===0?"true":"false");
-    b.onclick=()=>{[...bar.children].forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));Object.entries(panes).forEach(([kk,p])=>p.hidden=kk!==k);if(k==="j")loadJ();if(k==="q")loadQ();if(k==="b")loadB()};bar.append(b)});
-  pt.prepend(bar);pt.append(pj,pq,pbq);
+    b.onclick=()=>{[...bar.children].forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));Object.entries(panes).forEach(([kk,p])=>p.hidden=kk!==k);if(k==="j")loadJ();if(k==="q")loadQ()};bar.append(b)});
+  pt.prepend(bar);pt.append(pj,pq);
+  const host=$("pbd");
+  if(host){pbq.hidden=false;pbq.style.marginBottom="26px";const pn=host.querySelector("p.note");
+    if(pn){pn.innerHTML='위쪽은 <b>경영지원팀 관리 화면</b>(답변·숨기기·삭제·이메일 확인)이고, 아래는 <b>방문자에게 보이는 화면</b> 그대로예요. <a href="../board/" target="_blank" rel="noopener">새 창으로 열기 ↗</a>';pn.before(pbq)}else host.prepend(pbq);
+    const tb=document.querySelector('#tabs button[data-t="q"]');if(tb)tb.addEventListener("click",loadB);loadB()}
   $("mjq").oninput=drawJ;$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;$("mbq").oninput=drawB;$("mbr").onclick=loadB;
 }
 async function start(){
