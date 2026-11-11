@@ -214,7 +214,7 @@ function drawPane(){
     t=t.split("\n").filter(l=>!/^\s*\[image:.*\]/i.test(l)&&!/^\s*(RIF STUDIO|PANGYO\s*[•·\/].*|rif-studio\.com|https?:\/\/rif-studio\.com\/?)\s*$/i.test(l)&&!/^\s*--\s*$/.test(l)).join("\n");
     t=t.replace(/<https?:\/\/[^>\s]+>/g,"").replace(/\n{3,}/g,"\n\n").trim();return t.length>1200?t.slice(0,1200).trim()+" …":t};
   rp.onclick=async()=>{const d=await go();if(!d)return;const q=quoteOf(d.body_text);
-    composing={as:(isMine(m.to_addrs)?"me":"support"),inbox:m.id,to:m.from_addr,subject:/^re:/i.test(m.subject)?m.subject:"Re: "+m.subject,body:"\n\n"+ftl(m.received_at)+" "+(m.from_name||m.from_addr)+" 님이 보냄:\n"+(q?q.replace(/^/gm,"> "):"")};drawMail()}}
+    composing={as:(isMine(m.to_addrs)?"me":"support"),inbox:m.id,to:m.from_addr,subject:/^re:/i.test(m.subject)?m.subject:"Re: "+m.subject,body:"",quote:{head:ftl(m.received_at)+" · "+(m.from_name||m.from_addr)+" 님이 보냄",text:q.replace(/\n{2,}/g,"\n")}};drawMail()}}
 function cleanTable(h){try{const doc=new DOMParser().parseFromString(h,"text/html"),rules={};
   [...doc.querySelectorAll("style")].forEach(st=>{String(st.textContent).replace(/\.([\w-]+)\s*\{([^}]*)\}/g,(_,c,d)=>{rules[c]=(rules[c]||"")+d+";"})});
   const esc=t=>t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -234,6 +234,12 @@ function drawCompose(p){
   const c=composing;
   const fromSel=el("select",{style:"padding:9px 12px;border:1px solid #7775;border-radius:6px;font:inherit;background:var(--bg);color:var(--fg)"},[el("option",{value:"me",textContent:"내 개인 메일 ("+sendAs+") · 개인 서명 포함",selected:c.as!=="support"}),el("option",{value:"support",textContent:"support@rif-studio.com (공용 · 개인 서명 없음)",selected:c.as==="support"})]);
   const to=el("input",{value:c.to||"",placeholder:"name@example.com (쉼표로 여러 명)"}),sj=el("input",{value:c.subject||"",maxLength:200}),bd=el("div",{className:"rte",contentEditable:"true"});bd.textContent=c.body||"";
+  if(c.quote){bd.textContent="";const mk=(t,st,tx)=>{const e=document.createElement(t);if(st)e.setAttribute("style",st);if(tx!=null)e.textContent=tx;return e};
+    const f=mk("div",null,"");f.append(document.createElement("br"));const f2=mk("div",null,"");f2.append(document.createElement("br"));
+    const bq=mk("blockquote","margin:14px 0 0;padding:4px 0 4px 14px;border-left:3px solid #7c5cd6;color:#6b6975");
+    bq.append(mk("div","font-size:12px;margin-bottom:6px",c.quote.head));
+    c.quote.text.split("\n").forEach(l=>{const d=document.createElement("div");if(l.trim())d.textContent=l;else d.append(document.createElement("br"));bq.append(d)});
+    bd.append(f,f2,bq)}
   const files=[],MAXB=10*1024*1024,afl=el("div",{className:"atl"}),fi=el("input",{type:"file",multiple:true,hidden:true});
   const msgx=el("span",{className:"note"});
   const drawF=()=>{afl.replaceChildren(...files.map((f,i)=>{const x=el("button",{type:"button",className:"atx",textContent:"✕",title:"빼기"});x.onclick=()=>{files.splice(i,1);drawF()};return el("span",{className:"atb"},[document.createTextNode("📎 "+f.name+" ("+mb(f.size)+") "),x])}))};
@@ -250,7 +256,7 @@ function drawCompose(p){
     const tx=cd.getData("text/plain");if(tx){e.preventDefault();document.execCommand("insertText",false,tx)}});
   const send=el("button",{className:"ob p",type:"button",textContent:"보내기"}),cancel=el("button",{className:"ob",type:"button",textContent:"취소"});
   cancel.onclick=()=>{composing=null;drawMail()};
-  send.onclick=async()=>{const t=to.value.trim(),s=sj.value.trim(),b=bd.innerText.trim(),hasT=!!bd.querySelector("table");
+  send.onclick=async()=>{const t=to.value.trim(),s=sj.value.trim(),b=bd.innerText.trim(),hasT=!!bd.querySelector("table,blockquote");
     if(!t||!s||!b){msgx.className="note err";msgx.textContent="받는 사람·제목·내용을 모두 써 주세요.";return}
     if(!confirm(t+" 에게 메일을 보낼까요?"+(files.length?"\n첨부파일 "+files.length+"개 포함":"")+"\n보낸 뒤에는 취소할 수 없어요."))return;
     send.disabled=true;msgx.className="note";msgx.textContent="보내는 중…";let ok=false,m2="";
@@ -260,7 +266,7 @@ function drawCompose(p){
     send.disabled=false;if(!ok){msgx.className="note err";msgx.textContent="보내지 못했어요: "+m2;return}
     composing=null;fold="out";selId=null;await loadInbox()};
   p.append(el("h2",{className:"eh",textContent:"새 메일"}),el("div",{className:"cf"},[el("label",{},[document.createTextNode("보내는 사람"),fromSel]),el("label",{},[document.createTextNode("받는 사람"),to]),el("label",{},[document.createTextNode("제목"),sj]),bd,afl,fi,el("div",{className:"acts",style:"border:0;padding:0;margin:0"},[send,ab,cancel,msgx,el("span",{className:"note",textContent:"엑셀 표를 복사해 붙여넣을 수 있어요 · 개인 메일은 제목 앞에 [RIF STUDIO]가 자동으로 붙어요 · 서명은 자동으로 붙어요 (서명 설정에서 바꿀 수 있어요)"})])]));
-  to.focus()}
+  if(c.quote){bd.focus();try{const r=document.createRange();r.setStart(bd.firstChild,0);r.collapse(true);const sl=getSelection();sl.removeAllRanges();sl.addRange(r)}catch(_){}}else to.focus()}
 $("onew").onclick=()=>{composing={};drawMail()};$("oq").oninput=drawMail;$("osl").onclick=()=>{selMode=!selMode;picked.clear();drawMail()};$("orf").onclick=()=>{loadInbox();loadUsage()};loadUsage();
 
 /* 직원 · 프로필 */
