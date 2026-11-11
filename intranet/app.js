@@ -313,7 +313,7 @@ function drawDir(){
     tr.onclick=()=>showPerson(r);tb.append(tr)});
   g.append(el("div",{style:"overflow-x:auto;border:1px solid #7773;border-radius:6px"},[el("table",{className:"jt",id:"etbl"},[el("thead",{},[el("tr",{},["","이름","직책","직위","사번","Discord","X","업무 내용"].map(t=>el("th",{textContent:t})))]),tb])]))}
 function showPerson(r){const has=r.avatar&&urls[r.avatar],av=el("div",{className:"av"});if(has)avatar(av,r.avatar,"");else av.textContent=ini(r.nickname||r.name);
-  const rows=[["사번",r.emp||"-"],["부서",[r.division,r.team].filter(Boolean).join(" · ")||"-"],["직책·직위",[r.pos,r.rnk].filter(Boolean).join(" · ")||"-"],["전화",r.phone||"-"],["이메일",r.email],["Discord",r.discord||"-"],["X",r.twitter||"-"],["업무 내용",r.duties||"-"]];
+  const rows=[["사번",r.emp||"-"],["부서",[r.division,r.team].filter(Boolean).join(" · ")||"-"],["직책·직위",[r.pos,r.rnk].filter(Boolean).join(" · ")||"-"],["전화",fmtPhone(r.phone)||"-"],["이메일",r.email],["Discord",r.discord||"-"],["X",r.twitter||"-"],["업무 내용",r.duties||"-"]];
   $("pmb").replaceChildren(el("div",{className:"pfx"},[av,el("div",{},[el("b",{textContent:r.nickname||r.name}),el("span",{textContent:r.nickname&&r.name?r.name:""})])]),el("dl",{className:"prl"},rows.flatMap(([k,v])=>[el("dt",{textContent:k}),el("dd",{textContent:v})])));
   if(r.email.toLowerCase()!==me){const cb=el("button",{type:"button",className:"btn mred",textContent:"💬 채팅하기",style:"margin-top:16px;width:100%"});cb.onclick=()=>{chatTo=r.email.toLowerCase();$("cq").value="";$("pm").hidden=true;document.querySelector('#tabs button[data-t="c"]').click()};$("pmb").append(cb)}
   $("pm").hidden=false}
@@ -449,3 +449,5 @@ $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
 const qn=new URLSearchParams(location.search).get("n");if(qn&&/^\S{1,20}$/.test(qn)){$("sn").value=qn;$("sg").open=true}
 render();
 })();
+
+bindPhone($("sph"));

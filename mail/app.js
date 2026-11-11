@@ -82,3 +82,5 @@ $("out").onclick=async e=>{e.preventDefault();await db.auth.signOut();render()};
 const qn=new URLSearchParams(location.search).get("n");if(qn&&/^\S{1,20}$/.test(qn)){$("sn").value=qn;$("sg").open=true}
 render();
 })();
+
+bindPhone($("sph"));

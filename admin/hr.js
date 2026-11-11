@@ -24,7 +24,7 @@ function draw(){
     const st=r.status==="left"?["퇴사","x"]:r.used_at?["가입 완료","on"]:expired(r)?["기간 만료","x"]:["가입 대기","wt"];
     const acts=[];
     const b1=el("button",{className:"btn small",textContent:"수정"});
-    b1.onclick=()=>{edit=r;$("hft").textContent="정보 수정 · "+r.emp_no;$("hno").value=r.emp_no;$("hn").value=r.name;$("hnk").value=r.nickname;$("he").value=r.email;$("hph").value=r.phone;$("hp").value=r.position;$("hrk").value=r.rank||"";setDT(r.division||"",r.team||"");$("hdc").value=r.discord||"";$("htw").value=r.twitter||"";$("hm").value=r.memo;$("hform").hidden=false;$("hn").focus();$("hform").scrollIntoView({behavior:"smooth",block:"center"})};
+    b1.onclick=()=>{edit=r;$("hft").textContent="정보 수정 · "+r.emp_no;$("hno").value=r.emp_no;$("hn").value=r.name;$("hnk").value=r.nickname;$("he").value=r.email;$("hph").value=fmtPhone(r.phone);$("hp").value=r.position;$("hrk").value=r.rank||"";setDT(r.division||"",r.team||"");$("hdc").value=r.discord||"";$("htw").value=r.twitter||"";$("hm").value=r.memo;$("hform").hidden=false;$("hn").focus();$("hform").scrollIntoView({behavior:"smooth",block:"center"})};
     acts.push(b1);
     if(!r.used_at&&r.status==="active"&&r.invite_email){const b=el("button",{className:"btn small",textContent:r.onboard_sent_at?"메일 재발송":"축하 메일 보내기"});
       b.onclick=async()=>{if(!confirm(r.invite_email+" 에게 입사 축하 메일(한/일/영, 사번 "+r.emp_no+" 포함)을 보낼까요?"))return;b.disabled=true;const m=await sendMail(r);b.disabled=false;if(m)alert("메일을 보내지 못했어요: "+m);else{alert("보냈어요.");load()}};acts.push(b)}
@@ -46,7 +46,7 @@ function draw(){
       let m="";if(error){try{m=(await error.context.json()).error}catch(_){m=error.message}}else if(!(data&&data.ok))m=(data&&data.error)||"알 수 없는 오류";
       b3.disabled=false;if(m)return alert("지우지 못했어요: "+m);load()};acts.push(b3);
     const mailTd=el("td",{textContent:(r.email||"").replace(/@rif-studio\.com$/i,"")});if(!r.used_at&&r.invite_email){mailTd.textContent="초대: "+r.invite_email;mailTd.className="sm"}
-    tb.append(el("tr",{className:r.status==="left"?"lft":""},[el("td",{className:"en",textContent:r.emp_no}),el("td",{textContent:r.name}),el("td",{textContent:r.nickname}),mailTd,el("td",{textContent:r.phone}),el("td",{textContent:[r.position,r.rank].filter(Boolean).join(" / ")}),el("td",{textContent:r.division||""}),el("td",{textContent:r.team||""}),el("td",{textContent:r.discord||""}),el("td",{textContent:r.twitter||""}),
+    tb.append(el("tr",{className:r.status==="left"?"lft":""},[el("td",{className:"en",textContent:r.emp_no}),el("td",{textContent:r.name}),el("td",{textContent:r.nickname}),mailTd,el("td",{textContent:fmtPhone(r.phone)}),el("td",{textContent:[r.position,r.rank].filter(Boolean).join(" / ")}),el("td",{textContent:r.division||""}),el("td",{textContent:r.team||""}),el("td",{textContent:r.discord||""}),el("td",{textContent:r.twitter||""}),
       el("td",{},[el("span",{className:"hs "+st[1],textContent:st[0]}),...(r.onboard_sent_at&&!r.used_at?[el("div",{className:"sm",textContent:"축하 메일 발송 "+dt(r.onboard_sent_at)})]:[])]),el("td",{className:"sm",textContent:dt(r.issued_at)}),el("td",{textContent:r.memo}),el("td",{className:"ac"},acts)]))});
   if(!rows.length)tb.append(el("tr",{},[el("td",{colSpan:14,textContent:"아직 발급된 사번이 없어요."})]))}
 $("cshow").onchange=()=>{$("cpw").type=$("cshow").checked?"text":"password"};
@@ -96,3 +96,5 @@ $("hpo").onclick=async()=>{const p=$("hpi").value;if(!p)return;
 $("hpi").onkeydown=e=>{if(e.key==="Enter")$("hpo").click()};
 $("out").addEventListener("click",lock);
 })();
+
+bindPhone($("hph"));

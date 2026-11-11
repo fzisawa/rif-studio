@@ -33,3 +33,7 @@ function addForm(getPage,done,extra=[],getSec){
     try{const s=sec.hidden?"":sec.value;await addItem(getPage(),file.files[0],yt.value,cap.value.trim(),s);yt.value=file.value=cap.value="";prev.replaceChildren();msg.textContent="";done(s)}
     catch(e){msg.textContent="실패: "+e.message}btn.disabled=false};
   const panel=el("div",{id:"panel"},[...extra,yt,file,cap,sec,prev,btn,msg]);panel.fill=fill;fill();return panel}
+
+/* 전화번호 자동 서식: 숫자만 입력하면 000-0000-0000 */
+const fmtPhone=v=>{const s=String(v==null?"":v);const d=s.replace(/\D/g,"");if(!d)return/^\s*-?\s*$/.test(s)?s.trim():s;const x=d.slice(0,11);return x.length<=3?x:x.length<=7?x.slice(0,3)+"-"+x.slice(3):x.slice(0,3)+"-"+x.slice(3,7)+"-"+x.slice(7)};
+const bindPhone=i=>{if(!i)return;i.setAttribute("inputmode","numeric");i.setAttribute("maxlength","13");i.setAttribute("placeholder","000-0000-0000");i.addEventListener("input",()=>{const f=fmtPhone(i.value);if(f!==i.value)i.value=f})};
