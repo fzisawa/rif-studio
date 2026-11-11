@@ -458,7 +458,5 @@ $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
   const {error}=await db.auth.signInWithPassword({email:toEmail($("sid").value),password:$("spw").value});
   $("spw").value="";$("spw2").value="";m.textContent=error?"가입은 됐어요. 위에서 로그인해 주세요.":"";render()};
 const qn=new URLSearchParams(location.search).get("n");if(qn&&/^\S{1,20}$/.test(qn)){$("sn").value=qn;$("sg").open=true}
-render();
+bindPhone($("sph"));render();
 })();
-
-bindPhone($("sph"));
