@@ -101,6 +101,7 @@ $("hpc").onclick=()=>{pm.hidden=true};$("hpx").onclick=()=>{pm.hidden=true};pm.o
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("hmod").hidden)closeEdit();else if(!pm.hidden)pm.hidden=true});
 $("hpo").onclick=async()=>{const p=$("hpi").value;if(!p)return;
   const {data,error}=await db.rpc("check_ceo_pin",{p_pin:p});
+  if(error&&/permission denied|JWT|401/i.test(error.message||"")){$("hpe").textContent="로그인이 풀렸어요. 로그아웃 후 다시 로그인해 주세요";try{await db.auth.signOut()}catch(_){}setTimeout(()=>location.reload(),1500);return}
   if(error||!data){$("hpe").textContent="비밀번호가 맞지 않아요";return}
   PIN=p;pm.hidden=true;$("hr-body").hidden=false;$("hrlock").textContent="🔓 잠금 (열림)";clearTimeout(tm);tm=setTimeout(lock,10*60*1000);load()};
 $("hpi").onkeydown=e=>{if(e.key==="Enter")$("hpo").click()};
