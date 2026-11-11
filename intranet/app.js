@@ -77,19 +77,63 @@ function drawTasks(){
       st.onchange=async()=>{const {error}=await db.from("intra_tasks").update({status:st.value,updated_at:new Date().toISOString()}).eq("id",t.id);if(error)alert("바꾸지 못했어요");loadTasks()}}
     else st=el("span",{className:"rb "+(t.status==="done"?"on":"off"),textContent:(TS.find(x=>x[0]===t.status)||[0,t.status])[1]});
     const acts=[];
-    if(ceo||own){const x=el("button",{type:"button",className:"x",textContent:"×",title:"삭제"});x.onclick=async e=>{e.stopPropagation();if(!confirm("'"+t.title+"' 업무를 삭제할까요?"))return;await db.from("intra_tasks").delete().eq("id",t.id);loadTasks()};acts.push(x)}
+    if(ceo||own){const x=el("button",{type:"button",className:"x",textContent:"×",title:"삭제"});x.onclick=async e=>{e.stopPropagation();if(!confirm("'"+t.title+"' 업무를 삭제할까요?"))return;await db.from("intra_tasks").delete().eq("id",t.id);const fp=(t.refs||[]).filter(r=>r.k==="f").map(r=>r.path);if(fp.length)db.storage.from(RBK).remove(fp);loadTasks()};acts.push(x)}
     const tr=el("tr",{className:"r"+(t.status==="done"?" done":"")},[el("td",{},[st]),
       el("td",{className:"tt",title:t.title+(t.detail?" — "+t.detail:"")},[document.createTextNode(t.title),...(t.detail?[el("span",{className:"dn",textContent:"  "+t.detail.replace(/\s+/g," ")})]:[])]),
       el("td",{textContent:t.assignee_name||"미지정"}),el("td",{className:"dt tdue"},[el("span",{className:od?"od":"",textContent:t.due?t.due+(od?" · 지남":""):"-"})]),el("td",{textContent:(t.created_by_name||"")+" · "+fd(t.created_at)}),el("td",{className:"ac"},acts)]);
-    const dtl=el("tr",{className:"d",hidden:openT!==t.id},[el("td",{colSpan:6},[el("p",{textContent:t.detail||"(상세 내용이 없어요)"}),el("span",{className:"note",textContent:"등록 "+(t.created_by_name||"")+" · "+fd(t.created_at)+(t.assignee_name?" · 담당 "+t.assignee_name:"")})])]);
-    tr.onclick=()=>{dtl.hidden=!dtl.hidden;openT=dtl.hidden?null:t.id};
+    const rbox=el("div",{className:"refs"});
+    const dtl=el("tr",{className:"d",hidden:openT!==t.id},[el("td",{colSpan:6},[el("p",{textContent:t.detail||"(상세 내용이 없어요)"}),rbox,el("span",{className:"note",textContent:"등록 "+(t.created_by_name||"")+" · "+fd(t.created_at)+(t.assignee_name?" · 담당 "+t.assignee_name:"")})])]);
+    if(openT===t.id)fillRefs(t,rbox,can);
+    tr.onclick=()=>{dtl.hidden=!dtl.hidden;openT=dtl.hidden?null:t.id;if(!dtl.hidden)fillRefs(t,rbox,can)};
     tb.append(tr,dtl)});
   if(!list.length)tb.append(el("tr",{},[el("td",{colSpan:6,className:"dt",textContent:tflt==="done"?"완료한 업무가 아직 없어요.":"업무가 없어요."})]))}
 $("tmine").onchange=drawTasks;
+/* 레퍼런스(사진·영상·유튜브) — 파일은 비공개 저장소에 올리고, 볼 때만 잠깐 유효한 주소로 바로 보여줘요 */
+const RBK="task-refs",RMAX=50*1024*1024,RTYPES={"image/png":"png","image/jpeg":"jpg","image/gif":"gif","image/webp":"webp","video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov"};
+const ytIds=txt=>[...new Set(String(txt||"").split(/[\s,]+/).map(u=>{const m=u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/);return m?m[1]:""}).filter(Boolean))];
+async function uploadRefs(files){const out=[];
+  for(const f of files){
+    const ext=RTYPES[f.type];if(!ext)throw new Error("'"+f.name+"' 은(는) 올릴 수 없는 형식이에요 (사진, mp4/webm/mov 영상만)");
+    if(f.size>RMAX)throw new Error("'"+f.name+"' 이(가) 50MB보다 커요");
+    const path=uid+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
+    const {error}=await db.storage.from(RBK).upload(path,f,{contentType:f.type});
+    if(error)throw new Error("'"+f.name+"' 을(를) 올리지 못했어요");
+    out.push({k:"f",name:f.name,path,mime:f.type})}
+  return out}
+function lightbox(src){const o=el("div",{className:"lb"},[el("img",{src})]);o.onclick=()=>o.remove();document.body.append(o)}
+async function fillRefs(t,box,can){
+  const refs=Array.isArray(t.refs)?t.refs:[];box.replaceChildren();
+  const paths=refs.filter(r=>r.k==="f").map(r=>r.path);let urls={};
+  if(paths.length){const {data}=await db.storage.from(RBK).createSignedUrls(paths,3600);(data||[]).forEach(d=>{if(d.signedUrl)urls[d.path]=d.signedUrl})}
+  const save=async nr=>{const {error}=await db.from("intra_tasks").update({refs:nr,updated_at:new Date().toISOString()}).eq("id",t.id);if(error){alert("저장하지 못했어요");return false}t.refs=nr;return true};
+  const grid=el("div",{className:"rgrid"});
+  refs.forEach((r,i)=>{let m;
+    if(r.k==="yt")m=el("iframe",{src:"https://www.youtube-nocookie.com/embed/"+encodeURIComponent(r.id),allow:"accelerometer; encrypted-media; picture-in-picture; fullscreen",allowFullscreen:true,loading:"lazy",title:"유튜브 영상",className:"rv"});
+    else if(!urls[r.path])m=el("div",{className:"rv miss",textContent:r.name||"파일"});
+    else if((r.mime||"").startsWith("video/"))m=el("video",{src:urls[r.path],controls:true,preload:"metadata",playsInline:true,className:"rv"});
+    else{m=el("img",{src:urls[r.path],alt:r.name||"",loading:"lazy",className:"ri",title:"누르면 크게 보여요"});m.onclick=e=>{e.stopPropagation();lightbox(urls[r.path])}}
+    const wrap=el("div",{className:"ritem"},[m]);
+    if(can){const x=el("button",{type:"button",className:"x",textContent:"×",title:"이 레퍼런스 지우기"});
+      x.onclick=async e=>{e.stopPropagation();if(!confirm("이 레퍼런스를 지울까요?"))return;if(!await save(refs.filter((_,j)=>j!==i)))return;if(r.k==="f")db.storage.from(RBK).remove([r.path]);fillRefs(t,box,can)};wrap.append(x)}
+    grid.append(wrap)});
+  if(refs.length)box.append(grid);
+  if(can){const f=el("input",{type:"file",accept:"image/*,video/mp4,video/webm,video/quicktime",multiple:true,hidden:true});
+    const a=el("button",{type:"button",className:"btn small",textContent:"＋ 사진·영상 추가"}),y=el("button",{type:"button",className:"btn small",textContent:"＋ 유튜브 링크"}),mm=el("span",{className:"note"});
+    a.onclick=e=>{e.stopPropagation();f.click()};f.onclick=e=>e.stopPropagation();
+    f.onchange=async()=>{const fs=[...f.files];f.value="";if(!fs.length)return;mm.textContent="올리는 중…";
+      try{const add=await uploadRefs(fs);if(await save([...refs,...add]))fillRefs(t,box,can)}catch(x){mm.textContent=x.message}};
+    y.onclick=async e=>{e.stopPropagation();const v=prompt("유튜브 링크를 붙여 넣어 주세요");if(!v)return;const ids=ytIds(v);if(!ids.length)return alert("유튜브 링크가 아닌 것 같아요");if(await save([...refs,...ids.map(id=>({k:"yt",id}))]))fillRefs(t,box,can)};
+    box.append(el("div",{className:"ract"},[a,y,mm,f]))}
+  else if(!refs.length)box.hidden=true}
 $("tf").onsubmit=async e=>{e.preventDefault();const t=$("tt").value.trim();if(!t)return msg("tmsg","제목을 써 주세요.",1);
-  const as=$("ta").value;
-  const {error}=await db.from("intra_tasks").insert({title:t,detail:$("td").value.trim(),assignee_email:as,assignee_name:as?nameOf(as):"",due:$("tdue").value||null,created_by:me,created_by_name:myName});
-  if(error)return msg("tmsg","추가하지 못했어요",1);$("tt").value="";$("td").value="";$("tdue").value="";msg("tmsg","");closeWm();toast("업무를 추가했어요 ✓");tflt="open";loadTasks()};
+  const as=$("ta").value,b=e.submitter||$("tf").querySelector("button.btn");if(b)b.disabled=true;
+  try{
+    const ids=ytIds($("tyt").value);let refs=ids.map(id=>({k:"yt",id}));
+    const fs=[...$("tfile").files];if(fs.length){msg("tmsg","파일 올리는 중…");refs=[...await uploadRefs(fs),...refs]}
+    const {error}=await db.from("intra_tasks").insert({title:t,detail:$("td").value.trim(),assignee_email:as,assignee_name:as?nameOf(as):"",due:$("tdue").value||null,created_by:me,created_by_name:myName,refs});
+    if(error)throw new Error("추가하지 못했어요");
+  }catch(x){if(b)b.disabled=false;return msg("tmsg",x.message,1)}
+  if(b)b.disabled=false;$("tt").value="";$("td").value="";$("tdue").value="";$("tfile").value="";$("tyt").value="";msg("tmsg","");closeWm();toast("업무를 추가했어요 ✓");tflt="open";loadTasks()};
 
 /* 자료 */
 async function loadDocs(){const {data}=await db.from("intra_docs").select("*").order("created_at",{ascending:false}).limit(500);docs=data||[];drawDocs()}
