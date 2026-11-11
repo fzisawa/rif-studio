@@ -345,17 +345,17 @@ function markSeen(){const l=convMsgs(chatTo);setSeenFor(chatTo,l.length?l[l.leng
 function drawPeople(){const box=$("cp");box.replaceChildren();
   const q=($("cq").value||"").trim().toLowerCase();
   const roomItems=rooms.map(r=>({k:"room:"+r.id,name:r.name,sub:"👥 "+((roomMem[r.id]||[]).length+1)+"명",room:r}));
-  const items=[{k:"",name:"전체 채팅",sub:"모든 사원"}].concat(roomItems.filter(it=>!q||it.name.toLowerCase().includes(q))).concat(dir.filter(r=>r.email.toLowerCase()!==me&&(!q||[r.name,r.nickname,r.email].join(" ").toLowerCase().includes(q))).map(r=>({k:r.email.toLowerCase(),name:r.nickname||r.name,sub:[r.pos,r.rnk].filter(Boolean).join(" · "),r})));
+  const items=[{k:"",name:"RIF STUDIO",sub:"전체 채팅 · 모든 사원",logo:1}].concat(roomItems.filter(it=>!q||it.name.toLowerCase().includes(q))).concat(dir.filter(r=>r.email.toLowerCase()!==me&&(!q||[r.name,r.nickname,r.email].join(" ").toLowerCase().includes(q))).map(r=>({k:r.email.toLowerCase(),name:r.nickname||r.name,sub:[r.pos,r.rnk].filter(Boolean).join(" · "),r})));
   if(canLead()){const nb=el("button",{type:"button",className:"cpi cnew",textContent:"＋ 새 팀 채팅방 만들기"});nb.onclick=()=>roomDlg(null);box.prepend(nb)}
   items.forEach(it=>{const av=el("span",{className:"avs l"});
-    if(it.r&&it.r.avatar&&urls[it.r.avatar])avatar(av,it.r.avatar,"");else av.textContent=it.r?ini(it.name):it.room?"👥":"#";
+    if(it.r&&it.r.avatar&&urls[it.r.avatar])avatar(av,it.r.avatar,"");else {if(it.logo){av.style.backgroundImage='url("../img/logo-square.png")';av.style.backgroundSize="cover";av.style.backgroundColor="#fff"}else av.textContent=it.r?ini(it.name):it.room?"👥":"#"}
     const un=convUnread(it.k);
     const b=el("button",{type:"button",className:"cpi"+(chatTo===it.k?" on":"")},[av,el("span",{className:"cpt"},[el("b",{textContent:it.name}),el("span",{className:"note",textContent:it.sub})]),...(un&&!(chatOpen&&chatTo===it.k)?[el("span",{className:"cbd",textContent:un>99?"99+":un})]:[])]);
     b.onclick=()=>{chatTo=it.k;markSeen();drawPeople();drawChat(true);$("ci").focus()};box.append(b)})}
 function drawChat(stick){const box=$("cl"),near=box.scrollHeight-box.scrollTop-box.clientHeight<80;box.replaceChildren();let lastDay="";
   const to=chatTo?dir.find(x=>x.email.toLowerCase()===chatTo):null;
   const rm=curRoom();
-  $("ch2").replaceChildren(el("span",{textContent:rm?"👥 "+rm.name+" · "+[rm.owner_email,...(roomMem[rm.id]||[])].map(dispName).join(", "):chatTo?(to?(to.nickname||to.name):chatTo)+" 님과의 1:1 대화":"전체 채팅 · 모든 사원이 볼 수 있어요"}));
+  $("ch2").replaceChildren(el("span",{textContent:rm?"👥 "+rm.name+" · "+[rm.owner_email,...(roomMem[rm.id]||[])].map(dispName).join(", "):chatTo?(to?(to.nickname||to.name):chatTo)+" 님과의 1:1 대화":"RIF STUDIO · 전체 채팅 · 모든 사원이 볼 수 있어요"}));
   if(rm&&(rm.owner_email.toLowerCase()===me||ceo)){const mb=el("button",{type:"button",className:"ob2",textContent:"멤버 관리"});mb.onclick=()=>roomDlg(rm);const db2=el("button",{type:"button",className:"ob2",textContent:"방 삭제"});
     db2.onclick=async()=>{if(!confirm("'"+rm.name+"' 채팅방을 삭제할까요?\n대화 내용도 모두 사라지고 되돌릴 수 없어요."))return;const {error}=await db.rpc("chat_room_delete",{p_id:rm.id});if(error)return alert("삭제하지 못했어요");chatTo="";await loadRooms();await loadChat(true)};$("ch2").append(mb,db2)}
   $("ci").placeholder=rm?"채팅방 멤버 모두에게 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)":chatTo?"이 사원에게만 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)":"전체에게 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)";
