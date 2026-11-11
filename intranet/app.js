@@ -309,6 +309,7 @@ function drawDir(){
 function showPerson(r){const has=r.avatar&&urls[r.avatar],av=el("div",{className:"av"});if(has)avatar(av,r.avatar,"");else av.textContent=ini(r.nickname||r.name);
   const rows=[["사번",r.emp||"-"],["부서",[r.division,r.team].filter(Boolean).join(" · ")||"-"],["직책·직위",[r.pos,r.rnk].filter(Boolean).join(" · ")||"-"],["전화",r.phone||"-"],["이메일",r.email],["Discord",r.discord||"-"],["X",r.twitter||"-"],["업무 내용",r.duties||"-"]];
   $("pmb").replaceChildren(el("div",{className:"pfx"},[av,el("div",{},[el("b",{textContent:r.nickname||r.name}),el("span",{textContent:r.nickname&&r.name?r.name:""})])]),el("dl",{className:"prl"},rows.flatMap(([k,v])=>[el("dt",{textContent:k}),el("dd",{textContent:v})])));
+  if(r.email.toLowerCase()!==me){const cb=el("button",{type:"button",className:"btn mred",textContent:"💬 채팅하기",style:"margin-top:16px;width:100%"});cb.onclick=()=>{chatTo=r.email.toLowerCase();$("cq").value="";$("pm").hidden=true;document.querySelector('#tabs button[data-t="c"]').click()};$("pmb").append(cb)}
   $("pm").hidden=false}
 $("pmx").onclick=()=>{$("pm").hidden=true};$("pm").onclick=e=>{if(e.target===$("pm"))$("pm").hidden=true};document.addEventListener("keydown",e=>{if(e.key==="Escape")$("pm").hidden=true});
 $("eq").oninput=drawDir;
@@ -345,17 +346,25 @@ function markSeen(){const l=convMsgs(chatTo);setSeenFor(chatTo,l.length?l[l.leng
 function drawPeople(){const box=$("cp");box.replaceChildren();
   const q=($("cq").value||"").trim().toLowerCase();
   const roomItems=rooms.map(r=>({k:"room:"+r.id,name:r.name,sub:"👥 "+((roomMem[r.id]||[]).length+1)+"명",room:r}));
-  const items=[{k:"",name:"RIF STUDIO",sub:"전체 채팅 · 모든 사원",logo:1}].concat(roomItems.filter(it=>!q||it.name.toLowerCase().includes(q))).concat(dir.filter(r=>r.email.toLowerCase()!==me&&(!q||[r.name,r.nickname,r.email].join(" ").toLowerCase().includes(q))).map(r=>({k:r.email.toLowerCase(),name:r.nickname||r.name,sub:[r.pos,r.rnk].filter(Boolean).join(" · "),r})));
+  const lastId=k=>{const l=convMsgs(k);return l.length?l[l.length-1].id:0};
+  const mkEmp=r=>({k:r.email.toLowerCase(),name:r.nickname||r.name,sub:[r.pos,r.rnk].filter(Boolean).join(" · "),duty:r.duties||"",r});
+  let people,hd;
+  if(q){hd="검색 결과";people=dir.filter(r=>r.email.toLowerCase()!==me&&[r.name,r.nickname,r.email,r.duties,r.team,r.pos].join(" ").toLowerCase().includes(q)).map(mkEmp)}
+  else{hd="대화";const keys=[...new Set(chatMsgs.map(convKey).filter(k=>k&&!k.startsWith("room:")))];if(chatTo&&!chatTo.startsWith("room:")&&!keys.includes(chatTo))keys.push(chatTo);
+    people=keys.map(k=>dir.find(r=>r.email.toLowerCase()===k)).filter(Boolean).sort((x,y)=>lastId(y.email.toLowerCase())-lastId(x.email.toLowerCase())).map(mkEmp)}
+  const items=[{k:"",name:"RIF STUDIO",sub:"전체 채팅 · 모든 사원",logo:1}].concat(roomItems.filter(it=>!q||it.name.toLowerCase().includes(q))).concat([{hdr:hd}]).concat(people);
+  {const fb=el("button",{type:"button",className:"cpi cnew find",textContent:"🔎 사원 정보에서 찾기"});fb.onclick=()=>document.querySelector('#tabs button[data-t="e"]').click();box.prepend(fb)}
   if(canLead()){const nb=el("button",{type:"button",className:"cpi cnew",textContent:"＋ 새 팀 채팅방 만들기"});nb.onclick=()=>roomDlg(null);box.prepend(nb)}
-  items.forEach(it=>{const av=el("span",{className:"avs l"});
+  items.forEach(it=>{if(it.hdr){box.append(el("div",{className:"csh",textContent:it.hdr}));if(!people.length)box.append(el("div",{className:"note",style:"padding:10px 14px;font-size:12px",textContent:q?"찾는 사원이 없어요.":"사원은 위 검색이나 '사원 정보'에서 찾아 대화를 시작하세요."}));return}
+    const av=el("span",{className:"avs l"});
     if(it.r&&it.r.avatar&&urls[it.r.avatar])avatar(av,it.r.avatar,"");else {if(it.logo){av.style.backgroundImage='url("../img/logo-square.png")';av.style.backgroundSize="cover";av.style.backgroundColor="#fff"}else av.textContent=it.r?ini(it.name):it.room?"👥":"#"}
     const un=convUnread(it.k);
-    const b=el("button",{type:"button",className:"cpi"+(chatTo===it.k?" on":"")},[av,el("span",{className:"cpt"},[el("b",{textContent:it.name}),el("span",{className:"note",textContent:it.sub})]),...(un&&!(chatOpen&&chatTo===it.k)?[el("span",{className:"cbd",textContent:un>99?"99+":un})]:[])]);
-    b.onclick=()=>{chatTo=it.k;markSeen();drawPeople();drawChat(true);$("ci").focus()};box.append(b)})}
+    const b=el("button",{type:"button",className:"cpi"+(chatTo===it.k?" on":"")},[av,el("span",{className:"cpt"},[el("b",{textContent:it.name}),el("span",{className:"note",textContent:it.sub}),...(it.duty?[el("span",{className:"cduty",textContent:"업무 · "+it.duty})]:[])]),...(un&&!(chatOpen&&chatTo===it.k)?[el("span",{className:"cbd",textContent:un>99?"99+":un})]:[])]);
+    b.onclick=()=>{chatTo=it.k;if(q)$("cq").value="";markSeen();drawPeople();drawChat(true);$("ci").focus()};box.append(b)})}
 function drawChat(stick){const box=$("cl"),near=box.scrollHeight-box.scrollTop-box.clientHeight<80;box.replaceChildren();let lastDay="";
   const to=chatTo?dir.find(x=>x.email.toLowerCase()===chatTo):null;
   const rm=curRoom();
-  $("ch2").replaceChildren(el("span",{textContent:rm?"👥 "+rm.name+" · "+[rm.owner_email,...(roomMem[rm.id]||[])].map(dispName).join(", "):chatTo?(to?(to.nickname||to.name):chatTo)+" 님과의 1:1 대화":"RIF STUDIO · 전체 채팅 · 모든 사원이 볼 수 있어요"}));
+  $("ch2").replaceChildren(el("span",{textContent:rm?"👥 "+rm.name+" · "+[rm.owner_email,...(roomMem[rm.id]||[])].map(dispName).join(", "):chatTo?(to?(to.nickname||to.name):chatTo)+" 님과의 1:1 대화"+(to&&to.duties?" · 업무: "+to.duties:""):"RIF STUDIO · 전체 채팅 · 모든 사원이 볼 수 있어요"}));
   if(rm&&(rm.owner_email.toLowerCase()===me||ceo)){const mb=el("button",{type:"button",className:"ob2",textContent:"멤버 관리"});mb.onclick=()=>roomDlg(rm);const db2=el("button",{type:"button",className:"ob2",textContent:"방 삭제"});
     db2.onclick=async()=>{if(!confirm("'"+rm.name+"' 채팅방을 삭제할까요?\n대화 내용도 모두 사라지고 되돌릴 수 없어요."))return;const {error}=await db.rpc("chat_room_delete",{p_id:rm.id});if(error)return alert("삭제하지 못했어요");chatTo="";await loadRooms();await loadChat(true)};$("ch2").append(mb,db2)}
   $("ci").placeholder=rm?"채팅방 멤버 모두에게 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)":chatTo?"이 사원에게만 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)":"전체에게 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)";
