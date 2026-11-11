@@ -1,11 +1,11 @@
 (async()=>{
   const g=document.getElementById("grid"),page=g.dataset.page,sec=g.closest(".gal"),main=document.querySelector("main"),
-        tracks=page==="rif"?document.querySelector(".tracks"):null,admin=await isAdmin();
-  const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""),hash=()=>decodeURIComponent(location.hash.slice(1)).toLowerCase();
+        tracks=page==="rif"?document.querySelector(".tracks"):null,admin=await isStaffUser();
+  const slug=s=>s.toLowerCase().replace(/[^a-z0-9가-힣]+/g,"-").replace(/^-|-$/g,""),hash=()=>decodeURIComponent(location.hash.slice(1)).toLowerCase();
   let list=[],active=null,top=hash()==="portfolio"?"Portfolio":"Tracks";
   const bar=el("div",{className:"tabs"}),topBar=el("div",{className:"tabs top"});
   g.before(bar);if(tracks)tracks.before(topBar);
-  const form=addForm(()=>page,s=>{if(s)active=s;form.hidden=true;load()},[],()=>active);form.hidden=true;g.after(form);
+  const form=addForm(()=>page,s=>{if(s)active=s;form.hidden=true;load()},[],()=>active,()=>[...new Set(list.map(i=>i.section).filter(Boolean))]);form.hidden=true;g.after(form);
   const card=it=>{const c=el("figure",{className:"item"},[media(it)]);
     if(it.caption)c.append(el("figcaption",{textContent:it.caption,title:it.caption}));
     if(admin){const x=el("button",{className:"del",textContent:"×",ariaLabel:"삭제"});x.onclick=async()=>{if(confirm("삭제할까요?")){await delItem(it);load()}};c.append(x)}
@@ -13,7 +13,7 @@
   const tabs=(box,names,cur,pick)=>box.replaceChildren(...names.map(n=>{const b=el("button",{className:"tab"+(n===cur?" on":""),type:"button",textContent:n});b.onclick=()=>pick(n);return b}));
   const go=n=>history.replaceState(null,"","#"+slug(n));
   function render(){
-    const sectioned=page!=="woljae"&&(!!CATS[page]||list.some(i=>i.section));let its=list;
+    const sectioned=!!CATS[page]||list.some(i=>i.section);let its=list;
     g.replaceChildren();g.className="grid";bar.replaceChildren();
     if(sectioned){
       const base=CATS[page]||[],extra=[...new Set(list.map(i=>i.section).filter(Boolean))].filter(n=>!base.includes(n)),names=[...base,...extra];
@@ -31,5 +31,5 @@
       tracks.hidden=top!=="Tracks";sec.hidden=top!=="Portfolio";main.classList.add("tabbed");
       if(top!=="Tracks")document.dispatchEvent(new Event("rif:pause"))}
     else sec.hidden=!sectioned&&!admin&&!list.length}
-  async function load(){const {data}=await db.from("items").select("*").eq("page",page).order("created_at",{ascending:false});list=data||[];render()}
+  async function load(){const {data}=await db.from("items").select("*").eq("page",page).order("created_at",{ascending:false});list=(data||[]).map(i=>page==="woljae"&&OLDCATS.includes(i.section)?{...i,section:""}:i);render()}
   load()})();
