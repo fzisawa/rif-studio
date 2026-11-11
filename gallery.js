@@ -13,7 +13,7 @@
   const tabs=(box,names,cur,pick)=>box.replaceChildren(...names.map(n=>{const b=el("button",{className:"tab"+(n===cur?" on":""),type:"button",textContent:n});b.onclick=()=>pick(n);return b}));
   const go=n=>history.replaceState(null,"","#"+slug(n));
   function render(){
-    const sectioned=!!CATS[page]||list.some(i=>i.section);let its=list;
+    const sectioned=page!=="woljae"&&(!!CATS[page]||list.some(i=>i.section));let its=list;
     g.replaceChildren();g.className="grid";bar.replaceChildren();
     if(sectioned){
       const base=CATS[page]||[],extra=[...new Set(list.map(i=>i.section).filter(Boolean))].filter(n=>!base.includes(n)),names=[...base,...extra];
