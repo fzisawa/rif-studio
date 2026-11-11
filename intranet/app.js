@@ -7,15 +7,16 @@ let me="",myAddrs=[],sendAs="",uid="",myName="",ceo=false,exec=false,staff=[],re
 const CEO="takanashi@rif-studio.com";
 const msg=(id,t,bad)=>{const m=$(id);m.className="note"+(bad?" err":"");m.textContent=t};
 const nameOf=e=>(staff.find(s=>s.email.toLowerCase()===String(e).toLowerCase())||{}).name||e;
+let mySig={html:"",text:""};
 async function render(){
   const {data}=await db.auth.getSession(),s=data.session;
   $("login").hidden=!!s;$("sg").hidden=!!s;$("app").hidden=!s;
   if(!s)return;
   me=(s.user.email||"").toLowerCase();uid=s.user.id;ceo=me===CEO;$("who").textContent=s.user.email;
-  const {data:st}=await db.from("mail_staff").select("email,name,send_as,aliases").maybeSingle();
+  const {data:st}=await db.from("mail_staff").select("email,name,send_as,aliases,signature,signature_html").maybeSingle();
   $("box").hidden=!st;$("nomail").hidden=!!st;if(!st)return;
   myAddrs=[me,...(st.aliases||[]).map(a=>String(a).toLowerCase()).filter(Boolean)];sendAs=(st.send_as||"").toLowerCase()||me;
-  myName=st.name;{const {data:ex}=await db.rpc("is_exec");exec=!!ex||ceo}$("nw").hidden=!exec;
+  myName=st.name;mySig={html:(st.signature_html||"").trim(),text:(st.signature||"").trim()};{const {data:ex}=await db.rpc("is_exec");exec=!!ex||ceo}$("nw").hidden=!exec;
   await loadStaff();await loadAll()}
 async function loadStaff(){const {data}=await db.rpc("staff_list");staff=data||[];
   $("ta").replaceChildren(el("option",{value:"",textContent:"미지정"}),...staff.map(x=>el("option",{value:x.email,textContent:x.name||x.email})))}
@@ -179,15 +180,15 @@ function drawPane(){
         ...(canDel?(r.deleted_at?[(()=>{const b=el("button",{className:"ob p",type:"button",textContent:"↩ 복원"});b.onclick=async()=>{const {error}=await db.rpc("outbox_set_deleted",{p_id:r.id,p_del:false});if(error)return alert("복원하지 못했어요");selId=null;loadInbox()};return b})(),(()=>{const b=el("button",{className:"ob",type:"button",textContent:"영구 삭제"});b.onclick=async()=>{if(!confirm("이 메일을 영구 삭제할까요? 되돌릴 수 없어요."))return;const {error}=await db.rpc("outbox_purge",{p_ids:[r.id]});if(error)return alert("삭제하지 못했어요");selId=null;await loadInbox();loadUsage()};return b})()]:[(()=>{const b=el("button",{className:"ob",type:"button",textContent:"🗑 삭제"});b.onclick=async()=>{const {error}=await db.rpc("outbox_set_deleted",{p_id:r.id,p_del:true});if(error)return alert("삭제하지 못했어요");selId=null;loadInbox()};return b})()]):[])]),
       ...((r.attachments||[]).length?[el("div",{className:"atl"},r.attachments.map(x=>el("span",{className:"atb",textContent:"📎 "+x.filename+(x.size?" ("+mb(x.size)+")":"")})))]:[]),
       obody);
-    const sid=r.id;db.from("mail_outbox").select("body_html").eq("id",sid).single().then(({data})=>{if(data&&data.body_html&&selId===sid){const f=document.createElement("iframe");f.setAttribute("sandbox","");f.style.cssText="width:100%;min-height:200px;border:0;background:#fff;border-radius:6px";f.srcdoc='<base target="_blank"><body style="font:14px/1.6 sans-serif;margin:10px;color:#222">'+data.body_html;f.onload=()=>{try{f.style.height=Math.max(160,f.contentDocument.documentElement.scrollHeight+20)+"px"}catch(_){}};obody.replaceWith(f)}});return}
+    const sid=r.id;db.from("mail_outbox").select("body_html").eq("id",sid).single().then(({data})=>{if(data&&data.body_html&&selId===sid){const f=document.createElement("iframe");f.setAttribute("sandbox","");f.style.cssText="width:100%;min-height:200px;border:1px solid #7773;background:#f3eee4;border-radius:8px";f.srcdoc='<base target="_blank"><body style="font:14px/1.6 sans-serif;margin:10px;color:#222">'+data.body_html;f.onload=()=>{try{f.style.height=Math.max(160,f.contentDocument.documentElement.scrollHeight+20)+"px"}catch(_){}};obody.replaceWith(f)}});return}
   const m=inbox.find(x=>x.id===selId);if(!m)return;
   const acts=el("div",{className:"acts"});
   p.append(el("h2",{className:"eh",textContent:m.subject||"(제목 없음)"}),
     el("div",{className:"who"},[el("div",{className:"ci",textContent:ini(m.from_name||m.from_addr)}),el("div",{},[el("b",{textContent:(m.from_name?m.from_name+" ":"")+"<"+m.from_addr+">"}),el("span",{textContent:"받는 사람: "+(m.to_addrs||"support@rif-studio.com")+" · "+ftl(m.received_at)})])]),acts);
   const bodyBox=el("div",{});p.append(bodyBox);
   const show=data=>{bodyBox.replaceChildren();
-    const f=document.createElement("iframe");f.setAttribute("sandbox","");f.style.cssText="width:100%;min-height:300px;border:0;background:#fff;border-radius:6px";
-    if(data.body_html)f.srcdoc='<base target="_blank"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: cid:; style-src \'unsafe-inline\'"><body style="font:14px/1.6 sans-serif;margin:8px;color:#222">'+data.body_html;
+    const f=document.createElement("iframe");f.setAttribute("sandbox","");f.style.cssText="width:100%;min-height:300px;border:1px solid #7773;background:#f3eee4;border-radius:8px";
+    if(data.body_html)f.srcdoc='<base target="_blank"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: cid:; style-src \'unsafe-inline\'"><body style="font:14px/1.6 sans-serif;margin:14px 16px;color:#2a2620">'+data.body_html;
     else f.srcdoc='<body style="font:14px/1.6 sans-serif;margin:8px;white-space:pre-wrap;color:#222">'+(data.body_text||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
     f.onload=()=>{try{f.style.height=Math.max(300,f.contentDocument.documentElement.scrollHeight+20)+"px"}catch(_){}};bodyBox.append(f);
     if((m.attachments||[]).length)bodyBox.prepend(el("div",{className:"atl"},m.attachments.map((x,i)=>{const b=el("button",{type:"button",className:"atb",textContent:"📎 "+x.filename+(x.size?" ("+mb(x.size)+")":"")});
@@ -240,6 +241,16 @@ function drawCompose(p){
     bq.append(mk("div","font-size:12px;margin-bottom:6px",c.quote.head));
     c.quote.text.split("\n").forEach(l=>{const d=document.createElement("div");if(l.trim())d.textContent=l;else d.append(document.createElement("br"));bq.append(d)});
     bd.append(f,f2,bq)}
+  const esc2=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const sigBox=el("div",{className:"sgp"});
+  const drawSig=()=>{const mine=fromSel.value!=="support";
+    const brand='<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr><td style="padding:0 14px 0 0;vertical-align:middle"><img src="../img/logo-square.png" width="76" height="76" style="display:block;width:76px;height:76px"></td><td style="vertical-align:middle;line-height:1.4"><div style="font-size:20px;font-weight:700;letter-spacing:3px">RIF STUDIO</div><div style="font-size:11px;letter-spacing:2px;color:#7a7783;margin-top:6px">PANGYO \u2022 TOKYO \u2022 NEW YORK</div><div style="font-size:12px;margin-top:6px;color:#7c5cd6">rif-studio.com</div></td></tr></table>';
+    const own=mine?(mySig.html?'<div style="margin-top:16px">'+mySig.html+'</div>':(mySig.text||myName?'<div style="font-size:14px;margin-top:14px">'+esc2(mySig.text||myName).replace(/\n/g,"<br>")+"</div>":"")):"";
+    const fr=document.createElement("iframe");fr.setAttribute("sandbox","allow-same-origin");fr.title="서명 미리보기";
+    fr.srcdoc='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: *; style-src \'unsafe-inline\'"><base href="'+location.href.replace(/[^/]*$/,"")+'"><body style="margin:12px 16px;font:14px/1.6 sans-serif;color:#2a2620">'+brand+own;
+    fr.onload=()=>{try{fr.style.height=fr.contentDocument.documentElement.scrollHeight+4+"px"}catch(_){}};
+    sigBox.replaceChildren(el("div",{className:"sgh"},[el("b",{textContent:"✉ 이렇게 나가요 (예시)"}),el("span",{textContent:mine?"본문 맨 아래에 로고 + 내 서명이 자동으로 붙어요. 제목 앞에는 [RIF STUDIO]가 붙어요.":"공용 메일은 개인 서명 없이 RIF STUDIO 로고만 붙어요. 제목에는 [RIF STUDIO]가 붙지 않아요."}),...(mine&&!mySig.html&&!mySig.text?[el("a",{href:"../mail/",target:"_blank",textContent:"서명 설정하기 ↗"})]:[])]),fr)};
+  fromSel.onchange=drawSig;drawSig();
   const files=[],MAXB=10*1024*1024,afl=el("div",{className:"atl"}),fi=el("input",{type:"file",multiple:true,hidden:true});
   const msgx=el("span",{className:"note"});
   const drawF=()=>{afl.replaceChildren(...files.map((f,i)=>{const x=el("button",{type:"button",className:"atx",textContent:"✕",title:"빼기"});x.onclick=()=>{files.splice(i,1);drawF()};return el("span",{className:"atb"},[document.createTextNode("📎 "+f.name+" ("+mb(f.size)+") "),x])}))};
@@ -265,7 +276,7 @@ function drawCompose(p){
       if(error){try{m2=(await error.context.json()).error}catch(_){m2=error.message}}else if(data&&data.ok)ok=true;else m2=(data&&data.error)||"알 수 없는 오류"}catch(x){m2=String(x.message||x)}
     send.disabled=false;if(!ok){msgx.className="note err";msgx.textContent="보내지 못했어요: "+m2;return}
     composing=null;fold="out";selId=null;await loadInbox()};
-  p.append(el("h2",{className:"eh",textContent:"새 메일"}),el("div",{className:"cf"},[el("label",{},[document.createTextNode("보내는 사람"),fromSel]),el("label",{},[document.createTextNode("받는 사람"),to]),el("label",{},[document.createTextNode("제목"),sj]),bd,afl,fi,el("div",{className:"acts",style:"border:0;padding:0;margin:0"},[send,ab,cancel,msgx,el("span",{className:"note",textContent:"엑셀 표를 복사해 붙여넣을 수 있어요 · 개인 메일은 제목 앞에 [RIF STUDIO]가 자동으로 붙어요 · 서명은 자동으로 붙어요 (서명 설정에서 바꿀 수 있어요)"})])]));
+  p.append(el("h2",{className:"eh",textContent:"새 메일"}),el("div",{className:"cf"},[el("label",{},[document.createTextNode("보내는 사람"),fromSel]),el("label",{},[document.createTextNode("받는 사람"),to]),el("label",{},[document.createTextNode("제목"),sj]),bd,sigBox,afl,fi,el("div",{className:"acts",style:"border:0;padding:0;margin:0"},[send,ab,cancel,msgx,el("span",{className:"note",textContent:"엑셀 표를 복사해 붙여넣을 수 있어요 · 개인 메일은 제목 앞에 [RIF STUDIO]가 자동으로 붙어요 · 서명은 자동으로 붙어요 (서명 설정에서 바꿀 수 있어요)"})])]));
   if(c.quote){bd.focus();try{const r=document.createRange();r.setStart(bd.firstChild,0);r.collapse(true);const sl=getSelection();sl.removeAllRanges();sl.addRange(r)}catch(_){}}else to.focus()}
 $("onew").onclick=()=>{composing={};drawMail()};$("oq").oninput=drawMail;$("osl").onclick=()=>{selMode=!selMode;picked.clear();drawMail()};$("orf").onclick=()=>{loadInbox();loadUsage()};loadUsage();
 
@@ -429,7 +440,7 @@ $("ci").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.prevent
 const P={b:"pb",t:"pt",i:"pi",c:"pc",q:"pbd",e:"pe",s:"ps"};
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));
-  Object.entries(P).forEach(([k,id])=>$(id).hidden=k!==b.dataset.t);if(b.dataset.t==="c")openChat();if(b.dataset.t==="q"){const f=$("pbf");if(!f.getAttribute("src"))f.src="../board/"}});
+  Object.entries(P).forEach(([k,id])=>$(id).hidden=k!==b.dataset.t);if(b.dataset.t==="c")openChat();});
 document.querySelectorAll("#sub button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#sub button").forEach(x=>x.setAttribute("aria-pressed",x===b));$("pn").hidden=b.dataset.s!=="pn";$("pd").hidden=b.dataset.s!=="pd"});
 
 /* 로그인·가입 */

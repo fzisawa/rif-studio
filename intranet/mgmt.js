@@ -234,9 +234,7 @@ function build(){
     b.onclick=()=>{[...bar.children].forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));Object.entries(panes).forEach(([kk,p])=>p.hidden=kk!==k);if(k==="j")loadJ();if(k==="q")loadQ()};bar.append(b)});
   pt.prepend(bar);pt.append(pj,pq);
   const host=$("pbd");
-  if(host){pbq.hidden=false;pbq.style.marginBottom="26px";const pn=host.querySelector("p.note");
-    if(pn){pn.innerHTML='위쪽은 <b>경영지원팀 관리 화면</b>(답변·숨기기·삭제·이메일 확인)이고, 아래는 <b>방문자에게 보이는 화면</b> 그대로예요. <a href="../board/" target="_blank" rel="noopener">새 창으로 열기 ↗</a>';pn.before(pbq)}else host.prepend(pbq);
-    const tb=document.querySelector('#tabs button[data-t="q"]');if(tb)tb.addEventListener("click",loadB);loadB()}
+  if(host){pbq.hidden=false;host.append(pbq);const tb=document.querySelector('#tabs button[data-t="q"]');if(tb){tb.hidden=false;tb.addEventListener("click",loadB)}loadB()}
   $("mjq").oninput=drawJ;$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;$("mbq").oninput=drawB;$("mbr").onclick=loadB;
 }
 async function start(){
@@ -245,6 +243,6 @@ async function start(){
   started=true;
   const [m,b]=await Promise.all([db.rpc("is_mgmt"),db.rpc("is_boss")]);
   mgmt=!!m.data;boss=!!b.data;{const l=$("admlink");if(l)l.hidden=!boss}if(!mgmt)return;build()}
-function teardown(){{const l=$("admlink");if(l)l.hidden=true}started=false;mgmt=boss=false;rows=[];msgs=[];reps={};const pt=$("pt"),w=$("ptw");if(w&&pt){[...w.childNodes].forEach(n=>pt.insertBefore(n,w));w.remove()}["msub","pj","pq","pbq"].forEach(i=>{const e=$(i);if(e)e.remove()})}
+function teardown(){{const l=$("admlink");if(l)l.hidden=true}started=false;mgmt=boss=false;{const tb=document.querySelector('#tabs button[data-t="q"]');if(tb)tb.hidden=true}rows=[];msgs=[];reps={};const pt=$("pt"),w=$("ptw");if(w&&pt){[...w.childNodes].forEach(n=>pt.insertBefore(n,w));w.remove()}["msub","pj","pq","pbq"].forEach(i=>{const e=$(i);if(e)e.remove()})}
 try{const ap=$("app");new MutationObserver(()=>{if(ap.hidden)teardown();else start()}).observe(ap,{attributes:true,attributeFilter:["hidden"]});if(!ap.hidden)start()}catch(_){}
 })();
