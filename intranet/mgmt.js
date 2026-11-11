@@ -85,7 +85,7 @@ function drawJ(){
     if(boss&&!lk){const x=el("button",{className:"mbtn",type:"button",textContent:"이 지원서 삭제"});
       x.onclick=async()=>{if(!confirm((r.nickname||r.name)+" 지원서를 삭제할까요? 되돌릴 수 없어요."))return;const ok=await rpcSet("jr_delete",{p_id:r.id});if(ok){rows=rows.filter(z=>z.id!==r.id);drawJ()}};d.append(x)}
     const dtl=el("tr",{className:"d",hidden:openJ!==r.id},[el("td",{colSpan:boss?15:11},[d])]);
-    tr.onclick=()=>{dtl.hidden=!dtl.hidden;openJ=dtl.hidden?null:r.id};
+    tr.onclick=()=>{dtl.hidden=!dtl.hidden;openJ=dtl.hidden?null:r.id;if(!dtl.hidden)db.rpc("jr_seen",{p_id:r.id}).then(()=>{},()=>{})};
     tb.append(tr,dtl)})}
 
 /* ---------- support@ 문의 게시판 (같은 사람·같은 제목은 한 대화로 묶어요) ---------- */
