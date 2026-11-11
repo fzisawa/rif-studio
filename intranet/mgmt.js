@@ -11,40 +11,36 @@ let mgmt=false,boss=false,started=false,rows=[],msgs=[],reps={},openJ=null,openQ
 
 const css=document.createElement("style");
 css.textContent=`
-.msub{display:flex;gap:6px;margin:0 0 16px;border-bottom:1px solid #7773}.msub button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 16px;font:inherit;font-size:15px;color:var(--fg);cursor:pointer}.msub button[aria-pressed="true"]{border-bottom-color:#d64545;font-weight:700}
-.mbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}.mbar b{font-size:14px}.mbar input,.mbar select{padding:8px 10px;border:1px solid #7775;border-radius:4px;font:inherit;background:var(--bg);color:var(--fg)}.mbar input{min-width:240px}
-.mtw{overflow:auto;max-height:calc(100vh - 230px);border:1px solid #7773;border-radius:6px}
-table.mt{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px;line-height:1.5}
+.mbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}.mbar b{font-size:14px}.mbar input{min-width:240px}
+.mtw{overflow:auto;max-height:calc(100vh - 250px);border:1px solid var(--ln);border-radius:12px;background:var(--bg)}
 .mt thead th{position:sticky;top:0;z-index:3}.mt thead tr.gh+tr th{top:30px}
-.mt thead tr.gh th{height:30px;box-sizing:border-box;padding:0 10px;text-align:center;font-weight:700;color:var(--fg);border-bottom:1px dashed #7775}.mt thead tr.gh th.gt{color:#14b8a6}.mt thead tr.gh th.gb{color:#a78bfa;border-left:2px dashed #7778;border-right:2px dashed #7778}
+.mt thead tr.gh th{height:30px;box-sizing:border-box;padding:0 10px;text-align:center;font-weight:700;color:var(--fg);border-bottom:1px dashed var(--ln2);letter-spacing:0}.mt thead tr.gh th.gt{color:var(--ok)}.mt thead tr.gh th.gb{color:#7c5cd6;border-left:2px dashed var(--ln2);border-right:2px dashed var(--ln2)}
 table.mt.mtj{width:max-content;min-width:0}.mt td.fd{width:220px;min-width:220px;max-width:220px}
 .mt th.mk.bs,.mt td.mk.bs{width:64px;min-width:64px}
-.mt th.mk,.mt td.mk{width:46px;min-width:46px;padding-left:2px;padding-right:2px;text-align:center}
-.mt .bs{background:#a78bfa0d}.mt .bl{border-left:2px dashed #7778}.mt .br{border-right:2px dashed #7778}.mt th.b1{color:#3b82f6}.mt th.b2{color:#8b5cf6}.mt th.b3{color:#ef4444}.mt .b1{--c:#3b82f6}.mt .b2{--c:#8b5cf6}.mt .b3{--c:#ef4444}
+.mt th.mk,.mt td.mk{width:46px;min-width:46px;padding-left:2px;padding-right:2px;text-align:center;max-width:none}
+.mt .bs{background:color-mix(in srgb,#7c5cd6 6%,transparent)}.mt .bl{border-left:2px dashed var(--ln2)}.mt .br{border-right:2px dashed var(--ln2)}.mt th.b1{color:#2f80ed}.mt th.b2{color:#7c5cd6}.mt th.b3{color:var(--bad)}.mt .b1{--c:#2f80ed}.mt .b2{--c:#7c5cd6}.mt .b3{--c:var(--bad)}
 .mt td.mk input.cb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin:0;border:2px dashed var(--c);border-radius:4px;background:transparent;vertical-align:middle;cursor:pointer}
 .mt td.mk input.cb:checked{border-style:solid;background:var(--c) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 5' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat}
-.mt td.mk input.cb:disabled{cursor:not-allowed;opacity:.45}
-.mt th{background:var(--bg);text-align:left;padding:9px 10px;border-bottom:2px solid #7775;white-space:nowrap;font-size:12px;color:var(--mut)}
-.mt td{padding:9px 10px;border-bottom:1px solid #7773;vertical-align:top}
-.mt tr.r{cursor:pointer}.mt tr.r:hover td{background:#7771}.mt tr.dup td{background:#ff2d2d1a}.mt tr.rej td{opacity:.6}
-.mt td.no{color:var(--mut);text-align:right;width:40px}.mt td.dt{white-space:nowrap}.mt td.mk{text-align:center;width:44px}.mt td.mk input{width:17px;height:17px;accent-color:#14b8a6;cursor:pointer}
-.mt td.mk input:disabled{cursor:not-allowed;opacity:.55}
-.mt input.mm{width:100%;min-width:180px;padding:6px 8px;border:1px solid #7775;border-radius:4px;font:inherit;font-size:13px;background:var(--bg);color:var(--fg)}.mt input.mm[readonly]{background:#7771;cursor:not-allowed}.mt input.mm.ok{outline:2px solid #3bb273;outline-offset:-2px}
-.mt tr.d td{background:#7771;padding:16px 20px;cursor:default}.mt tr.d p{white-space:pre-wrap;margin:0 0 12px}.mt tr.d b.mlb{color:#d64545;font-size:12px;letter-spacing:.08em}
-.mbadge{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;color:#fff;background:#999;white-space:nowrap}.mbadge.new{background:#d64545}.mbadge.rep{background:#0f6cbd}.mbadge.done{background:#3bb273}
-.mdupb{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;background:#e5332a;color:#fff;font-size:11px;font-weight:700}
-.mrep{border-left:3px solid #0f6cbd;background:#0f6cbd12;border-radius:4px;padding:10px 14px;margin:0 0 10px}.mrep .h{font-size:12px;color:var(--mut);margin-bottom:4px}.mrep .t{white-space:pre-wrap}
-.mbody{white-space:pre-wrap;word-break:break-word;line-height:1.7;font-size:14px;padding:14px 16px;border:1px solid #7775;border-radius:8px;background:#7771;color:var(--fg);max-height:520px;overflow:auto}
-.mfr{width:100%;min-height:120px;border:1px solid #7775;border-radius:8px;background:#fff;display:block}.mfr.dark{filter:invert(1) hue-rotate(180deg)}
-.mtl{display:flex;flex-direction:column;gap:10px;margin:6px 0 16px}.mmsg{border:1px solid #7775;border-radius:8px;padding:10px 14px;background:var(--bg)}
-.mmsg .h{font-size:12px;color:var(--mut);margin-bottom:8px}.mmsg.in{border-left:3px solid #9a98a3}.mmsg.out{border-left:3px solid #0f6cbd;background:#0f6cbd12}.mmsg .t{white-space:pre-wrap;line-height:1.7}
-.mwho{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:700;color:var(--fg);background:#7772}.mwho.out{background:#0f6cbd;color:#fff}
-.mbadge.nw{background:#ff3d6e;letter-spacing:.06em}.mbadge.chk{background:#6b7a99}.mrd{margin-left:10px;color:var(--mut)}.mrd.on{color:#3bb273;font-weight:700}.mt td.rd{white-space:nowrap;font-size:13px}
-.mbtn.mq{margin-top:8px;padding:4px 10px;font-size:12px}
-.mfrm textarea{width:100%;min-height:110px;padding:10px;border:1px solid #7775;border-radius:6px;font:inherit;background:var(--bg);color:var(--fg);box-sizing:border-box}
+.mt td.mk input.cb:disabled,.mt td.mk input:disabled{cursor:not-allowed;opacity:.5}
+.mt tr.dup td{background:color-mix(in srgb,var(--bad) 10%,transparent)}.mt tr.rej td{opacity:.6}
+.mt input.mm{width:100%;min-width:180px;padding:5px 10px;border-radius:8px;font-size:13px}.mt input.mm[readonly]{background:var(--hv);cursor:not-allowed}.mt input.mm.ok{outline:2px solid var(--ok);outline-offset:-2px}
+.mt td.rd{font-size:13px}
+.mt tr.d td b.mlb{color:var(--ac);font-size:12px;letter-spacing:.08em}
+.mbadge{color:#fff;background:#8c8a96}.mbadge.new,.mbadge.nw{background:var(--ac)}.mbadge.rep{background:#7c5cd6}.mbadge.done{background:var(--ok)}.mbadge.chk{background:#8c8a96}.mbadge.nw{letter-spacing:.06em}
+.mdupb{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:var(--bad);color:#fff;font-size:11px;font-weight:700}
+.mrep{border-left:3px solid var(--ac);background:var(--soft);border-radius:0 10px 10px 0;padding:10px 14px;margin:0 0 10px}.mrep .h{font-size:12px;color:var(--mut);margin-bottom:4px}.mrep .t{white-space:pre-wrap}
+.mbody{white-space:pre-wrap;word-break:break-word;line-height:1.7;font-size:14px;padding:14px 16px;border:1px solid var(--ln2);border-radius:10px;background:var(--hv);color:var(--fg);max-height:520px;overflow:auto}
+.mfr{display:block;width:100%;aspect-ratio:auto;min-height:120px;border:1px solid var(--ln2);border-radius:10px;background:#f6f1e7}.mfr.dark{filter:invert(1) hue-rotate(180deg)}
+.mtl{display:flex;flex-direction:column;gap:10px;margin:6px 0 16px}.mmsg{border:1px solid var(--ln2);border-radius:10px;padding:10px 14px;background:var(--bg)}
+.mmsg .h{font-size:12px;color:var(--mut);margin-bottom:8px}.mmsg.in{border-left:3px solid #8c8a96}.mmsg.out{border-left:3px solid var(--ac);background:var(--soft)}.mmsg .t{white-space:pre-wrap;line-height:1.7}
+.mwho{display:inline-block;padding:1px 10px;border-radius:99px;font-size:12px;font-weight:700;color:var(--fg);background:var(--hv)}.mwho.out{background:var(--ac);color:#fff}
+.mrd{margin-left:10px;color:var(--mut)}.mrd.on{color:var(--ok);font-weight:700}
+.mfrm textarea{width:100%;min-height:110px}
 .mfrm .acts{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
-.mbtn{padding:8px 16px;border:1px solid #7775;border-radius:4px;background:var(--bg);color:var(--fg);font:inherit;cursor:pointer}.mbtn.p{background:#d64545;border-color:#d64545;color:#fff;font-weight:700}.mbtn:disabled{opacity:.5}
-.mnote{font-size:12px;color:var(--mut)}.mnote.err{color:#d64545}
+.mbtn{display:inline-flex;align-items:center;justify-content:center;padding:5px 14px;border:1px solid var(--ln2);border-radius:99px;background:none;color:var(--fg);font:inherit;font-size:13px;cursor:pointer;text-decoration:none;white-space:nowrap}.mbtn:hover{border-color:var(--ac);color:var(--ac)}
+.mbtn.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:700}.mbtn.p:hover{color:#fff;filter:brightness(1.08)}.mbtn:disabled{opacity:.5;cursor:default}
+.mbtn.mq{margin-top:8px;padding:3px 12px;font-size:12px}
+.mnote{font-size:13px;color:var(--mut)}.mnote.err{color:var(--bad)}
 `;
 document.head.appendChild(css);
 
@@ -156,7 +152,7 @@ function showBody(m,box){
       if(h&&/<(table|img|style|a\s)/i.test(h)){
         const f=document.createElement("iframe");f.setAttribute("sandbox","allow-same-origin");
         const dm=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):{matches:true};f.className="mfr"+(dm.matches?" dark":"");
-        f.srcdoc='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: cid:; style-src \'unsafe-inline\'"><style>html,body{background:#fff}img,video{filter:invert(1) hue-rotate(180deg)}</style><body style="font:14px/1.6 sans-serif;margin:12px;color:#222">'+h;
+        f.srcdoc='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src https: data: cid:; style-src \'unsafe-inline\'"><style>html,body{background:#f6f1e7}img,video{filter:invert(1) hue-rotate(180deg)}</style><body style="font:14px/1.6 sans-serif;margin:12px;color:#222">'+h;
         f.onload=()=>{try{f.style.height=Math.min(640,Math.max(120,f.contentDocument.body.scrollHeight+28))+"px"}catch(_){}};
         const cb=el("button",{className:"mbtn",type:"button",textContent:dm.matches?"원본 색으로 보기":"다크로 보기"});cb.style.marginBottom="8px";
         cb.onclick=()=>{const d=f.classList.toggle("dark");cb.textContent=d?"원본 색으로 보기":"다크로 보기"};
@@ -164,7 +160,7 @@ function showBody(m,box){
       else{const t=h?toText(h):(showFull?txt:txtCut);body.append(el("div",{className:"mbody",textContent:t||txt||"(내용 없음)"}))}};
     draw();
     if(canToggle){tg.onclick=()=>{showFull=!showFull;tg.textContent=showFull?"이전 내용 접기":"이전 내용 보기";draw()};box.append(tg)}
-    if((m.attachments||[]).length)box.append(el("div",{className:"mnote",style:"display:flex;flex-wrap:wrap;gap:8px"},m.attachments.map((x,i)=>{const b=el("button",{type:"button",className:"ob",style:"cursor:pointer",textContent:"📎 "+x.filename+(x.size?" ("+(x.size>=1048576?(x.size/1048576).toFixed(1)+" MB":Math.max(1,Math.round(x.size/1024))+" KB")+")":"")});
+    if((m.attachments||[]).length)box.append(el("div",{className:"mnote",style:"display:flex;flex-wrap:wrap;gap:8px"},m.attachments.map((x,i)=>{const b=el("button",{type:"button",className:"mbtn",textContent:"📎 "+x.filename+(x.size?" ("+(x.size>=1048576?(x.size/1048576).toFixed(1)+" MB":Math.max(1,Math.round(x.size/1024))+" KB")+")":"")});
       b.onclick=async()=>{b.disabled=true;const {data:d,error}=await db.functions.invoke("mail-file",{body:{inbox_id:m.id,index:i}});b.disabled=false;if(error||!d||!d.url)return alert("파일을 가져오지 못했어요"+(d&&d.error?": "+d.error:""));window.open(d.url,"_blank","noopener")};return b})))})}
 function buildQ(t,box){
   box.replaceChildren();
@@ -198,7 +194,7 @@ function drawB(){const tb=$("mbb");if(!tb)return;const k=($("mbq").value||"").tr
   $("mbc").textContent="문의 "+inq.length+"건 · 미답변 "+inq.filter(x=>!x.reply&&!x.hidden).length+"건";
   inq.filter(r=>!k||[r.name,r.email,r.title,r.body].join(" ").toLowerCase().includes(k)).forEach(r=>{
     const st=r.hidden?"숨김":r.reply?"답변 완료":"미답변";
-    const tr=el("tr",{className:"r"},[el("td",{className:"no",textContent:r.id}),el("td",{className:"dt",textContent:dt(r.created_at)}),el("td",{textContent:r.name}),el("td",{textContent:r.email}),el("td",{textContent:(r.secret?"🔒 ":"")+r.title}),el("td",{textContent:st,style:"white-space:nowrap;font-weight:700;color:"+(r.hidden?"var(--mut)":r.reply?"#14b8a6":"#d64545")})]);
+    const tr=el("tr",{className:"r"},[el("td",{className:"no",textContent:r.id}),el("td",{className:"dt",textContent:dt(r.created_at)}),el("td",{textContent:r.name}),el("td",{textContent:r.email}),el("td",{textContent:(r.secret?"🔒 ":"")+r.title}),el("td",{textContent:st,style:"white-space:nowrap;font-weight:700;color:"+(r.hidden?"var(--mut)":r.reply?"var(--ok)":"var(--ac)")})]);
     tr.onclick=()=>{openB=openB===r.id?null:r.id;drawB()};tb.append(tr);
     if(openB!==r.id)return;
     const ta=el("textarea",{value:r.reply||"",rows:5,maxLength:3000,placeholder:"답변을 쓰면 비밀글이 아닌 글은 게시판에 공개돼요. 비밀글은 공개되지 않으니 아래 '메일로 답장'을 이용해 주세요.",style:"width:100%;box-sizing:border-box;padding:10px;border:1px solid #7775;border-radius:6px;font:inherit;background:var(--bg);color:var(--fg)"});
@@ -216,7 +212,7 @@ function build(){
   const pt=$("pt");if(!pt||$("msub"))return;
   const w=el("div",{id:"ptw"});[...pt.childNodes].forEach(n=>w.append(n));pt.append(w);
   const bar=el("div",{className:"msub",id:"msub"});
-  const defs=[["w","할 일"],["j","지원서"],["q","support@ 문의"]];
+  const defs=[["w","할 일"],["j","지원서"],["q","고객 문의 메일"]];
   const pj=el("div",{id:"pj",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mjc"}),el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("span",{className:"mnote",textContent:"클릭하면 상세 내용이 펼쳐져요 · 감사/면접/거절/채용은 표시만 하고 메일은 자동으로 나가지 않아요"})]),
     el("div",{className:"mtw"},[el("table",{className:"mt mtj"},[el("thead",{},[
@@ -224,7 +220,7 @@ function build(){
       el("tr",{},["No.","접수일시","닉네임","성명","출신","분야","감사","면접","거절","채용","대표 면접","대표 채용","대표 거절","대표 메모 🔒","경영지원팀 메모"].map((t,i)=>el("th",{textContent:t,className:["","","","","","","mk","mk","mk","mk","mk bs b1 bl","mk bs b2 b2h","mk bs b3","bs bm br",""][i].replace("b2h","")})))]),el("tbody",{id:"mjb"})])])]);
   const sel=el("select",{id:"mqs"},[["all","전체"],["new","읽지 않음"],["chk","확인함"],["rep","답장함"],["done","완료"]].map(([v,t])=>el("option",{value:v,textContent:t})));
   const pq=el("div",{id:"pq",hidden:true},[
-    el("div",{className:"mbar"},[el("b",{id:"mqc"}),sel,el("input",{id:"mqq",placeholder:"검색 (제목·보낸 사람·내용)"}),el("button",{className:"mbtn",type:"button",id:"mqr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"support@rif-studio.com 으로 온 메일이에요. 답장은 기록으로 계속 남아요."})]),
+    el("div",{className:"mbar"},[el("b",{id:"mqc"}),sel,el("input",{id:"mqq",placeholder:"검색 (제목·보낸 사람·내용)"}),el("button",{className:"mbtn",type:"button",id:"mqr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"support@rif-studio.com 으로 온 메일을 대화별로 묶어 보여줘요. 메일 탭 › 공용 메일함 '고객 문의'와 같은 메일이에요. 답장은 기록으로 계속 남아요."})]),
     el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","상태","제목","보낸 사람","먼저 확인","답장한 사원","최근 활동"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mqb"})])])]);
   const pbq=el("div",{id:"pbq",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mbc"}),el("input",{id:"mbq",placeholder:"검색 (이름·이메일·제목·내용)"}),el("button",{className:"mbtn",type:"button",id:"mbr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"사이트의 공개 문의 게시판(rif-studio.com/board/)에 올라온 글이에요. 이메일은 운영진만 볼 수 있어요."})]),
