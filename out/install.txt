@@ -1,0 +1,8 @@
+Performing Streamed Install
+Success
+install exit=0
+package:com.rifstudio.intranet
+    versionCode=1 minSdk=24 targetSdk=35
+    versionName=1.0.0
+    apkSigningVersion=2
+    signatures=PackageSignatures{9eba1e1 version:2, signatures:[c3fb25cc], past signatures:[]}

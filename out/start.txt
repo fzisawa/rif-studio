@@ -1,0 +1,7 @@
+Starting: Intent { cmp=com.rifstudio.intranet/com.google.androidbrowserhelper.trusted.LauncherActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.rifstudio.intranet/com.google.androidbrowserhelper.trusted.LauncherActivity
+TotalTime: 721
+WaitTime: 728
+Complete
