@@ -48,3 +48,44 @@ jobs:
           git add -f out
           git commit -q -m "build output for ${GITHUB_SHA::7}"
           git push -f origin android-app-out
+
+  device-test:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: has signed apk
+        id: has
+        run: |
+          if [ -f signed/rif-intranet.apk ]; then echo "yes=1" >> "$GITHUB_OUTPUT"; fi
+      - name: enable kvm
+        if: steps.has.outputs.yes == '1'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: install and run on emulator
+        if: steps.has.outputs.yes == '1'
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash ./ci/device-test.sh
+      - name: publish
+        if: always() && steps.has.outputs.yes == '1'
+        run: |
+          mkdir -p out
+          git config user.name "rif-app-build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan android-app-test
+          git rm -rf --cached . >/dev/null
+          git add -f out
+          git commit -q -m "device test for ${GITHUB_SHA::7}" || true
+          git push -f origin android-app-test
