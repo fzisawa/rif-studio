@@ -268,7 +268,7 @@ function related(p,m){
   const rel=[...inbox.filter(x=>x.id!==m.id&&!x.deleted_at&&normSub(x.subject)===k).map(x=>({t:x.received_at,k:"in",x})),...outbox.filter(x=>!x.deleted_at&&normSub(x.subject)===k&&(lc(x.author_email)===X.me||X.ceo||(x.box_id&&boxes.some(b=>b.id===x.box_id)))).map(x=>({t:x.created_at,k:"out",x}))].sort((a,b)=>new Date(b.t)-new Date(a.t)).slice(0,12);
   if(!rel.length)return;
   p.append(el("section",{className:"nts"},[el("h3",{textContent:"같은 제목의 메일 "+rel.length+"건"}),...rel.map(r=>{const d=el("div",{className:"rel"},[el("span",{className:"cp "+(r.k==="out"?"ok":""),textContent:r.k==="out"?"보냄":"받음"}),el("span",{className:"rwho",textContent:r.k==="out"?"→ "+r.x.to_email:(r.x.from_name||r.x.from_addr)}),el("span",{className:"rpv",textContent:r.k==="out"?(r.x.body||"").replace(/\s+/g," ").slice(0,90):(r.x.preview||"")}),el("span",{className:"dd",textContent:fmt(r.t)})]);
-    d.onclick=()=>{selId=r.x.id;selKind=r.k;mode="read";if(r.k==="in"&&!irds.has(r.x.id)){irds.add(r.x.id);db.from("inbox_reads").upsert({msg_id:r.x.id,email:X.me},{onConflict:"msg_id,email",ignoreDuplicates:true})}render()};return d})]))}
+    d.onclick=()=>{selId=r.x.id;selKind=r.k;mode="read";if(r.k==="in"&&!irds.has(r.x.id)){irds.add(r.x.id);title();db.from("inbox_reads").upsert({msg_id:r.x.id,email:X.me},{onConflict:"msg_id,email",ignoreDuplicates:true})}render()};return d})]))}
 function readOut(p,r){
   const acts=el("div",{className:"acts"}),canDel=X.ceo||lc(r.author_email)===X.me,obody=el("div",{className:"obody otxt",textContent:r.body});
   p.append(el("h2",{className:"eh",textContent:r.subject}),
