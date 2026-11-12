@@ -34,6 +34,11 @@ Deno.serve(async (req) => {
     const type = String(b.type || "");
     const col = COL[type];
     if (!col) return json({ error: "알 수 없는 메일 종류예요" }, 400);
+    // 거절·채용 메일은 대표만
+    if (type === "reject" || type === "hire") {
+      const { data: boss } = await asUser.rpc("is_boss");
+      if (!boss) return json({ error: "거절·채용 메일은 대표만 보낼 수 있어요" }, 403);
+    }
     const id = String(b.id || "");
     if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ error: "지원서 ID가 올바르지 않아요" }, 400);
 

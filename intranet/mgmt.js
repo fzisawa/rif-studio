@@ -22,7 +22,7 @@ table.mt.mtj{width:max-content;min-width:0}.mt td.fd{width:220px;min-width:220px
 .mt td.mk input.cb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin:0;border:2px dashed var(--c);border-radius:4px;background:transparent;vertical-align:middle;cursor:pointer}
 .mt td.mk input.cb:checked{border-style:solid;background:var(--c) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 5' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat}
 .mt td.mk input.cb:disabled,.mt td.mk input:disabled{cursor:not-allowed;opacity:.5}
-.mt tr.dup td{background:color-mix(in srgb,var(--bad) 10%,transparent)}.mt tr.rej td{opacity:.6}
+.mt tr.dup td{background:color-mix(in srgb,var(--bad) 20%,transparent)}.mt tr.dup:hover td{background:color-mix(in srgb,var(--bad) 28%,transparent)}.mt tr.rej td{opacity:.6}
 .mt input.mm{width:100%;min-width:180px;padding:5px 10px;border-radius:8px;font-size:13px}.mt input.mm[readonly]{background:var(--hv);cursor:not-allowed}.mt input.mm.ok{outline:2px solid var(--ok);outline-offset:-2px}
 .mt td.rd{font-size:13px}
 .mt tr.d td b.mlb{color:var(--ac);font-size:12px;letter-spacing:.08em}
@@ -63,14 +63,14 @@ function drawJ(){
   $("mjc").textContent="지원자 "+view.length+(q?" / "+rows.length:"")+"명";
   view.forEach(r=>{
     const lk=isLk(r);
-    const dup=cnt[(r.email||"").trim().toLowerCase()]>1;
+    const dup=!!r.reapply; /* 같은 이메일로 예전에 지원한 적이 있으면(서버 판단, 비공개 지원서 포함) 빨간 음영 */
     const nick=cell(r.nickname||r.name);if(dup)nick.append(el("span",{className:"mdupb",textContent:"재지원"}));
     const MC=[["mail_thanks","감사"],["mail_interview","면접"],["mail_reject","거절"],["mail_hire","채용"]].map(([k,t])=>{
-      const c=el("input",{type:"checkbox",checked:!!r[k],disabled:lk,title:lk?"대표가 결정한 지원서라 수정할 수 없어요":t+" 메일 보냄 표시 (✉로 보내면 자동 체크)"});
+      const bo=k==="mail_reject"||k==="mail_hire",no=bo&&!boss;const c=el("input",{type:"checkbox",checked:!!r[k],disabled:lk||no,title:no?"거절·채용 메일은 대표만 처리해요":lk?"대표가 결정한 지원서라 수정할 수 없어요":t+" 메일 보냄 표시 (✉로 보내면 자동 체크)"});
       c.onclick=e=>e.stopPropagation();
-      c.onchange=async()=>{const v=c.checked;c.disabled=true;const ok=await rpcSet("jr_set_check",{p_id:r.id,p_field:k,p_val:v},null,()=>{c.checked=!v});if(ok){r[k]=v;sb.hidden=!canSend()}c.disabled=lk};
+      c.onchange=async()=>{const v=c.checked;c.disabled=true;const ok=await rpcSet("jr_set_check",{p_id:r.id,p_field:k,p_val:v},null,()=>{c.checked=!v});if(ok){r[k]=v;sb.hidden=!canSend()}c.disabled=lk||no};
       // ✉ 보내기: support@ 이름으로 지원자 출신 언어에 맞춰 발송 → 누른 사람의 보낸 편지함에 기록, 성공하면 자동 체크
-      const canSend=()=>!r[k]&&(!lk||k==="mail_reject"||k==="mail_hire");
+      const canSend=()=>!r[k]&&!no&&(!lk||bo);
       const sb=el("button",{type:"button",className:"msend",textContent:"✉",hidden:!canSend(),title:t+" 메일 보내기 (support@)"});
       sb.onclick=async e=>{e.stopPropagation();
         const lang={korea:"한국어",japan:"일본어",english:"영어",other:"영어"}[r.region]||"한국어·일본어·영어 한 통";
