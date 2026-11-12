@@ -160,3 +160,4 @@ main.wide select.stsel.doing{border-color:var(--ac);color:var(--ac)}main.wide se
 .lb img{max-width:100%;max-height:100%;border-radius:8px}
 
 .msend{margin-left:4px;border:1px solid #7c5cd655;background:#f3effc;color:#6b4fbb;border-radius:6px;font-size:12px;line-height:1;padding:3px 5px;cursor:pointer;vertical-align:middle}.msend:hover{background:#7c5cd6;color:#fff}.msend:disabled{opacity:.6;cursor:wait}
+.inst{margin:6px 0 14px;font-size:14px}.inst summary{cursor:pointer;color:var(--ac);width:max-content}.instb{margin-top:8px;padding:12px 14px;border:1px solid var(--ln2);border-radius:12px;background:var(--soft);line-height:1.7}.instb p{margin:4px 0}
