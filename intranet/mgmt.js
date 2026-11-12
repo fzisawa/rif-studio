@@ -230,7 +230,7 @@ function build(){
   const bar=el("div",{className:"msub",id:"msub"});
   const defs=[["w","할 일"],["j","지원서"],["q","고객 문의 메일"]];
   const pj=el("div",{id:"pj",hidden:true},[
-    el("div",{className:"mbar"},[el("b",{id:"mjc"}),el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("span",{className:"mnote",textContent:"클릭하면 상세 내용이 펼쳐져요 · ✉ 버튼을 누르면 메일이 나가고 자동으로 체크돼요"})]),
+    el("div",{className:"mbar"},[el("b",{id:"mjc"}),el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("button",{className:"mbtn",type:"button",id:"mjlk",textContent:"🔒 대표 잠금 해제",hidden:!boss}),el("span",{className:"mnote",textContent:"클릭하면 상세 내용이 펼쳐져요 · ✉ 버튼을 누르면 메일이 나가고 자동으로 체크돼요"})]),
     el("div",{className:"mtw"},[el("table",{className:"mt mtj"},[el("thead",{},[
       el("tr",{className:"gh"},[["기본 정보",6,""],["경영지원팀 체크",2,"gt"],["대표 전용 · 대표만 보고 수정",5,"gb"],["경영지원팀 메모",1,""]].filter(x=>boss||x[2]!=="gb").map(([t,n,c])=>el("th",{textContent:t,colSpan:n,className:c}))),
       el("tr",{},[["No.",""],["접수일시",""],["닉네임",""],["성명",""],["출신",""],["분야",""],["감사","mk"],["면접","mk"],["채용 메일","mk bs b2 bl",1],["거절 메일","mk bs b3",1],["대표 채용","mk bs b2",1],["대표 거절","mk bs b3",1],["대표 메모 🔒","bs bm br",1],["경영지원팀 메모",""]].filter(x=>boss||!x[2]).map(([t,c])=>el("th",{textContent:t,className:c})))]),el("tbody",{id:"mjb"})])])]);
@@ -247,8 +247,33 @@ function build(){
   pt.prepend(bar);pt.append(pj,pq);
   const host=$("pbd");
   if(host){pbq.hidden=false;host.append(pbq);const tb=document.querySelector('#tabs button[data-t="q"]');if(tb){tb.hidden=false;tb.addEventListener("click",loadB)}loadB()}
-  $("mjq").oninput=drawJ;$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;$("mbq").oninput=drawB;$("mbr").onclick=loadB;
+  $("mjq").oninput=drawJ;if(boss)$("mjlk").onclick=openUnlock;$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;$("mbq").oninput=drawB;$("mbr").onclick=loadB;
 }
+
+/* 대표 잠금 해제 — 대표 채용·거절로 잠긴 지원서를 대표 비밀번호로 풀어요 (대표에게만 보여요) */
+function openUnlock(){
+  const mod=el("div",{className:"mod"}),box=el("div",{className:"mbox wd"}),close=()=>{mod.remove();document.removeEventListener("keydown",esc)};
+  const esc=e=>{if(e.key==="Escape")close()};document.addEventListener("keydown",esc);
+  mod.onclick=e=>{if(e.target===mod)close()};
+  const x=el("button",{type:"button",className:"mx",textContent:"×","aria-label":"닫기"});x.onclick=close;
+  const body=el("div");box.append(x,body);mod.append(box);document.body.append(mod);
+  const pin=el("input",{type:"password",inputMode:"numeric",autocomplete:"off",maxLength:20,className:"pin",style:"width:100%;text-align:center;letter-spacing:.3em;padding:11px 14px"});
+  const err=el("p",{className:"note err",style:"min-height:1.4em"}),ok=el("button",{type:"button",className:"btn",textContent:"확인"});
+  body.append(el("h2",{textContent:"대표 확인"}),el("p",{className:"note",textContent:"잠긴 지원서를 풀려면 대표 비밀번호를 입력해 주세요."}),pin,err,el("div",{className:"jbar"},[ok]));
+  pin.focus();
+  const list=async p=>{
+    const {data,error}=await db.rpc("jr_locked_list",{p_pin:p});
+    if(error){err.textContent=/bad pin/.test(error.message)?"비밀번호가 맞지 않아요":/admin only/.test(error.message)?"대표 계정으로 로그인해 주세요":"불러오지 못했어요";return false}
+    body.replaceChildren(el("h2",{textContent:"잠긴 지원서"}),el("p",{className:"note",textContent:"풀면 경영지원팀에 다시 보이고 수정할 수 있어요."}));
+    if(!(data||[]).length)body.append(el("p",{className:"note",textContent:"잠긴 지원서가 없어요."}));
+    (data||[]).forEach(r=>{const b=el("button",{type:"button",className:"btn small",textContent:"잠금 풀기"});
+      b.onclick=async()=>{const nm=r.nickname||r.name||r.email;if(!confirm(nm+" 지원서의 채용/거절 결정을 풀까요?"))return;
+        b.disabled=true;const {error}=await db.rpc("jr_unlock",{p_id:r.id,p_pin:p});if(error){b.disabled=false;alert("풀지 못했어요");return}
+        await list(p);loadJ()};
+      body.append(el("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)"},[el("span",{textContent:(r.nickname||r.name||"")+" · "+(r.email||"")+" · "+(r.decision==="hire"?"대표 채용":"대표 거절")}),b]))});
+    return true};
+  const go=async()=>{if(!pin.value)return;err.textContent="";ok.disabled=true;await list(pin.value);ok.disabled=false};
+  ok.onclick=go;pin.onkeydown=e=>{if(e.key==="Enter")go()}}
 async function start(){
   if(started)return;
   const {data:s}=await db.auth.getSession();if(!s.session)return;
