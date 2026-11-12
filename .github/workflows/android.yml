@@ -1,0 +1,30 @@
+name: android
+# RIF 인트라넷 안드로이드 앱 빌드 (사이트와 분리된 가지에서만 돌아요)
+on:
+  push:
+    branches: [android-app]
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: probe
+        run: |
+          mkdir -p out
+          {
+            echo "ANDROID_HOME=$ANDROID_HOME"; ls "$ANDROID_HOME"; echo "-- platforms"; ls "$ANDROID_HOME/platforms"; echo "-- build-tools"; ls "$ANDROID_HOME/build-tools";
+            echo "-- java"; java -version 2>&1; echo "JAVA_HOME=$JAVA_HOME"; env | grep -i '^JAVA_HOME' ;
+            echo "-- gradle"; gradle -v 2>&1 | head -12; echo "-- kvm"; ls -l /dev/kvm 2>&1; echo "-- cpu/mem"; nproc; free -g | head -2;
+            echo "-- emulator"; ls "$ANDROID_HOME/emulator" 2>&1 | head -5; ls "$ANDROID_HOME/system-images" 2>&1 | head; lsb_release -d 2>&1
+          } > out/probe.txt 2>&1 || true
+      - name: publish
+        run: |
+          git config user.name "rif-app-build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan android-app-out
+          git rm -rf --cached . >/dev/null
+          git add -f out
+          git commit -q -m "build output"
+          git push -f origin android-app-out
