@@ -68,8 +68,6 @@ jobs:
       - name: install and run on emulator
         if: steps.has.outputs.yes == '1'
         uses: reactivecircus/android-emulator-runner@v2
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
         with:
           api-level: 34
           target: google_apis
