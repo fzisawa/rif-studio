@@ -1,0 +1,39 @@
+plugins {
+    id 'com.android.application'
+}
+
+// RIF 인트라넷 — rif-studio.com/intranet 을 전체 화면으로 여는 앱 (Trusted Web Activity).
+// 화면 내용은 전부 웹에서 오기 때문에, 사이트를 고치면 앱도 바로 바뀌어요.
+android {
+    namespace 'com.rifstudio.intranet'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.rifstudio.intranet'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+}

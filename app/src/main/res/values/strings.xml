@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="appName">RIF 인트라넷</string>
+    <string name="launcherName">RIF 인트라넷</string>
+    <string name="hostName">rif-studio.com</string>
+    <string name="launchUrl">https://rif-studio.com/intranet/</string>
+    <string name="webManifestUrl">https://rif-studio.com/intranet/manifest.webmanifest</string>
+    <string name="providerAuthority">com.rifstudio.intranet.fileprovider</string>
+    <string name="fallbackType">customtabs</string>
+    <string name="assetStatements">[{ \"relation\": [\"delegate_permission/common.handle_all_urls\"], \"target\": { \"namespace\": \"web\", \"site\": \"https://rif-studio.com\" } }]</string>
+    <integer name="splashScreenFadeOutDuration">300</integer>
+</resources>

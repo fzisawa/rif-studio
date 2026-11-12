@@ -1,30 +1,50 @@
 name: android
-# RIF 인트라넷 안드로이드 앱 빌드 (사이트와 분리된 가지에서만 돌아요)
+# RIF 인트라넷 안드로이드 앱 빌드 — 사이트(main)와 분리된 android-app 가지에서만 돌아요.
+# 결과물(서명 전 APK · 기록)은 android-app-out 가지에 올라가요. 서명 열쇠는 여기 두지 않아요.
 on:
   push:
     branches: [android-app]
 permissions:
   contents: write
+concurrency:
+  group: android-app
+  cancel-in-progress: true
 jobs:
-  probe:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: probe
+      - name: build
         run: |
+          set +e
           mkdir -p out
-          {
-            echo "ANDROID_HOME=$ANDROID_HOME"; ls "$ANDROID_HOME"; echo "-- platforms"; ls "$ANDROID_HOME/platforms"; echo "-- build-tools"; ls "$ANDROID_HOME/build-tools";
-            echo "-- java"; java -version 2>&1; echo "JAVA_HOME=$JAVA_HOME"; env | grep -i '^JAVA_HOME' ;
-            echo "-- gradle"; gradle -v 2>&1 | head -12; echo "-- kvm"; ls -l /dev/kvm 2>&1; echo "-- cpu/mem"; nproc; free -g | head -2;
-            echo "-- emulator"; ls "$ANDROID_HOME/emulator" 2>&1 | head -5; ls "$ANDROID_HOME/system-images" 2>&1 | head; lsb_release -d 2>&1
-          } > out/probe.txt 2>&1 || true
+          export JAVA_HOME="$JAVA_HOME_17_X64"
+          BT="$ANDROID_HOME/build-tools/35.0.0"
+          ./gradlew --no-daemon --stacktrace assembleRelease > out/gradle.log 2>&1
+          echo "gradle exit=$?" >> out/gradle.log
+          tail -40 out/gradle.log
+          APK=app/build/outputs/apk/release/app-release-unsigned.apk
+          ls -la app/build/outputs/apk/release/ >> out/gradle.log 2>&1
+          if [ -f "$APK" ]; then
+            cp "$APK" out/rif-intranet-unsigned.apk
+            "$BT/zipalign" -c -v 4 out/rif-intranet-unsigned.apk > out/zipalign.txt 2>&1; echo "zipalign exit=$?" >> out/zipalign.txt
+            "$BT/aapt2" dump badging out/rif-intranet-unsigned.apk > out/badging.txt 2>&1
+            "$BT/aapt2" dump xmltree --file AndroidManifest.xml out/rif-intranet-unsigned.apk > out/manifest.txt 2>&1
+            unzip -l out/rif-intranet-unsigned.apk > out/files.txt
+            sha256sum out/rif-intranet-unsigned.apk > out/sha256.txt
+          fi
+          if [ -f signed/rif-intranet.apk ]; then
+            "$BT/apksigner" verify --verbose --print-certs signed/rif-intranet.apk > out/verify.txt 2>&1; echo "apksigner exit=$?" >> out/verify.txt
+            "$BT/zipalign" -c -v 4 signed/rif-intranet.apk > out/zipalign-signed.txt 2>&1; echo "zipalign exit=$?" >> out/zipalign-signed.txt
+          fi
+          exit 0
       - name: publish
+        if: always()
         run: |
           git config user.name "rif-app-build"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout --orphan android-app-out
           git rm -rf --cached . >/dev/null
           git add -f out
-          git commit -q -m "build output"
+          git commit -q -m "build output for ${GITHUB_SHA::7}"
           git push -f origin android-app-out
