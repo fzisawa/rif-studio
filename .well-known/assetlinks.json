@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.rifstudio.intranet",
+      "sha256_cert_fingerprints": ["7C:13:A7:22:C5:49:6C:69:EB:93:D9:8E:0B:34:F8:E2:59:FF:40:17:C4:91:31:8A:F4:40:BC:19:C0:13:0F:DF"]
+    }
+  }
+]
