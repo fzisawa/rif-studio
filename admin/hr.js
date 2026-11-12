@@ -103,7 +103,15 @@ $("hpo").onclick=async()=>{const p=$("hpi").value;if(!p)return;
   const {data,error}=await db.rpc("check_ceo_pin",{p_pin:p});
   if(error&&/permission denied|JWT|401/i.test(error.message||"")){$("hpe").textContent="로그인이 풀렸어요. 로그아웃 후 다시 로그인해 주세요";try{await db.auth.signOut()}catch(_){}setTimeout(()=>location.reload(),1500);return}
   if(error||!data){$("hpe").textContent="비밀번호가 맞지 않아요";return}
-  PIN=p;pm.hidden=true;$("hr-body").hidden=false;$("hrlock").textContent="🔓 잠금 (열림)";clearTimeout(tm);tm=setTimeout(lock,10*60*1000);load()};
+  PIN=p;pm.hidden=true;$("hr-body").hidden=false;$("hrlock").textContent="🔓 잠금 (열림)";clearTimeout(tm);tm=setTimeout(lock,10*60*1000);load();loadLocked()};
+async function loadLocked(){const box=$("jlkl");box.replaceChildren();
+  const {data,error}=await db.rpc("jr_locked_list",{p_pin:PIN});
+  if(error){box.append(el("p",{className:"note err",textContent:"불러오지 못했어요"}));return}
+  if(!(data||[]).length){box.append(el("p",{className:"note",textContent:"잠긴 지원서가 없어요."}));return}
+  data.forEach(r=>{const b=el("button",{type:"button",className:"btn small",textContent:"잠금 풀기"});
+    b.onclick=async()=>{const nm=(r.nickname||r.name||r.email);if(!confirm(nm+" 지원서의 채용/거절 결정을 풀까요?\n풀면 경영지원팀에 다시 보이고 수정할 수 있어요."))return;
+      b.disabled=true;const {error}=await db.rpc("jr_unlock",{p_id:r.id,p_pin:PIN});if(error){b.disabled=false;alert("풀지 못했어요: "+err(error));return}loadLocked()};
+    box.append(el("div",{className:"idrow",style:"justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);display:flex;align-items:center"},[el("span",{textContent:(r.nickname||r.name||"")+" · "+(r.email||"")+" · "+(r.decision==="hire"?"대표 채용":"대표 거절")+" · "+new Date(r.created_at).toLocaleDateString("ko-KR")}),b]))})}
 $("hpi").onkeydown=e=>{if(e.key==="Enter")$("hpo").click()};
 $("out").addEventListener("click",lock);
 /* 로그인 직후(스크립트가 다 불러와지기 전/후 어느 쪽이든) 인사정보 화면을 반드시 보여줘요 */
