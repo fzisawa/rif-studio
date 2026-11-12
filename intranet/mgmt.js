@@ -48,6 +48,7 @@ const cell=(v,cls)=>el("td",{className:cls||"",textContent:v||"-"});
 function link(v,cls){const td=el("td",{className:cls||""});const u=url(v);if(u){const a=el("a",{href:u,target:"_blank",rel:"noopener noreferrer",textContent:v});a.onclick=e=>e.stopPropagation();td.append(a)}else td.textContent=v||"-";return td}
 
 /* ---------- 지원서 ---------- */
+const TYPE2={mail_thanks:"thanks",mail_interview:"interview",mail_reject:"reject",mail_hire:"hire"};
 async function loadJ(){const {data,error}=await db.rpc("jr_list");
   if(error){$("mjc").textContent="불러오지 못했어요";return}
   rows=(data||[]).map((r,i)=>({...r,no:i+1})).reverse();drawJ()}
@@ -65,10 +66,21 @@ function drawJ(){
     const dup=cnt[(r.email||"").trim().toLowerCase()]>1;
     const nick=cell(r.nickname||r.name);if(dup)nick.append(el("span",{className:"mdupb",textContent:"재지원"}));
     const MC=[["mail_thanks","감사"],["mail_interview","면접"],["mail_reject","거절"],["mail_hire","채용"]].map(([k,t])=>{
-      const c=el("input",{type:"checkbox",checked:!!r[k],disabled:lk,title:lk?"대표가 결정한 지원서라 수정할 수 없어요":t+" (표시만 해요. 메일은 자동으로 나가지 않아요)"});
+      const c=el("input",{type:"checkbox",checked:!!r[k],disabled:lk,title:lk?"대표가 결정한 지원서라 수정할 수 없어요":t+" 메일 보냄 표시 (✉로 보내면 자동 체크)"});
       c.onclick=e=>e.stopPropagation();
-      c.onchange=async()=>{const v=c.checked;c.disabled=true;const ok=await rpcSet("jr_set_check",{p_id:r.id,p_field:k,p_val:v},null,()=>{c.checked=!v});if(ok)r[k]=v;c.disabled=lk};
-      return el("td",{className:"mk"},[c])});
+      c.onchange=async()=>{const v=c.checked;c.disabled=true;const ok=await rpcSet("jr_set_check",{p_id:r.id,p_field:k,p_val:v},null,()=>{c.checked=!v});if(ok){r[k]=v;sb.hidden=!canSend()}c.disabled=lk};
+      // ✉ 보내기: support@ 이름으로 지원자 출신 언어에 맞춰 발송 → 누른 사람의 보낸 편지함에 기록, 성공하면 자동 체크
+      const canSend=()=>!r[k]&&(!lk||k==="mail_reject"||k==="mail_hire");
+      const sb=el("button",{type:"button",className:"msend",textContent:"✉",hidden:!canSend(),title:t+" 메일 보내기 (support@)"});
+      sb.onclick=async e=>{e.stopPropagation();
+        const lang={korea:"한국어",japan:"일본어",english:"영어",other:"영어"}[r.region]||"한국어·일본어·영어 한 통";
+        if(!confirm((r.nickname||r.name)+" 님("+r.email+")에게 '"+t+"' 메일을 보낼까요?\n\n· 보내는 주소: support@rif-studio.com\n· 언어: "+lang+"\n· 내 보낸 편지함에 기록되고, 상대가 열면 '읽음'으로 표시돼요"))return;
+        sb.disabled=true;sb.textContent="…";
+        const {data,error}=await db.functions.invoke("send-applicant-mail",{body:{type:TYPE2[k],id:r.id}});
+        let msg=data&&data.error;if(error&&!msg){try{msg=(await error.context.json()).error}catch(_){msg="보내지 못했어요"}}
+        if(msg){alert(msg);sb.disabled=false;sb.textContent="✉";return}
+        r[k]=true;c.checked=true;sb.hidden=true;if(data&&data.warn)alert(data.warn)};
+      return el("td",{className:"mk"},[c,sb])});
     const CK=[["ceo_interview","면접 의향"],["ceo_hire","채용 의향"],["ceo_reject","채용 거절"]].map(([k,t],i)=>{
       const c=el("input",{className:"cb b"+(i+1),type:"checkbox",checked:!!r[k],disabled:!boss||(lk&&!(r[k]&&k!=="ceo_interview")),title:lk?(r[k]&&k!=="ceo_interview"?"체크를 풀면 수정 잠금이 풀려요":"결정된 지원서라 잠겨 있어요"):t});c.onclick=e=>e.stopPropagation();
       c.onchange=async()=>{const v=c.checked;c.disabled=true;const ok=await rpcSet("jr_set_ceo_flag",{p_id:r.id,p_field:k,p_val:v},null,()=>{c.checked=!v});if(ok){r[k]=v;r.locked=!!(r.ceo_hire||r.ceo_reject);drawJ()}else c.disabled=false};
