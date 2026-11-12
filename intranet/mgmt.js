@@ -146,6 +146,9 @@ const rdText=m=>m.first_read_at?"👁 "+who2(m.first_read_by)+" 님이 먼저 �
 function paint(t){const [k,s]=tstatus(t);if(t.ui){t.ui.bd.className="mbadge "+k;t.ui.bd.textContent=s;t.ui.rd.textContent=rdOf(t)}
   (t.ins||[]).forEach(m=>{const e=t.rds&&t.rds[m.id];if(e){e.textContent=rdText(m);e.className="mrd"+(m.first_read_at?" on":"")}})}
 async function markRead(t){
+  /* 여기서 열어 본 메일은 메일 탭에서도 '읽음'이 되게 (메일 탭 숫자 배지가 같이 줄어요) */
+  try{const u=(await db.auth.getSession()).data.session,me=u&&(u.user.email||"").toLowerCase();
+    if(me&&t.ins.length){await db.from("inbox_reads").upsert(t.ins.map(m=>({msg_id:m.id,email:me})),{onConflict:"msg_id,email",ignoreDuplicates:true});if(window.RIFMAIL&&RIFMAIL.refresh)RIFMAIL.refresh(true)}}catch(_){}
   const ids=t.ins.filter(m=>!m.first_read_at).map(m=>m.id);if(!ids.length)return;
   const {data,error}=await db.rpc("inbox_mark_read",{p_ids:ids});if(error){console.error(error);return}
   (data||[]).forEach(r=>{const m=t.ins.find(x=>x.id===r.id);if(m){m.first_read_by=r.first_read_by;m.first_read_at=r.first_read_at}});paint(t)}
