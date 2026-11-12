@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     const { data: st } = await sb.from("mail_staff").select("name").ilike("email", email).maybeSingle();
     const author = String(st?.name || email.split("@")[0]);
     const lang = langOf(r.region);
-    const m = render(type, lang, String(r.nickname || r.name || to.split("@")[0]));
+    const m = render(type, lang, String(r.nickname || r.name || to.split("@")[0]), r.fields, r.field_other);
 
     const { data: row, error: ie } = await sb.from("mail_outbox").insert({
       sender: SUPPORT, sender_name: "support@ (공용)", author_email: email, author_name: author,
