@@ -138,3 +138,12 @@ ruby rt{font-size:.5em;font-weight:400;letter-spacing:.08em;line-height:1}
 @media(max-width:900px){.grid.vids{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.grid.vids{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px}}
 main:has(.cv){max-width:920px}
+/* 채널 주인 편집 (캐치프레이즈 · 경력 · 탭) */
+.pe-open{margin-top:18px}
+.pe{margin:28px 0;padding:22px;border:1px dashed var(--ac);border-radius:18px;display:grid;gap:12px}
+.pe h2{font-size:18px;margin:0}.pe label{display:grid;gap:6px;font-size:13px;color:var(--mut)}
+.pe input,.pe textarea{font:inherit;font-size:15px;padding:10px 12px;border:1px solid #7775;border-radius:10px;background:transparent;color:var(--fg);width:100%;box-sizing:border-box}
+.pe-rows{display:grid;gap:8px}.pe-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr) auto;gap:8px}
+@media(max-width:640px){.pe-row{grid-template-columns:1fr 1fr}.pe-row .r2{grid-column:1/-1;order:-1}}
+.pe-acts{display:flex;gap:10px;justify-content:flex-end}
+.tab.tadd{border-style:dashed;color:var(--ac)}.tab.tdel{border-style:dashed;font-size:13px}
