@@ -1,0 +1,29 @@
+name: fetch-deck-assets
+on:
+  push:
+    branches: [tmp-deck-assets]
+    paths: [ids.txt]
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: download
+        run: |
+          mkdir -p out
+          while read line; do
+            [ -z "$line" ] && continue
+            id="${line:3}"
+            curl -sfL "https://i.ytimg.com/vi/$id/maxresdefault.jpg" -o "out/$line.jpg" || curl -sfL "https://i.ytimg.com/vi/$id/hqdefault.jpg" -o "out/$line.jpg" || echo "fail $line"
+          done < ids.txt
+          for f in 1794409541435 1794409479233 1794409500205; do
+            curl -sfL "https://noqtyhmgdfzziymfclnx.supabase.co/storage/v1/object/public/portfolio/$f.jpg" -o "out/wj_$f.jpg" || echo "fail $f"
+          done
+          for v in $(cut -c4- ids.txt); do curl -s "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=$v&format=json" | python3 -c "import sys,json;d=json.load(sys.stdin);print('$v\t'+d.get('title','')+'\t'+d.get('author_name',''))" 2>/dev/null || echo "$v\t\t"; done > out/titles.tsv
+          ls -la out | head -60
+      - name: commit
+        run: |
+          git config user.name "deck-bot"; git config user.email "deck-bot@users.noreply.github.com"
+          git add out && git commit -m "assets" && git push
