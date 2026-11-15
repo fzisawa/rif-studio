@@ -185,7 +185,7 @@ async function loadDir(){const {data}=await db.rpc("staff_directory");dir=data||
   const mine=dir.find(r=>r.email.toLowerCase()===me)||{};
   avatar($("pfav"),mine.avatar,mine.name);$("pfnk").value=mine.nickname||"";$("pfdc").value=mine.discord||"";$("pftw").value=mine.twitter||"";$("pfdu").value=mine.duties||"";
   drawTree();drawDir();loadOrg()}
-let DIVS={"경영부":["경영지원팀"],"프로덕션부":["보컬팀","사운드제작팀","일러스트팀","매니지먼트팀","영상제작팀"]};
+let DIVS={"경영부":["경영지원팀"],"프로덕션부":["보컬팀","사운드제작팀","일러스트팀","영상제작팀"]};
 const TEAM_DIV={};const mapDiv=()=>{for(const k in TEAM_DIV)delete TEAM_DIV[k];Object.entries(DIVS).forEach(([d,ts])=>ts.forEach(t=>TEAM_DIV[t]=d))};mapDiv();
 /* 부서·팀 목록은 관리자 페이지에서 바꿀 수 있어요 (org_units) */
 let orgLoaded=false;

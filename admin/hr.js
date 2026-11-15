@@ -84,7 +84,7 @@ $("hform").onsubmit=async e=>{e.preventDefault();if(!edit)return;
   const {error}=await db.rpc("hr_save2",{p_pin:PIN,p_id:edit.id,p_emp_no:$("hno").value.trim(),p_name:$("hn").value,p_nick:$("hnk").value,p_email:$("he").value,p_phone:$("hph").value,p_position:$("hp").value,p_rank:$("hrk").value,p_division:$("hdv").value,p_team:$("htm").value,p_discord:$("hdc").value,p_twitter:$("htw").value,p_memo:$("hm").value});
   if(error)return alert("저장하지 못했어요: "+err(error));
   edit=null;$("hmod").hidden=true;load()};
-let TD={"경영지원팀":"경영부","보컬팀":"프로덕션부","사운드제작팀":"프로덕션부","일러스트팀":"프로덕션부","매니지먼트팀":"프로덕션부","영상제작팀":"프로덕션부"},DV=["경영부","프로덕션부"];
+let TD={"경영지원팀":"경영부","보컬팀":"프로덕션부","사운드제작팀":"프로덕션부","일러스트팀":"프로덕션부","영상제작팀":"프로덕션부"},DV=["경영부","프로덕션부"];
 /* 부서·팀 (org_units) — 관리자 페이지에서 편집 */
 function fillDivs(){const sel=$("hdv"),cur=sel.value;sel.replaceChildren(el("option",{value:"",textContent:"미배정"}),...DV.map(d=>el("option",{value:d,textContent:d})));if(cur&&!DV.includes(cur))sel.append(el("option",{value:cur,textContent:cur}));sel.value=cur}
 async function loadOrgU(){const {data,error}=await db.from("org_units").select("division,team,sort").order("sort");if(error||!data||!data.length)return null;
