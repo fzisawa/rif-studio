@@ -84,7 +84,21 @@ $("hform").onsubmit=async e=>{e.preventDefault();if(!edit)return;
   const {error}=await db.rpc("hr_save2",{p_pin:PIN,p_id:edit.id,p_emp_no:$("hno").value.trim(),p_name:$("hn").value,p_nick:$("hnk").value,p_email:$("he").value,p_phone:$("hph").value,p_position:$("hp").value,p_rank:$("hrk").value,p_division:$("hdv").value,p_team:$("htm").value,p_discord:$("hdc").value,p_twitter:$("htw").value,p_memo:$("hm").value});
   if(error)return alert("저장하지 못했어요: "+err(error));
   edit=null;$("hmod").hidden=true;load()};
-const TD={"경영지원팀":"경영부","보컬팀":"프로덕션부","사운드제작팀":"프로덕션부","일러스트팀":"프로덕션부","매니지먼트팀":"프로덕션부"};
+let TD={"경영지원팀":"경영부","보컬팀":"프로덕션부","사운드제작팀":"프로덕션부","일러스트팀":"프로덕션부","매니지먼트팀":"프로덕션부","영상제작팀":"프로덕션부"},DV=["경영부","프로덕션부"];
+/* 부서·팀 (org_units) — 관리자 페이지에서 편집 */
+function fillDivs(){const sel=$("hdv"),cur=sel.value;sel.replaceChildren(el("option",{value:"",textContent:"미배정"}),...DV.map(d=>el("option",{value:d,textContent:d})));if(cur&&!DV.includes(cur))sel.append(el("option",{value:cur,textContent:cur}));sel.value=cur}
+async function loadOrgU(){const {data,error}=await db.from("org_units").select("division,team,sort").order("sort");if(error||!data||!data.length)return null;
+  const o=[];data.forEach(r=>{let d=o.find(x=>x.division===r.division);if(!d){d={division:r.division,teams:[]};o.push(d)}if(r.team)d.teams.push(r.team)});
+  DV=o.map(d=>d.division);TD={};o.forEach(d=>d.teams.forEach(t=>TD[t]=d.division));fillDivs();return o}
+function orgRow(d){const nm=el("input",{className:"odn",maxLength:40,placeholder:"부서 이름 (예: 프로덕션부)",value:d.division||""}),tm=el("textarea",{className:"otm",rows:Math.max(3,(d.teams||[]).length+1),placeholder:"팀 이름 (한 줄에 하나)",value:(d.teams||[]).join("\n")});
+  const x=el("button",{type:"button",className:"btn small ghost",textContent:"부서 삭제"});const row=el("div",{className:"orow",style:"display:grid;grid-template-columns:minmax(140px,1fr) 2fr auto;gap:10px;align-items:start;padding:12px 0;border-top:1px solid var(--line)"},[nm,tm,x]);
+  x.onclick=()=>{if(confirm((nm.value||"이 부서")+" 을(를) 목록에서 지울까요? (저장을 눌러야 반영돼요)"))row.remove()};return row}
+async function drawOrgU(){const o=await loadOrgU()||DV.map(d=>({division:d,teams:Object.keys(TD).filter(t=>TD[t]===d)}));$("orgl").replaceChildren(...o.map(orgRow))}
+$("orgadd").onclick=()=>{const r=orgRow({});$("orgl").append(r);r.querySelector("input").focus()};
+$("orgsave").onclick=async()=>{const units=[...document.querySelectorAll("#orgl .orow")].map(r=>({division:r.querySelector(".odn").value.trim(),teams:r.querySelector(".otm").value.split("\n").map(x=>x.trim()).filter(Boolean)})).filter(u=>u.division);
+  if(!units.length)return alert("부서를 하나 이상 적어 주세요");const names=units.map(u=>u.division);if(new Set(names).size!==names.length)return alert("같은 이름의 부서가 두 개 있어요");
+  const b=$("orgsave");b.disabled=true;const {error}=await db.rpc("org_save",{p_pin:PIN,p_units:units});b.disabled=false;
+  if(error){$("orgmsg").textContent="저장하지 못했어요: "+err(error);return}$("orgmsg").textContent="저장했어요. 인트라넷은 새로고침하면 반영돼요.";drawOrgU();fillTeams()};
 /* 부서를 고르면 그 부서의 팀만 팀 목록에 나와요 */
 function fillTeams(keep){const d=$("hdv").value,cur=keep===undefined?$("htm").value:keep,sel=$("htm");
   sel.replaceChildren(el("option",{value:"",textContent:"없음"}),...Object.keys(TD).filter(t=>TD[t]===d).map(t=>el("option",{value:t,textContent:t})));
@@ -93,7 +107,7 @@ function setDT(d,t){$("hdv").value=d;fillTeams(t)}
 $("hdv").addEventListener("change",()=>fillTeams());
 $("htm").addEventListener("mousedown",()=>fillTeams());$("htm").addEventListener("focus",()=>fillTeams());
 $("htm").onchange=()=>{const t=$("htm").value;if(t)$("hdv").value=TD[t]};
-fillTeams();
+loadOrgU().then(()=>fillTeams());fillTeams();
 const closeEdit=()=>{edit=null;$("hmod").hidden=true};$("hcancel").onclick=closeEdit;$("hmx").onclick=closeEdit;$("hmod").onclick=e=>{if(e.target===$("hmod"))closeEdit()};
 const pm=$("hpm");
 $("hrlock").onclick=()=>{if(PIN){lock();return}$("hpi").value="";$("hpe").textContent="";pm.hidden=false;$("hpi").focus()};
@@ -103,7 +117,7 @@ $("hpo").onclick=async()=>{const p=$("hpi").value;if(!p)return;
   const {data,error}=await db.rpc("check_ceo_pin",{p_pin:p});
   if(error&&/permission denied|JWT|401/i.test(error.message||"")){$("hpe").textContent="로그인이 풀렸어요. 로그아웃 후 다시 로그인해 주세요";try{await db.auth.signOut()}catch(_){}setTimeout(()=>location.reload(),1500);return}
   if(error||!data){$("hpe").textContent="비밀번호가 맞지 않아요";return}
-  PIN=p;pm.hidden=true;$("hr-body").hidden=false;$("hrlock").textContent="🔓 잠금 (열림)";clearTimeout(tm);tm=setTimeout(lock,10*60*1000);load();loadLocked()};
+  PIN=p;pm.hidden=true;$("hr-body").hidden=false;$("hrlock").textContent="🔓 잠금 (열림)";clearTimeout(tm);tm=setTimeout(lock,10*60*1000);load();loadLocked();drawOrgU()};
 async function loadLocked(){const box=$("jlkl");box.replaceChildren();
   const {data,error}=await db.rpc("jr_locked_list",{p_pin:PIN});
   if(error){box.append(el("p",{className:"note err",textContent:"불러오지 못했어요"}));return}

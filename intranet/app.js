@@ -184,9 +184,14 @@ async function loadDir(){const {data}=await db.rpc("staff_directory");dir=data||
   if(paths.length){const {data:u}=await db.storage.from("avatars").createSignedUrls(paths,3600);(u||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
   const mine=dir.find(r=>r.email.toLowerCase()===me)||{};
   avatar($("pfav"),mine.avatar,mine.name);$("pfnk").value=mine.nickname||"";$("pfdc").value=mine.discord||"";$("pftw").value=mine.twitter||"";$("pfdu").value=mine.duties||"";
-  drawTree();drawDir()}
-const DIVS={"경영부":["경영지원팀"],"프로덕션부":["보컬팀","사운드제작팀","일러스트팀","매니지먼트팀"]};
-const TEAM_DIV={};Object.entries(DIVS).forEach(([d,ts])=>ts.forEach(t=>TEAM_DIV[t]=d));
+  drawTree();drawDir();loadOrg()}
+let DIVS={"경영부":["경영지원팀"],"프로덕션부":["보컬팀","사운드제작팀","일러스트팀","매니지먼트팀","영상제작팀"]};
+const TEAM_DIV={};const mapDiv=()=>{for(const k in TEAM_DIV)delete TEAM_DIV[k];Object.entries(DIVS).forEach(([d,ts])=>ts.forEach(t=>TEAM_DIV[t]=d))};mapDiv();
+/* 부서·팀 목록은 관리자 페이지에서 바꿀 수 있어요 (org_units) */
+let orgLoaded=false;
+async function loadOrg(){if(orgLoaded)return;orgLoaded=true;
+  const {data,error}=await db.from("org_units").select("division,team,sort").order("sort");if(error||!data||!data.length)return;
+  const o={};data.forEach(r=>{if(!o[r.division])o[r.division]=[];if(r.team)o[r.division].push(r.team)});DIVS=o;mapDiv();drawTree();drawDir()}
 const divOf=r=>r.division||TEAM_DIV[r.team]||"";
 let osel="",oopen={root:false};
 const isBoss=r=>r.pos==="대표이사";
