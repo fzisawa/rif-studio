@@ -102,7 +102,7 @@ html.ash-in #mqb tr.r td.no,html.ash-in #mbb tr.r td.no{display:none}
 html.ash-in #mqb tr.r td:nth-child(2){order:1;flex:1}html.ash-in #mqb tr.r td.dt{order:1;font-size:12px}
 html.ash-in #mqb tr.r td:nth-child(4){order:3;flex:1 1 100%;overflow:hidden;text-overflow:ellipsis}
 html.ash-in #mqb tr.r td.rd{order:4}html.ash-in #mqb tr.r td.rd::before{content:"확인 "}
-html.ash-in #mqb tr.r td:nth-child(6){order:5}html.ash-in #mqb tr.r td:nth-child(6)::before{content:"· 답장 "}
+html.ash-in #mqb tr.r td:nth-child(7){order:5}html.ash-in #mqb tr.r td:nth-child(7)::before{content:"· 답장 "}html.ash-in #mqb tr.r td.as{order:3}html.ash-in #mqb tr.r td.as::before{content:"담당 "}
 html.ash-in #mbb tr.r td:nth-child(6){order:1;flex:1}html.ash-in #mbb tr.r td.dt{order:1;font-size:12px}
 html.ash-in #mbb tr.r td:nth-child(3){order:3}html.ash-in #mbb tr.r td:nth-child(4){order:4;overflow:hidden;text-overflow:ellipsis}
 html.ash-in #mbb tr:not(.r) td{flex:1 1 100%;color:var(--fg);font-size:14px;white-space:normal}

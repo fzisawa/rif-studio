@@ -134,10 +134,11 @@ let who={},threads=[];
 const label=e=>{const p=who[(e||"").toLowerCase()];return p?[p.name||p.nickname,[p.pos,p.rnk].filter(Boolean).join(" ")].filter(Boolean).join(" · "):""};
 const cutQ=s=>{s=String(s||"").replace(/\r\n/g,"\n");const i=s.search(/\n[^\n]*(wrote:|작성:)\s*(\n|$)|\n>/);return i>0?s.slice(0,i).trim():s.trim()};
 async function loadQ(){
-  const [a,b,c]=await Promise.all([
+  const [a,b,c,d]=await Promise.all([
     db.from("inbox_messages").select("id,from_addr,from_name,to_addrs,subject,received_at,assignee_email,done,preview,attachments,first_read_by,first_read_at").is("deleted_at",null).order("received_at",{ascending:false}).limit(500),
     db.from("mail_outbox").select("id,inbox_id,author_name,author_email,to_email,subject,body,created_at").not("inbox_id","is",null).is("deleted_at",null).order("created_at",{ascending:true}),
-    db.rpc("staff_directory")]);
+    db.rpc("staff_directory"),
+    db.from("mail_outbox").select("id,inbox_id,author_name,author_email,to_email,subject,body,created_at").is("inbox_id",null).ilike("sender","support@rif-studio.com").is("deleted_at",null).order("created_at",{ascending:true}).limit(300)]);
   if(a.error){$("mqc").textContent="불러오지 못했어요";return}
   who={};(c.data||[]).forEach(p=>{who[(p.email||"").toLowerCase()]=p});
   msgs=(a.data||[]).filter(x=>!x.to_addrs||/support@/i.test(x.to_addrs));reps={};(b.data||[]).forEach(x=>{(reps[x.inbox_id]=reps[x.inbox_id]||[]).push(x)});
@@ -145,12 +146,16 @@ async function loadQ(){
   [...msgs].sort((x,y)=>new Date(x.received_at)-new Date(y.received_at)).forEach(m=>{const k=tkey(m);let t=map.get(k);
     if(!t){t={key:k,subject:m.subject,from:m.from_addr,fromName:m.from_name,ins:[],outs:[]};map.set(k,t)}
     t.ins.push(m);(reps[m.id]||[]).forEach(r=>t.outs.push(r))});
+  /* 고객 문의 메일에서 새로 보낸 메일: 받는 사람·제목이 같으면 그 사람의 답장과 한 대화로 이어져요 */
+  (d.data||[]).forEach(r=>{const to=String(r.to_email||"").split(",")[0].trim().toLowerCase(),k=to+"|"+normSub(r.subject);let t=map.get(k);
+    if(!t){t={key:k,subject:r.subject,from:to,fromName:"",ins:[],outs:[],started:true};map.set(k,t)}t.outs.push(r)});
   threads=[...map.values()].map(t=>{
     t.ev=[...t.ins.map(m=>({k:"in",t:new Date(m.received_at),m})),...t.outs.map(r=>({k:"out",t:new Date(r.created_at),r}))].sort((x,y)=>x.t-y.t);
-    t.last=t.ev[t.ev.length-1];t.done=t.ins.every(m=>m.done);return t}).sort((x,y)=>y.last.t-x.last.t);
+    t.last=t.ev[t.ev.length-1];t.done=!!t.ins.length&&t.ins.every(m=>m.done);t.asg=(t.ins[t.ins.length-1]||{}).assignee_email||"";return t}).sort((x,y)=>y.last.t-x.last.t);
   drawQ()}
 const tstatus=t=>{
   if(t.done)return["done","완료"];
+  if(!t.ins.length)return["rep","보냄 "+t.outs.length];
   if(t.last.k==="out")return["rep","답장함 "+t.outs.length];
   if(!t.ins.some(m=>!m.first_read_at))return["chk","확인함"];
   return t.ins.length>1||t.outs.length?["nw","NEW"]:["new","새 메일"]};
@@ -174,8 +179,8 @@ function drawQ(){
   const total=threads.length;
   view.forEach(t=>{
     const [k,s]=tstatus(t),lo=t.outs[t.outs.length-1];
-    const bd=el("span",{className:"mbadge "+k,textContent:s});const tr=el("tr",{className:"r"},[cell(String(total-threads.indexOf(t)),"no"),el("td",{},[bd]),cell(t.subject||"(제목 없음)"),cell((t.fromName?t.fromName+" ":"")+"<"+t.from+">"),(()=>{const c=cell(rdOf(t),"rd");t.ui={bd:null,rd:c};return c})(),cell(lo?(label(lo.author_email)||lo.author_name||lo.author_email):"-"),cell(dt(t.last.t),"dt")]);
-    t.ui.bd=bd;const dtl=el("tr",{className:"d",hidden:openQ!==t.key},[el("td",{colSpan:7},[])]);
+    const bd=el("span",{className:"mbadge "+k,textContent:s});const tr=el("tr",{className:"r"},[cell(String(total-threads.indexOf(t)),"no"),el("td",{},[bd]),cell(t.subject||"(제목 없음)"),cell((t.fromName?t.fromName+" ":"")+"<"+t.from+">"),cell(t.asg?who2(t.asg).split(" · ")[0]:"미지정","as"),(()=>{const c=cell(rdOf(t),"rd");t.ui={bd:null,rd:c};return c})(),cell(lo?(label(lo.author_email)||lo.author_name||lo.author_email):"-"),cell(dt(t.last.t),"dt")]);
+    t.ui.bd=bd;const dtl=el("tr",{className:"d",hidden:openQ!==t.key},[el("td",{colSpan:8},[])]);
     const fill=()=>{if(dtl.dataset.on)return;dtl.dataset.on="1";buildQ(t,dtl.firstChild)};
     if(openQ===t.key)fill();
     tr.onclick=()=>{dtl.hidden=!dtl.hidden;openQ=dtl.hidden?null:t.key;if(!dtl.hidden){fill();markRead(t)}};
@@ -217,19 +222,37 @@ function buildQ(t,box){
       showBody(m,body)}
     else{const r=e.r;
       tl.append(el("div",{className:"mmsg out",style:ind},[el("div",{className:"h"},[el("span",{className:"mwho out",textContent:"✉ "+(label(r.author_email)||r.author_name||r.author_email)}),el("span",{textContent:" 님이 보냄 → "+r.to_email+" · "+dt(r.created_at)})]),el("div",{className:"t",textContent:r.body})]))}});
-  const li=t.ins[t.ins.length-1];
-  const ta=el("textarea",{placeholder:"답장 내용 (support@rif-studio.com 이름으로 나가고, 보낸 사람 이름은 이 기록 옆에 계속 남아요)",maxLength:20000});
+  const li=t.ins[t.ins.length-1]||null,to0=li?li.from_addr:t.from,sub0=li?li.subject:(t.outs[0]||{}).subject;
+  /* 담당자: 이 대화를 맡은 사원 (모든 받은 메일에 같이 적용) */
+  if(li){const as=el("select",{className:"mqas",title:"담당자"},[el("option",{value:"",textContent:"담당자 미지정"}),...Object.values(who).filter(p=>p.email).map(p=>el("option",{value:p.email.toLowerCase(),textContent:"담당 "+(p.name||p.nickname||p.email),selected:(t.asg||"").toLowerCase()===p.email.toLowerCase()}))]);
+    as.onchange=async()=>{const v=as.value||null;const {error}=await db.from("inbox_messages").update({assignee_email:v}).in("id",t.ins.map(m=>m.id));if(error){alert("담당자를 바꾸지 못했어요");as.value=t.asg||"";return}t.ins.forEach(m=>m.assignee_email=v);t.asg=v||"";openQ=t.key;drawQ()};
+    box.prepend(el("div",{className:"mqah"},[el("b",{textContent:"담당"}),as,el("span",{className:"mnote",textContent:"답장은 support@ 이름으로 나가고, 보낸 사원의 메일 탭 › 보낸 편지함에도 기록돼요."})]))}
+  const ta=el("textarea",{placeholder:"답장 내용 (support@rif-studio.com 이름으로 나가요)",maxLength:20000});
   const send=el("button",{className:"mbtn p",type:"button",textContent:"답장 보내기"}),
     dn=el("button",{className:"mbtn",type:"button",textContent:t.done?"완료 취소":"✓ 완료 처리"}),note=el("span",{className:"mnote"});
   send.onclick=async()=>{const b=ta.value.trim();if(!b){note.className="mnote err";note.textContent="답장 내용을 써 주세요.";return}
-    if(!confirm(li.from_addr+" 에게 답장을 보낼까요?\n보낸 뒤에는 취소할 수 없어요."))return;
+    if(!confirm(to0+" 에게 답장을 보낼까요?\n보낸 뒤에는 취소할 수 없어요."))return;
     send.disabled=true;note.className="mnote";note.textContent="보내는 중…";let ok=false,em="";
-    try{const {data,error}=await db.functions.invoke("send-mail",{body:{to:li.from_addr,subject:/^re:/i.test(li.subject||"")?li.subject:"Re: "+(li.subject||""),body:b,as:"support",inbox_id:li.id}});
+    try{const {data,error}=await db.functions.invoke("send-mail",{body:{to:to0,subject:/^re:/i.test(sub0||"")?sub0:"Re: "+(sub0||""),body:b,as:"support",...(li?{inbox_id:li.id}:{})}});
       if(error){try{em=(await error.context.json()).error}catch(_){em=error.message}}else if(data&&data.ok)ok=true;else em=(data&&data.error)||"알 수 없는 오류"}catch(x){em=String(x.message||x)}
     send.disabled=false;if(!ok){note.className="mnote err";note.textContent="보내지 못했어요: "+em;return}
     openQ=t.key;await loadQ()};
   dn.onclick=async()=>{const v=!t.done;const {error}=await db.from("inbox_messages").update({done:v}).in("id",t.ins.map(m=>m.id));if(error)return alert("바꾸지 못했어요");t.ins.forEach(m=>m.done=v);t.done=v;openQ=t.key;drawQ()};
-  box.append(el("div",{className:"mfrm"},[ta,el("div",{className:"acts"},[send,dn,note])]))}
+  box.append(el("div",{className:"mfrm"},[ta,el("div",{className:"acts"},li?[send,dn,note]:[send,note])]))}
+/* 고객 문의 메일에서 support@ 이름으로 새 메일 보내기 */
+function composeQ(){const old=$("mqnew");if(old)old.remove();
+  const to=el("input",{type:"email",placeholder:"받는 사람 이메일",maxLength:200,required:true}),sj=el("input",{placeholder:"제목",maxLength:200,required:true}),bd=el("textarea",{placeholder:"내용",rows:10,maxLength:20000,required:true}),msg=el("p",{className:"mnote"});
+  const x=el("button",{type:"button",className:"mx",textContent:"×",ariaLabel:"닫기"}),go=el("button",{type:"submit",className:"mbtn p",textContent:"support@ 로 보내기"});
+  const f=el("form",{className:"mbox wd"},[x,el("h2",{textContent:"새 메일 (support@rif-studio.com)"}),el("p",{className:"mnote",textContent:"RIF STUDIO <support@rif-studio.com> 이름으로 나가요. 보낸 메일은 여기 고객 문의 메일과 내 보낸 편지함에 남고, 상대가 답장하면 같은 대화로 이어져요."}),to,sj,bd,el("div",{className:"acts"},[go]),msg]);
+  const m=el("div",{className:"mod",id:"mqnew"},[f]);const close=()=>m.remove();x.onclick=close;m.onclick=e=>{if(e.target===m)close()};
+  f.onsubmit=async e=>{e.preventDefault();const a=to.value.trim(),t=sj.value.trim(),b=bd.value.trim();if(!a||!t||!b)return;
+    if(!confirm(a+" 에게 support@ 이름으로 보낼까요?\n보낸 뒤에는 취소할 수 없어요."))return;
+    go.disabled=true;msg.className="mnote";msg.textContent="보내는 중…";let ok=false,em="";
+    try{const {data,error}=await db.functions.invoke("send-mail",{body:{to:a,subject:t,body:b,as:"support"}});
+      if(error){try{em=(await error.context.json()).error}catch(_){em=error.message}}else if(data&&data.ok)ok=true;else em=(data&&data.error)||"알 수 없는 오류"}catch(x2){em=String(x2.message||x2)}
+    go.disabled=false;if(!ok){msg.className="mnote err";msg.textContent="보내지 못했어요: "+em;return}
+    close();openQ=a.toLowerCase()+"|"+normSub(t);await loadQ()};
+  document.body.append(m);to.focus()}
 
 /* ---------- 사이트 문의 게시판 (공개 /board/ 에 올라온 글) ---------- */
 let inq=[],openB=null;
@@ -264,8 +287,8 @@ function build(){
       el("tr",{},[["No.",""],["접수일시",""],["닉네임",""],["성명",""],["출신",""],["분야",""],["감사","mk"],["면접","mk"],["대표 채용 · 채용 메일","mk bs b2 bl",1],["대표 거절 · 거절 메일","mk bs b3",1],["대표 메모 🔒","bs bm br",1],["경영지원팀 메모",""]].filter(x=>boss||!x[2]).map(([t,c])=>el("th",{textContent:t,className:c})))]),el("tbody",{id:"mjb"})])])]);
   const sel=el("select",{id:"mqs"},[["all","전체"],["new","읽지 않음"],["chk","확인함"],["rep","답장함"],["done","완료"]].map(([v,t])=>el("option",{value:v,textContent:t})));
   const pq=el("div",{id:"pq",hidden:true},[
-    el("div",{className:"mbar"},[el("b",{id:"mqc"}),sel,el("input",{id:"mqq",placeholder:"검색 (제목·보낸 사람·내용)"}),el("button",{className:"mbtn",type:"button",id:"mqr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"support@rif-studio.com 으로 온 메일을 대화별로 묶어 보여줘요. 메일 탭 › 공용 메일함 '고객 문의'와 같은 메일이에요. 답장은 기록으로 계속 남아요."})]),
-    el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","상태","제목","보낸 사람","먼저 확인","답장한 사원","최근 활동"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mqb"})])])]);
+    el("div",{className:"mbar"},[el("b",{id:"mqc"}),sel,el("input",{id:"mqq",placeholder:"검색 (제목·보낸 사람·내용)"}),el("button",{className:"mbtn",type:"button",id:"mqr",textContent:"새로고침"}),el("button",{className:"mbtn p",type:"button",id:"mqn",textContent:"✉ 새 메일"}),el("span",{className:"mnote",textContent:"support@rif-studio.com 으로 주고받은 메일을 대화별로 묶어 보여줘요. 줄을 눌러 담당을 정하고 답장할 수 있어요. 보낸 메일은 보낸 사원의 보낸 편지함에도 남아요."})]),
+    el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","상태","제목","상대","담당","먼저 확인","답장한 사원","최근 활동"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mqb"})])])]);
   const pbq=el("div",{id:"pbq",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mbc"}),el("input",{id:"mbq",placeholder:"검색 (이름·이메일·제목·내용)"}),el("button",{className:"mbtn",type:"button",id:"mbr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"사이트의 공개 문의 게시판(rif-studio.com/board/)에 올라온 글이에요. 이메일은 운영진만 볼 수 있어요."})]),
     el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","작성일시","이름","이메일","제목","상태"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mbb"})])])]);
@@ -275,7 +298,7 @@ function build(){
   pt.prepend(bar);pt.append(pj,pq);
   const host=$("pbd");
   if(host){pbq.hidden=false;host.append(pbq);const tb=document.querySelector('#tabs button[data-t="q"]');if(tb){tb.hidden=false;tb.addEventListener("click",loadB)}loadB()}
-  $("mjq").oninput=drawJ;if(boss)$("mjlk").onclick=openUnlock;$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;$("mbq").oninput=drawB;$("mbr").onclick=loadB;
+  $("mjq").oninput=drawJ;if(boss)$("mjlk").onclick=openUnlock;$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;$("mqn").onclick=composeQ;$("mbq").oninput=drawB;$("mbr").onclick=loadB;
 }
 
 /* 대표 잠금 해제 — 대표 채용·거절로 잠긴 지원서를 대표 비밀번호로 풀어요 (대표에게만 보여요) */

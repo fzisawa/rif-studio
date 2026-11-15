@@ -62,7 +62,7 @@ function drawFolders(){
   const f=$("of");if(!f)return;f.replaceChildren();const c=counts();
   const nb=el("button",{className:"onew",type:"button",textContent:"✉ 새 메일"});nb.onclick=()=>openCompose({});f.append(nb);
   const item=(k,label,n,sec)=>{const on=fold===k&&(mode==="list"||mode==="read"||k===mode);const d=el("div",{className:"ofi"+(on?" on":"")},[el("span",{textContent:label}),el("span",{className:"c",textContent:n||""})]);d.onclick=()=>go(k);f.append(d)};
-  item("in","받은 편지함",c.in);item("star","별표 편지함","");item("mine","내 담당",c.mine);item("out","보낸 편지함","");item("draft","임시보관함",c.draft);item("done","완료한 메일","");item("trash","휴지통",c.trash);
+  item("in","받은 편지함",c.in);item("star","별표 편지함","");item("out","보낸 편지함","");item("draft","임시보관함",c.draft);item("done","완료한 메일","");item("trash","휴지통",c.trash);
   f.append(el("div",{className:"ofh",textContent:"공용 메일함"}));
   if(!boxes.length)f.append(el("div",{className:"ofn",textContent:"아직 없어요"}));
   boxes.forEach(b=>item("box:"+b.id,b.name,c["box:"+b.id]));
@@ -91,7 +91,7 @@ function baseList(){
   const live=m=>!m.deleted_at;let L=[];
   if(fold==="in")L=inbox.filter(m=>live(m)&&!m.done&&mineMsg(m));
   else if(fold==="star")L=inbox.filter(m=>live(m)&&stars.has(m.id));
-  else if(fold==="mine")L=inbox.filter(m=>live(m)&&!m.done&&lc(m.assignee_email)===X.me);
+  else if(fold==="mine"){fold="in";L=inbox.filter(m=>live(m)&&!m.done&&mineMsg(m))}
   else if(fold==="done")L=inbox.filter(m=>live(m)&&m.done);
   else if(fold==="out")L=outbox.filter(r=>!r.deleted_at&&lc(r.author_email)===X.me).map(wrapOut);
   else if(fold==="draft")L=drafts.map(wrapDraft);

@@ -176,3 +176,6 @@ main.wide select.stsel.doing{border-color:var(--ac);color:var(--ac)}main.wide se
 .jds pre,.jds p{margin:0;white-space:pre-wrap;word-break:break-word;font:inherit;font-size:15px;line-height:1.7}
 .jdb .mbtn{margin-top:24px}
 #mjb tr.r{cursor:pointer}#mjb tr.r.on td{background:var(--soft)}
+.mqah{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 12px;margin-bottom:10px;border:1px solid var(--ln);border-radius:12px}
+.mqah select{padding:7px 10px;border-radius:10px}.mqah .mnote{flex:1 1 260px}
+#mqnew form{display:grid;gap:10px}#mqnew input,#mqnew textarea{width:100%;box-sizing:border-box}
