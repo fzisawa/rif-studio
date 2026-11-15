@@ -1,0 +1,23 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by org.conscrypt.NativeLibraryUtil in an unnamed module (file:/usr/local/lib/android/sdk/build-tools/35.0.0/lib/apksigner.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=RIF STUDIO Intranet App, O=RIF STUDIO, C=KR
+Signer #1 certificate SHA-256 digest: 7c13a722c5496c69eb93d98e0b34f8e259ff4017c491318af440bc19c0130fdf
+Signer #1 certificate SHA-1 digest: 4d43aef638d35bdcdd5f9dd663ebd31e316143f7
+Signer #1 certificate MD5 digest: 3a6a623f0b55537104ed690878a164e4
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 94c40d6bf050e8980591e9e8249ee5d3f28ce32ae90e517cbe77c791c8b58323
+Signer #1 public key SHA-1 digest: 68aa40538eef6b4e46091c6c61de3042a9913499
+Signer #1 public key MD5 digest: 816bdf413c3adc99551fbe6834bd27ac
+apksigner exit=0
