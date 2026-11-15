@@ -147,3 +147,4 @@ main:has(.cv){max-width:920px}
 @media(max-width:640px){.pe-row{grid-template-columns:1fr 1fr}.pe-row .r2{grid-column:1/-1;order:-1}}
 .pe-acts{display:flex;gap:10px;justify-content:flex-end}
 .tab.tadd{border-style:dashed;color:var(--ac)}.tab.tdel{border-style:dashed;font-size:13px}
+.ng:has(>.nm:empty){display:none}
