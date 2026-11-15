@@ -105,13 +105,27 @@ function drawJ(){
     tm.onclick=e=>e.stopPropagation();if(lk)tm.title="대표가 결정한 지원서라 수정할 수 없어요";
     tm.onchange=()=>rpcSet("jr_set_team_memo",{p_id:r.id,p_memo:tm.value.trim()},tm).then(ok=>{if(ok)r.team_memo=tm.value.trim()||null});
     const tr=el("tr",{className:"r"+(dup?" dup":"")+(lk?" rej":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(R[r.region]||"-"),cell(flds(r),"fd"),...MC,...(boss?[...CK,el("td",{className:"bs bm br"},[bm])]:[]),el("td",{},[tm])]);
-    const d=el("div",{},[el("b",{className:"mlb",textContent:"이메일"}),el("p",{textContent:r.email||"-"}),el("b",{className:"mlb",textContent:"YouTube / Twitter"}),el("p",{textContent:[r.youtube,r.twitter].filter(Boolean).join("  ·  ")||"-"}),
-      el("b",{className:"mlb",textContent:"경력"}),el("p",{textContent:r.career||"-"}),el("b",{className:"mlb",textContent:"자기소개"}),el("p",{textContent:r.intro||"-"}),el("b",{className:"mlb",textContent:"지원동기"}),el("p",{textContent:r.motive||"-"})]);
-    if(boss&&!lk){const x=el("button",{className:"mbtn",type:"button",textContent:"이 지원서 삭제"});
-      x.onclick=async()=>{if(!confirm((r.nickname||r.name)+" 지원서를 삭제할까요? 되돌릴 수 없어요."))return;const ok=await rpcSet("jr_delete",{p_id:r.id});if(ok){rows=rows.filter(z=>z.id!==r.id);drawJ()}};d.append(x)}
-    const dtl=el("tr",{className:"d",hidden:openJ!==r.id},[el("td",{colSpan:boss?12:8},[d])]);
-    tr.onclick=()=>{dtl.hidden=!dtl.hidden;openJ=dtl.hidden?null:r.id;if(!dtl.hidden)db.rpc("jr_seen",{p_id:r.id}).then(()=>{},()=>{})};
-    tb.append(tr,dtl)})}
+    tr.onclick=()=>{openJ=r.id;openJD(r,lk);db.rpc("jr_seen",{p_id:r.id}).then(()=>{},()=>{});tb.querySelectorAll("tr.on").forEach(x=>x.classList.remove("on"));tr.classList.add("on")};
+    if(openJ===r.id)tr.classList.add("on");
+    tb.append(tr)});
+  if(openJ&&!view.some(r=>r.id===openJ))closeJD()}
+/* 지원서 상세: 오른쪽 패널에 전체 내용 (잘림 없이) */
+const lnk=v=>{v=String(v||"").trim();if(!v)return null;const u=/^https?:\/\//i.test(v)?v:/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(v)?"https://"+v:null;return u?el("a",{href:u,target:"_blank",rel:"noopener noreferrer",textContent:v}):el("span",{textContent:v})};
+function closeJD(){const p=$("mjd");if(p)p.remove();openJ=null;document.querySelectorAll("#mjb tr.on").forEach(x=>x.classList.remove("on"))}
+function openJD(r,lk){const old=$("mjd");if(old)old.remove();
+  const sec=(t,v,pre)=>el("section",{className:"jds"},[el("h3",{textContent:t}),typeof v==="string"||v==null?el(pre?"pre":"p",{textContent:v||"-"}):v]);
+  const links=el("div",{className:"jdl"},[["YouTube",r.youtube],["X (Twitter)",r.twitter],["Discord",r.discord]].map(([k,v])=>el("div",{},[el("b",{textContent:k}),lnk(v)||el("span",{className:"note",textContent:"-"})])));
+  const x=el("button",{type:"button",className:"mx",textContent:"×",ariaLabel:"닫기"});x.onclick=closeJD;
+  const head=el("div",{className:"jdh"},[el("div",{},[el("h2",{textContent:r.nickname||r.name||"-"}),el("p",{className:"note",textContent:[r.nickname?r.name:"",r.email,"#"+r.no+" · "+dt(r.created_at)].filter(Boolean).join("  ·  ")})]),x]);
+  const tags=el("div",{className:"jdt"},[el("span",{className:"chip",textContent:"출신 "+(R[r.region]||"-")}),...(flds(r)||"-").split(/,\s*/).filter(Boolean).map(f=>el("span",{className:"chip on",textContent:f})),...(r.reapply?[el("span",{className:"mdupb",textContent:"재지원"})]:[]),...(lk?[el("span",{className:"chip",textContent:"🔒 대표 결정됨"})]:[])]);
+  const body=el("div",{className:"jdb"},[tags,links,sec("경력",r.career,true),sec("자기소개",r.intro,true),sec("지원동기",r.motive,true)]);
+  if(boss&&r.memo)body.append(sec("대표 메모",r.memo,true));if(r.team_memo)body.append(sec("경영지원팀 메모",r.team_memo,true));
+  if(boss&&!lk){const del=el("button",{className:"mbtn",type:"button",textContent:"이 지원서 삭제"});
+    del.onclick=async()=>{if(!confirm((r.nickname||r.name)+" 지원서를 삭제할까요? 되돌릴 수 없어요."))return;const ok=await rpcSet("jr_delete",{p_id:r.id});if(ok){rows=rows.filter(z=>z.id!==r.id);closeJD();drawJ()}};body.append(del)}
+  const pnl=el("aside",{id:"mjd",className:"jdp",role:"dialog",ariaLabel:"지원서 상세"},[head,body]);
+  document.body.append(pnl);x.focus({preventScroll:true})}
+document.addEventListener("click",e=>{if($("mjd")&&e.target.closest&&e.target.closest("#tabs,#msub"))closeJD()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("mjd")&&!document.querySelector(".mod:not([hidden])"))closeJD()});
 
 /* ---------- support@ 문의 게시판 (같은 사람·같은 제목은 한 대화로 묶어요) ---------- */
 const normSub=s=>{let t=String(s||"").trim();for(let i=0;i<8;i++){const n=t.replace(/^\s*((re|fw|fwd|답장|회신|답신|전달)\s*(\[\d+\])?\s*[:：]\s*)+/i,"");if(n===t)break;t=n}return t.trim().toLowerCase()};
@@ -244,7 +258,7 @@ function build(){
   const bar=el("div",{className:"msub",id:"msub"});
   const defs=[["w","할 일"],["j","지원서"],["q","고객 문의 메일"]];
   const pj=el("div",{id:"pj",hidden:true},[
-    el("div",{className:"mbar"},[el("b",{id:"mjc"}),el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("button",{className:"mbtn",type:"button",id:"mjlk",textContent:"🔒 대표 잠금 해제",hidden:!boss}),el("span",{className:"mnote",textContent:"클릭하면 상세 내용이 펼쳐져요 · ✉ 버튼을 누르면 메일이 나가고 자동으로 체크돼요"})]),
+    el("div",{className:"mbar"},[el("b",{id:"mjc"}),el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("button",{className:"mbtn",type:"button",id:"mjlk",textContent:"🔒 대표 잠금 해제",hidden:!boss}),el("span",{className:"mnote",textContent:"줄을 누르면 오른쪽에 지원서 전체가 열려요 · ✉ 버튼을 누르면 메일이 나가고 자동으로 체크돼요"})]),
     el("div",{className:"mtw"},[el("table",{className:"mt mtj"},[el("thead",{},[
       el("tr",{className:"gh"},[["기본 정보",6,""],["경영지원팀 체크",2,"gt"],["대표 전용 · 대표만 보고 수정",3,"gb"],["경영지원팀 메모",1,""]].filter(x=>boss||x[2]!=="gb").map(([t,n,c])=>el("th",{textContent:t,colSpan:n,className:c}))),
       el("tr",{},[["No.",""],["접수일시",""],["닉네임",""],["성명",""],["출신",""],["분야",""],["감사","mk"],["면접","mk"],["대표 채용 · 채용 메일","mk bs b2 bl",1],["대표 거절 · 거절 메일","mk bs b3",1],["대표 메모 🔒","bs bm br",1],["경영지원팀 메모",""]].filter(x=>boss||!x[2]).map(([t,c])=>el("th",{textContent:t,className:c})))]),el("tbody",{id:"mjb"})])])]);

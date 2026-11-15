@@ -161,3 +161,18 @@ main.wide select.stsel.doing{border-color:var(--ac);color:var(--ac)}main.wide se
 
 .msend{margin-left:4px;border:1px solid #7c5cd655;background:#f3effc;color:#6b4fbb;border-radius:6px;font-size:12px;line-height:1;padding:3px 5px;cursor:pointer;vertical-align:middle}.msend:hover{background:#7c5cd6;color:#fff}.msend:disabled{opacity:.6;cursor:wait}
 .inst{margin:6px 0 14px;font-size:14px}.inst summary{cursor:pointer;color:var(--ac);width:max-content}.instb{margin-top:8px;padding:12px 14px;border:1px solid var(--ln2);border-radius:12px;background:var(--soft);line-height:1.7}.instb p{margin:4px 0}
+/* 지원서 상세 패널 (오른쪽) */
+.jdp{position:fixed;top:0;right:0;bottom:0;width:min(560px,100vw);z-index:60;background:var(--bg);color:var(--fg);border-left:1px solid var(--ln);box-shadow:-18px 0 50px #0003;display:flex;flex-direction:column;animation:jdin .18s ease-out}
+@keyframes jdin{from{transform:translateX(24px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.jdp{animation:none}}
+.jdh{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:22px 22px 14px;border-bottom:1px solid var(--ln)}
+.jdh h2{margin:0 0 4px;font-size:22px}.jdh .note{margin:0;word-break:break-all}
+.jdh .mx{position:static;flex:none}
+.jdb{flex:1;overflow:auto;padding:16px 22px 40px}
+.jdt{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}.jdt .chip{cursor:default}
+.jdl{display:grid;gap:6px;padding:12px 14px;border:1px solid var(--ln);border-radius:12px;margin-bottom:6px}
+.jdl>div{display:grid;grid-template-columns:96px 1fr;gap:8px;font-size:14px}.jdl b{color:var(--mut);font-weight:600}.jdl a,.jdl span{word-break:break-all}
+.jds h3{margin:18px 0 6px;font-size:13px;color:var(--mut);font-weight:700}
+.jds pre,.jds p{margin:0;white-space:pre-wrap;word-break:break-word;font:inherit;font-size:15px;line-height:1.7}
+.jdb .mbtn{margin-top:24px}
+#mjb tr.r{cursor:pointer}#mjb tr.r.on td{background:var(--soft)}
