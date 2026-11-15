@@ -32,7 +32,7 @@ function openSheet(){closeSheet();
   if(!sa)items.push(row("📱","앱으로 설치하기",()=>{const d=document.querySelector("details.inst");if(!d)return;const pm=$("pm"),pb=$("pmb");if(pm&&pb){pb.replaceChildren(mk("h2",{textContent:"앱으로 설치하기"}),d.querySelector(".instb").cloneNode(true));pm.hidden=false}}));
   items.push(row("🌐","RIF STUDIO 사이트",()=>{location.href="../"}),row("↩","로그아웃",()=>{const o=$("out");if(o&&confirm("로그아웃할까요?"))o.click()},"out"));
   const pa=mk("span",{className:"ash-av big"});pa.style.backgroundImage=av.style.backgroundImage;pa.textContent=av.textContent;
-  sheet=mk("div",{className:"ash-sheet"},[mk("div",{className:"ash-sbox"},[mk("div",{className:"ash-grip"}),mk("div",{className:"ash-me"},[pa,mk("div",{},[mk("b",{textContent:"RIF 인트라넷"}),mk("span",{textContent:who})])]),...items])]);
+  sheet=mk("div",{className:"ash-sheet"},[mk("div",{className:"ash-sbox"},[mk("div",{className:"ash-grip"}),mk("div",{className:"ash-me"},[pa,mk("div",{},[mk("b",{textContent:"RIF Intranet"}),mk("span",{textContent:who})])]),...items])]);
   sheet.onclick=e=>{if(e.target===sheet)closeSheet()};document.body.append(sheet)}
 more.onclick=e=>{e.stopPropagation();openSheet()};av.onclick=openSheet;
 /* 채팅: 목록 → 대화방 */
