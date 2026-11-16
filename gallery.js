@@ -7,6 +7,18 @@
   g.before(bar);if(tracks)tracks.before(topBar);
   const allTabs=()=>{const base=CATS[page]||[],mt=(meta.tabs||[]).filter(n=>!base.includes(n)),ex=[...new Set(list.map(i=>i.section).filter(Boolean))].filter(n=>!base.includes(n)&&!mt.includes(n));return [...base,...mt,...ex]};
   const form=addForm(()=>page,s=>{if(s)active=s;if(tracks)top=s||"Portfolio";form.hidden=true;load()},[],()=>active,allTabs);form.hidden=true;g.after(form);
+  /* 올린 음원은 RIF 페이지의 Tracks 와 같은 디자인으로 (사진·영상 아래 한 줄씩) */
+  const tl=el("ol"),tw=el("div",{className:"tracks up",hidden:true},[tl]);g.after(tw);
+  const fmt=x=>Math.floor(x/60)+":"+String(Math.floor(x%60)).padStart(2,"0");
+  const trow=it=>{const du=el("span",{className:"du",textContent:"–:––"}),li=el("li",{},[el("button",{className:"pl",type:"button",textContent:"▶",ariaLabel:"재생"}),el("div",{className:"ti"},[el("b",{textContent:it.caption||"Untitled"}),el("i",{className:"bar"},[el("u")])]),du]);
+    li.dataset.src=it.url;
+    const m=new Audio();m.preload="metadata";m.onloadedmetadata=()=>{if(isFinite(m.duration)){li.dataset.dur=fmt(m.duration);if(!li.classList.contains("on"))du.textContent=li.dataset.dur}m.removeAttribute("src");m.load()};m.src=it.url;
+    if(admin){const x=el("button",{className:"tdel2",type:"button",textContent:"×",ariaLabel:"삭제",title:"이 음원 삭제"});x.onclick=async()=>{if(confirm("'"+(it.caption||"Untitled")+"' 음원을 삭제할까요?")){try{await delItem(it)}catch(e){alert("삭제하지 못했어요: "+e.message)}load()}};li.append(x);li.classList.add("ed")}
+    return li};
+  const fill=its=>{const au=its.filter(i=>i.kind==="audio"),vs=its.filter(i=>i.kind!=="audio");
+    vs.forEach(i=>g.append(card(i)));tl.replaceChildren(...au.map(trow));tw.hidden=!au.length;if(!au.length)document.dispatchEvent(new Event("rif:pause"));
+    if(vs.length&&vs.every(i=>i.kind==="image"))g.classList.add("imgs");else if(vs.length)g.classList.add("vids");
+    g.hidden=!vs.length&&!!au.length&&!admin};
   const card=it=>{const c=el("figure",{className:"item"},[media(it)]);
     if(it.caption)c.append(el("figcaption",{textContent:it.caption,title:it.caption}));
     if(admin){const x=el("button",{className:"del",textContent:"×",ariaLabel:"삭제"});x.onclick=async()=>{if(confirm("삭제할까요?")){try{await delItem(it)}catch(e){alert("삭제하지 못했어요: "+e.message)}load()}};c.append(x)}
@@ -57,9 +69,8 @@
         dt.onclick=async()=>{if(!confirm("'"+active+"' 탭을 지울까요? (비어 있는 탭만 지울 수 있어요)"))return;try{await saveMeta({tabs:(meta.tabs||[]).filter(n=>n!==active)});active=null;render()}catch(e){alert("지우지 못했어요: "+e.message)}};bar.append(dt)}
       const b=el("button",{className:"plus",textContent:"+",ariaLabel:"추가"});b.onclick=()=>{form.hidden=!form.hidden;if(!form.hidden)form.fill()};g.append(b)}
     if(!form.hidden)form.fill();
-    its.forEach(i=>g.append(card(i)));
     if(!its.length&&!admin)g.append(el("p",{className:"empty",textContent:"Coming soon"}));
-    if(its.length&&its.every(i=>i.kind==="image"))g.classList.add("imgs");else if(its.length&&its.every(i=>i.kind!=="image"))g.classList.add("vids");
+    fill(its);
     if(tracks){
       tabs(topBar,["Tracks","Portfolio"],top,n=>{top=n;go(n);render()});
       tracks.hidden=top!=="Tracks";sec.hidden=top!=="Portfolio";main.classList.add("tabbed");
@@ -79,9 +90,9 @@
     if(top==="Tracks")return;document.dispatchEvent(new Event("rif:pause"));active=top==="Portfolio"?"":top;
     const its=list.filter(i=>(i.section||"")===active).sort((a,b)=>a.created_at<b.created_at?-1:1);
     if(admin){const b=el("button",{className:"plus",textContent:"+",ariaLabel:"추가"});b.onclick=()=>{form.hidden=!form.hidden;if(!form.hidden)form.fill()};g.append(b)}
-    if(!form.hidden)form.fill();its.forEach(i=>g.append(card(i)));
+    if(!form.hidden)form.fill();
     if(!its.length&&!admin)g.append(el("p",{className:"empty",textContent:"Coming soon"}));
-    if(its.length&&its.every(i=>i.kind==="image"))g.classList.add("imgs");else if(its.length&&its.every(i=>i.kind!=="image"))g.classList.add("vids")}
+    fill(its)}
   async function load(){const [a,m]=await Promise.all([db.from("items").select("*").eq("page",page).order("created_at",{ascending:false}),db.from("page_meta").select("*").eq("page",page).maybeSingle()]);
     list=(a.data||[]).map(i=>page==="woljae"&&OLDCATS.includes(i.section)?{...i,section:""}:i);meta=(m&&m.data)||{};applyMeta();render()}
   load()})();

@@ -148,3 +148,8 @@ main:has(.cv){max-width:920px}
 .pe-acts{display:flex;gap:10px;justify-content:flex-end}
 .tab.tadd{border-style:dashed;color:var(--ac)}.tab.tdel{border-style:dashed;font-size:13px}
 .ng:has(>.nm:empty){display:none}
+/* 올린 음원 — RIF Tracks 와 같은 줄 디자인 (모든 채널 공통) */
+.tracks.up{margin-top:20px}.tabbed .tracks.up{margin-top:20px}
+.tracks li.ed{grid-template-columns:44px 1fr auto 32px}
+.tdel2{width:28px;height:28px;border-radius:50%;border:0;background:#7772;color:var(--mut);font-size:17px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.tdel2:hover{background:var(--bad,#d64545);color:#fff}

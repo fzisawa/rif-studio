@@ -1,18 +1,22 @@
-(()=>{
-  const rows=[...document.querySelectorAll(".tracks li")];if(!rows.length)return;
+/* 트랙 플레이어 — 모든 채널 공통 (RIF 페이지의 Tracks 디자인).
+   나중에 그려지는 목록(올린 음원)도 되도록 클릭을 문서 전체에서 받아요. 한 번에 한 곡만 재생돼요. */
+(()=>{if(window.RIFP)return;window.RIFP=1;
   const a=new Audio();a.preload="none";let cur=null;
-  const fmt=s=>Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0");
-  const reset=r=>{r.classList.remove("on");r.querySelector(".pl").textContent="▶";r.querySelector(".pl").setAttribute("aria-label","재생");r.querySelector(".bar u").style.width="0"};
+  const fmt=s=>Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0"),Q=(r,s)=>r.querySelector(s);
+  const icon=(r,p)=>{const b=Q(r,".pl");b.textContent=p?"❚❚":"▶";b.setAttribute("aria-label",p?"일시정지":"재생")};
+  const reset=r=>{r.classList.remove("on");icon(r,false);Q(r,".bar u").style.width="0";if(r.dataset.dur)Q(r,".du").textContent=r.dataset.dur};
   function play(r){
-    if(cur===r){a.paused?a.play():a.pause();return}
-    if(cur)reset(cur);cur=r;a.src=r.dataset.src;r.classList.add("on");a.play().catch(()=>{})}
-  rows.forEach(r=>{
-    r.querySelector(".pl").onclick=()=>play(r);
-    r.querySelector(".bar").onclick=e=>{if(cur!==r||!a.duration)return;const b=e.currentTarget.getBoundingClientRect();a.currentTime=a.duration*Math.min(1,Math.max(0,(e.clientX-b.left)/b.width))}});
-  a.onplay=()=>{if(cur){cur.querySelector(".pl").textContent="❚❚";cur.querySelector(".pl").setAttribute("aria-label","일시정지")}};
-  a.onpause=()=>{if(cur&&!a.ended){cur.querySelector(".pl").textContent="▶";cur.querySelector(".pl").setAttribute("aria-label","재생")}};
-  a.ontimeupdate=()=>{if(cur&&a.duration){cur.querySelector(".bar u").style.width=(a.currentTime/a.duration*100)+"%";cur.querySelector(".du").textContent=fmt(a.currentTime)}};
-  a.onended=()=>{const i=rows.indexOf(cur),d=cur.dataset.dur;cur.querySelector(".du").textContent=d;reset(cur);const n=rows[i+1];cur=null;if(n)play(n)};
-  rows.forEach(r=>r.dataset.dur=r.querySelector(".du").textContent);
+    if(cur===r){a.paused?a.play().catch(()=>{}):a.pause();return}
+    if(cur)reset(cur);cur=r;if(!r.dataset.dur)r.dataset.dur=Q(r,".du").textContent;
+    a.src=r.dataset.src;r.classList.add("on");a.play().catch(()=>{})}
+  document.addEventListener("click",e=>{
+    const p=e.target.closest(".tracks li .pl");if(p){play(p.closest("li"));return}
+    const b=e.target.closest(".tracks li .bar");if(!b)return;const r=b.closest("li");if(cur!==r||!a.duration)return;
+    const x=b.getBoundingClientRect();a.currentTime=a.duration*Math.min(1,Math.max(0,(e.clientX-x.left)/x.width))});
+  a.onplay=()=>{if(cur)icon(cur,true)};
+  a.onpause=()=>{if(cur&&!a.ended)icon(cur,false)};
+  a.ontimeupdate=()=>{if(!cur)return;if(!cur.isConnected){a.pause();cur=null;return}
+    if(a.duration){Q(cur,".bar u").style.width=(a.currentTime/a.duration*100)+"%";Q(cur,".du").textContent=fmt(a.currentTime)}};
+  a.onended=()=>{const r=cur;reset(r);cur=null;let n=r.nextElementSibling;while(n&&!n.dataset.src)n=n.nextElementSibling;if(n)play(n)};
   document.addEventListener("rif:pause",()=>a.pause());
 })();
