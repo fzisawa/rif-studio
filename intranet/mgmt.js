@@ -325,7 +325,7 @@ function build(){
   const pbq=el("div",{id:"pbq",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mbc"}),el("input",{id:"mbq",placeholder:"검색 (이름·이메일·제목·내용)"}),el("button",{className:"mbtn",type:"button",id:"mbr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"사이트의 공개 문의 게시판(rif-studio.com/board/)에 올라온 글이에요. 이메일은 운영진만 볼 수 있어요."})]),
     el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["No.","작성일시","이름","이메일","제목","상태"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"mbb"})])])]);
-  const ps=el("div",{id:"ps",hidden:true},[
+  const ps=el("div",{id:"pjs",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"msc"}),(()=>{const f=el("select",{id:"mss"},[["all","전체"],["unread","안 읽음"],["read","읽음"],["app","지원자 메일"],["rep","답장"],["new","새 메일"]].map(([v,t])=>el("option",{value:v,textContent:t})));return f})(),el("input",{id:"msq",placeholder:"검색 (받는 사람·제목·보낸 사원·내용)"}),el("button",{className:"mbtn",type:"button",id:"msr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"support@rif-studio.com 이름으로 나간 모든 메일이에요(지원자 메일·답장·새 메일). 줄을 누르면 내용을 보고, 같은 사람에게 바로 이어서 보낼 수 있어요. 상대가 답장하면 고객 문의 메일로 들어와요."})]),
     el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["보낸 시각","종류","받는 사람","제목","보낸 사원","읽음"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"msb"})])])]);
   const panes={w:w,j:pj,q:pq,s:ps};
