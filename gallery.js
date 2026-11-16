@@ -28,27 +28,37 @@
   /* 소개 문구(캐치프레이즈) · 경력 · 탭은 page_meta 에 저장돼요. 저장한 적이 없으면 원래 페이지 내용 그대로 */
   const lead=document.querySelector(".hero .lead"),cvSec=document.querySelector("section.sect");
   const lines=t=>String(t||"").split("\n").flatMap((x,i)=>i?[el("br"),document.createTextNode(x)]:[document.createTextNode(x)]);
+  /* 번역: page_meta.i18n = {ja:{lead, career:[{text,tag}]}, en:{…}} — 없는 칸은 한국어 그대로 */
+  const lng=()=>{try{const v=localStorage.getItem("rif-lang");if(v==="ja"||v==="en")return v}catch(_){}return "ko"};
+  const lead0=lead?[...lead.childNodes].map(n=>n.cloneNode(true)):[],koText=()=>lead0.map(n=>n.nodeName==="BR"?"\n":n.textContent).join("").trim();
   function applyMeta(){
-    if(meta.lead&&lead){lead.removeAttribute("data-i18n");lead.replaceChildren(...lines(meta.lead))}
+    const L=lng(),tr=L!=="ko"&&meta.i18n&&meta.i18n[L]||{};
+    if(lead){if(tr.lead){lead.removeAttribute("data-i18n");lead.replaceChildren(...lines(tr.lead))}
+      else if(meta.lead){lead.removeAttribute("data-i18n");lead.replaceChildren(...lines(meta.lead))}
+      else if(!lead.hasAttribute("data-i18n"))lead.replaceChildren(...lead0.map(n=>n.cloneNode(true)))}
     if(Array.isArray(meta.career)){let s=cvSec;
       if(!s){s=el("section",{className:"sect"},[el("h2",{textContent:"Career"}),el("ul",{className:"cv"})]);document.querySelector(".hero").after(s)}
-      const ul=s.querySelector("ul.cv");ul.replaceChildren(...meta.career.filter(c=>c&&(c.role||c.text)).map(c=>el("li",{},[el("b",{textContent:c.role||""}),el("span",{textContent:c.text||""}),...(c.tag?[el("em",{textContent:c.tag})]:[])])));
+      const ul=s.querySelector("ul.cv");const tc=Array.isArray(tr.career)?tr.career:[];
+      ul.replaceChildren(...meta.career.map((c,i)=>[c,tc[i]||{}]).filter(([c])=>c&&(c.role||c.text)).map(([c,t])=>el("li",{},[el("b",{textContent:t.role||c.role||""}),el("span",{textContent:t.text||c.text||""}),...((t.tag||c.tag)?[el("em",{textContent:t.tag||c.tag})]:[])])));
       s.hidden=!meta.career.length}}
   async function saveMeta(patch){const row={page,...meta,...patch,updated_at:new Date().toISOString()};delete row.created_at;
     const {error}=await db.from("page_meta").upsert(row,{onConflict:"page"});if(error)throw error;meta=row}
   function editor(){
     const curCv=Array.isArray(meta.career)?meta.career:[...((cvSec&&cvSec.querySelectorAll("ul.cv li"))||[])].map(li=>{const b=li.querySelector("b"),em=li.querySelector("em");const t=[...li.childNodes].filter(n=>n!==b&&n!==em).map(n=>n.textContent).join("").trim();return {role:b?b.textContent.trim():"",text:t,tag:em?em.textContent.trim():""}});
-    const ld=el("textarea",{rows:3,maxLength:400,value:meta.lead||(lead?lead.innerText.trim():""),placeholder:"한두 줄로 나를 소개하는 문구 (줄바꿈 가능)"});
+    const ld=el("textarea",{rows:3,maxLength:400,value:meta.lead||koText(),placeholder:"한두 줄로 나를 소개하는 문구 (줄바꿈 가능)"});
     const rows=el("div",{className:"pe-rows"});
     const addRow=c=>{const r=el("div",{className:"pe-row"},[el("input",{className:"r1",maxLength:40,placeholder:"구분 (예: 2024, Sound Engineer)",value:c.role||""}),el("input",{className:"r2",maxLength:200,placeholder:"내용",value:c.text||""}),el("input",{className:"r3",maxLength:20,placeholder:"뱃지 (선택, 예: 최우수상)",value:c.tag||""}),(()=>{const x=el("button",{type:"button",className:"btn small ghost",textContent:"삭제"});x.onclick=()=>r.remove();return x})()]);rows.append(r)};
     curCv.forEach(addRow);if(!curCv.length)addRow({});
     const add=el("button",{type:"button",className:"btn small ghost",textContent:"＋ 경력 추가"});add.onclick=()=>{addRow({});rows.lastChild.querySelector("input").focus()};
     const msg=el("p",{className:"note"}),sv=el("button",{type:"button",className:"btn",textContent:"저장"}),cc=el("button",{type:"button",className:"btn ghost",textContent:"닫기"});
-    const box=el("div",{className:"pe",id:"pe"},[el("h2",{textContent:"내 채널 편집"}),el("p",{className:"note",textContent:"캐치프레이즈와 경력은 저장하면 바로 이 페이지에 나와요. 제목·배치 같은 페이지 틀은 사이트 통일을 위해 바꿀 수 없어요. (한국어로 저장하면 일본어·영어 화면에도 같은 문구가 나와요)"}),el("label",{textContent:"캐치프레이즈"},[ld]),rows,add,el("div",{className:"pe-acts"},[cc,sv]),msg]);
+    const box=el("div",{className:"pe",id:"pe"},[el("h2",{textContent:"내 채널 편집"}),el("p",{className:"note",textContent:"캐치프레이즈와 경력은 저장하면 바로 이 페이지에 나와요. 제목·배치 같은 페이지 틀은 사이트 통일을 위해 바꿀 수 없어요. (일본어·영어 번역이 있는 줄을 고치면 그 줄은 번역이 지워지고 한국어로 나와요. 새 번역은 대표님께 요청해 주세요)"}),el("label",{textContent:"캐치프레이즈"},[ld]),rows,add,el("div",{className:"pe-acts"},[cc,sv]),msg]);
     cc.onclick=()=>box.remove();
     sv.onclick=async()=>{sv.disabled=true;msg.textContent="저장 중…";
       const career=[...rows.children].map(r=>({role:r.querySelector(".r1").value.trim(),text:r.querySelector(".r2").value.trim(),tag:r.querySelector(".r3").value.trim()})).filter(c=>c.role||c.text);
-      try{await saveMeta({lead:ld.value.trim()||null,career});applyMeta();msg.textContent="저장했어요."}catch(e){msg.textContent="저장하지 못했어요: "+e.message}sv.disabled=false};
+      const nl=ld.value.trim()||null,old=Array.isArray(meta.career)?meta.career:[],i18n=JSON.parse(JSON.stringify(meta.i18n||{}));
+      ["ja","en"].forEach(L=>{const t=i18n[L];if(!t)return;if(nl!==(meta.lead||null)&&!(meta.lead==null&&nl===koText()))delete t.lead;
+        const oc=Array.isArray(t.career)?t.career:[];t.career=career.map(c=>{const j=old.findIndex(o=>o&&o.text===c.text&&o.role===c.role);return j>=0&&oc[j]?oc[j]:{}})});
+      try{await saveMeta({lead:nl,career,i18n});applyMeta();msg.textContent="저장했어요."}catch(e){msg.textContent="저장하지 못했어요: "+e.message}sv.disabled=false};
     return box}
   if(admin){const eb=el("button",{type:"button",className:"btn small pe-open",textContent:"✎ 캐치프레이즈 · 경력 편집"});
     eb.onclick=()=>{const o=document.getElementById("pe");if(o){o.remove();return}document.querySelector(".hero").after(editor())};document.querySelector(".hero").append(eb)}
@@ -95,4 +105,5 @@
     fill(its)}
   async function load(){const [a,m]=await Promise.all([db.from("items").select("*").eq("page",page).order("created_at",{ascending:false}),db.from("page_meta").select("*").eq("page",page).maybeSingle()]);
     list=(a.data||[]).map(i=>page==="woljae"&&OLDCATS.includes(i.section)?{...i,section:""}:i);meta=(m&&m.data)||{};applyMeta();render()}
+  document.addEventListener("rif:lang",()=>applyMeta());
   load()})();
