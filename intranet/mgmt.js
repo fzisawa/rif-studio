@@ -46,6 +46,15 @@ table.mt.mtj{width:max-content;min-width:0}.mt td.fd{width:220px;min-width:220px
 .mbtn.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:700}.mbtn.p:hover{color:#fff;filter:brightness(1.08)}.mbtn:disabled{opacity:.5;cursor:default}
 .mbtn.mq{margin-top:8px;padding:3px 12px;font-size:12px}
 .mnote{font-size:13px;color:var(--mut)}.mnote.err{color:var(--bad)}
+.mmv{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;width:100%;min-width:170px;max-width:260px;padding:6px 10px;border:1px solid var(--ln2,#7775);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;font-size:13px;line-height:1.45;text-align:left;white-space:normal;word-break:break-all;cursor:text}
+.mmv:hover{border-color:var(--ac)}.mmv.mt0{color:var(--mut);border-style:dashed}.mmv.ok{outline:2px solid #2fa36b}
+.mt td:has(>.mmv){white-space:normal;max-width:none;overflow:visible}
+.mmpop{position:fixed;z-index:80;background:var(--bg);color:var(--fg);border:1px solid var(--ln2,#7775);border-radius:14px;box-shadow:0 18px 50px #0006;padding:14px;display:flex;flex-direction:column;gap:10px}
+.mmh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.mmh b{font-size:14px}.mmh .note{font-size:12px}
+.mmpop textarea{width:100%;resize:vertical;padding:10px 12px;border:1px solid var(--ln2,#7775);border-radius:10px;background:var(--bg);color:var(--fg);font:inherit;font-size:14px;line-height:1.6}
+.mmpop textarea:focus{outline:2px solid color-mix(in srgb,var(--ac) 45%,transparent);border-color:var(--ac)}
+.mmf{display:flex;align-items:center;gap:8px}.mmf .sp{flex:1}.mmc{font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}.mmf .note{font-size:12px}
+.mbtn.p{background:var(--ac);border-color:var(--ac);color:#fff}
 .mtj .bsx{display:none}.mtj.bc .bs{display:none}.mtj.bc .bsx{display:table-cell;width:34px;min-width:34px;padding:0;background:color-mix(in srgb,#7c5cd6 8%,transparent)}
 .bct{border:0;background:none;color:inherit;font:inherit;font-weight:inherit;cursor:pointer;padding:2px 6px;border-radius:8px;white-space:nowrap}.bct:hover{background:color-mix(in srgb,#7c5cd6 18%,transparent)}
 .mtj.bc th.gb{width:34px;padding:0;text-align:center}
@@ -120,12 +129,8 @@ function drawJ(){
         if(hire&&data)alert(data.emp_used?"채용 메일을 보냈어요.\n\n이미 인트라넷에 가입한 분이라 사번은 새로 발급하지 않았어요.":data.emp_no?"채용 메일을 보냈어요.\n\n· 사번 "+data.emp_no+(data.emp_reused?" (이미 발급돼 있던 사번을 다시 안내했어요)":" 을 발급해 메일에 함께 안내했어요")+"\n· 14일 안에 가입하면 돼요\n· 가입 대기 중인 사번은 관리자 › 인사정보에서 볼 수 있어요":"채용 메일을 보냈어요.");
         if(data&&data.warn)alert(data.warn)};
       return el("td",{className:"mk bs b"+(i+2)+(i===0?" bl":"")},[el("div",{className:"mdec"},[c,sb,done])])});
-    const bm=el("input",{className:"mm",value:r.memo||"",maxLength:500,placeholder:"대표 메모",readOnly:lk});
-    bm.title=lk?"결정된 지원서라 수정할 수 없어요":"대표만 쓸 수 있는 메모";bm.onclick=e=>e.stopPropagation();
-    bm.onchange=()=>rpcSet("jr_set_boss_memo",{p_id:r.id,p_memo:bm.value.trim()},bm).then(ok=>{if(ok)r.memo=bm.value.trim()||null});
-    const tm=el("input",{className:"mm",value:r.team_memo||"",maxLength:500,placeholder:"경영지원팀 메모",readOnly:lk});
-    tm.onclick=e=>e.stopPropagation();if(lk)tm.title="대표가 결정한 지원서라 수정할 수 없어요";
-    tm.onchange=()=>rpcSet("jr_set_team_memo",{p_id:r.id,p_memo:tm.value.trim()},tm).then(ok=>{if(ok)r.team_memo=tm.value.trim()||null});
+    const bm=memoCell(r,"memo","jr_set_boss_memo","대표 메모",lk,"대표만 쓰고 보는 메모");
+    const tm=memoCell(r,"team_memo","jr_set_team_memo","경영지원팀 메모",lk,"경영지원팀 메모");
     const tr=el("tr",{className:"r"+(dup?" dup":"")+(lk?" rej":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(R[r.region]||"-"),cell(flds(r),"fd"),...MC,...(boss?[...CK,el("td",{className:"bs bm br"},[bm]),el("td",{className:"bsx",title:"대표 전용 칸이 접혀 있어요"})]:[]),el("td",{},[tm])]);
     tr.onclick=()=>{openJ=r.id;openJD(r,lk);db.rpc("jr_seen",{p_id:r.id}).then(()=>{},()=>{});tb.querySelectorAll("tr.on").forEach(x=>x.classList.remove("on"));tr.classList.add("on")};
     if(openJ===r.id)tr.classList.add("on");
@@ -149,6 +154,27 @@ function askHire(r,lang){return new Promise(res=>{
     el("p",{className:"note",textContent:"계약 형태는 관리자 › 인사정보에만 저장되고 메일에는 들어가지 않아요. 나중에 바꿀 수 있어요."}),
     el("div",{className:"wr"},[no,go])]));
   document.body.append(mod);go.focus()})}
+/* 메모 칸: 표에는 두 줄까지만 미리 보이고, 누르면 넓은 편집 창이 열려요 */
+function memoCell(r,key,rpc,label,lk,tip){
+  const v=()=>r[key]||"",b=el("button",{type:"button",className:"mmv"+(v()?"":" mt0")});
+  const paint=()=>{b.textContent=v()||(lk?"—":"＋ 메모 쓰기");b.classList.toggle("mt0",!v());b.title=v()?(v().length>60?v():tip)+(lk?" (잠김)":""):tip};paint();
+  b.onclick=e=>{e.stopPropagation();openMemo(r,key,rpc,label,lk,b,paint)};return b}
+function openMemo(r,key,rpc,label,lk,anchor,paint){
+  const old=$("mmemo");if(old)old.remove();
+  const box=el("div",{className:"mmpop",id:"mmemo",role:"dialog",ariaLabel:label}),ta=el("textarea",{maxLength:500,rows:6,value:r[key]||"",readOnly:lk,placeholder:label+"를 적어 주세요"}),cnt=el("span",{className:"mmc"});
+  const fit=()=>{ta.style.height="auto";ta.style.height=Math.min(320,Math.max(120,ta.scrollHeight+2))+"px";cnt.textContent=ta.value.length+" / 500"};
+  const close=()=>{box.remove();document.removeEventListener("mousedown",out,true);document.removeEventListener("keydown",key2,true);anchor.focus({preventScroll:true})};
+  const save=async()=>{const nv=ta.value.trim();if(nv===(r[key]||"")){close();return}sv.disabled=true;
+    const ok=await rpcSet(rpc,{p_id:r.id,p_memo:nv},null);sv.disabled=false;if(!ok)return;r[key]=nv||null;paint();anchor.classList.add("ok");setTimeout(()=>anchor.classList.remove("ok"),900);close()};
+  const cc=el("button",{type:"button",className:"mbtn",textContent:lk?"닫기":"취소"}),sv=el("button",{type:"button",className:"mbtn p",textContent:"저장",hidden:lk});
+  cc.onclick=close;sv.onclick=save;ta.oninput=fit;
+  const out=e=>{if(!box.contains(e.target)&&e.target!==anchor)close()},key2=e=>{if(e.key==="Escape"){e.preventDefault();close()}else if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&!lk){e.preventDefault();save()}};
+  box.append(el("div",{className:"mmh"},[el("b",{textContent:label}),el("span",{className:"note",textContent:(r.nickname||r.name||"")+(lk?" · 잠김 (읽기만)":"")})]),ta,el("div",{className:"mmf"},[cnt,el("span",{className:"sp"}),...(lk?[]:[el("span",{className:"note",textContent:"Ctrl+Enter 저장"})]),cc,sv]));
+  document.body.append(box);
+  const a=anchor.getBoundingClientRect(),W=Math.min(380,innerWidth-24);box.style.width=W+"px";
+  let left=Math.min(Math.max(12,a.right-W),innerWidth-W-12),top=a.bottom+6;const h=box.offsetHeight||260;if(top+h>innerHeight-12)top=Math.max(12,a.top-h-6);
+  box.style.left=left+"px";box.style.top=top+"px";fit();ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
+  setTimeout(()=>{document.addEventListener("mousedown",out,true);document.addEventListener("keydown",key2,true)},0)}
 /* 대표 전용 칸 접기/펴기 (이 브라우저에 기억) */
 const BC="rif-boss-cols",bcGet=()=>{try{return localStorage.getItem(BC)==="1"}catch(_){return false}};
 function bossHead(t){const th=el("th",{className:"gb"}),b=el("button",{type:"button",className:"bct"});
@@ -458,6 +484,6 @@ async function start(){
   started=true;
   const [m,b]=await Promise.all([db.rpc("is_mgmt"),db.rpc("is_boss")]);
   mgmt=!!m.data;boss=!!b.data;{const l=$("admlink");if(l)l.hidden=!boss}if(!mgmt)return;build()}
-function teardown(){{const l=$("admlink");if(l)l.hidden=true}started=false;mgmt=boss=false;{const tb=document.querySelector('#tabs button[data-t="q"]');if(tb)tb.hidden=true}rows=[];msgs=[];reps={};threads=[];sent=[];qchan="inq";showSub=null;joinOk=false;joinIn=new Set();joinOut=new Set();openJ=openQ=openS=null;const pt=$("pt"),w=$("ptw");if(w&&pt){[...w.childNodes].forEach(n=>pt.insertBefore(n,w));w.remove()}["msub","pj","pq","pbq","pjs","mjd","mqnew","mhire"].forEach(i=>{const e=$(i);if(e)e.remove()})}
+function teardown(){{const l=$("admlink");if(l)l.hidden=true}started=false;mgmt=boss=false;{const tb=document.querySelector('#tabs button[data-t="q"]');if(tb)tb.hidden=true}rows=[];msgs=[];reps={};threads=[];sent=[];qchan="inq";showSub=null;joinOk=false;joinIn=new Set();joinOut=new Set();openJ=openQ=openS=null;const pt=$("pt"),w=$("ptw");if(w&&pt){[...w.childNodes].forEach(n=>pt.insertBefore(n,w));w.remove()}["msub","pj","pq","pbq","pjs","mjd","mqnew","mhire","mmemo"].forEach(i=>{const e=$(i);if(e)e.remove()})}
 try{const ap=$("app");new MutationObserver(()=>{if(ap.hidden)teardown();else start()}).observe(ap,{attributes:true,attributeFilter:["hidden"]});if(!ap.hidden)start()}catch(_){}
 })();
