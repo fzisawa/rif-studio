@@ -41,7 +41,9 @@ async function load(){
   if(fold.startsWith("box:")&&!boxes.some(x=>"box:"+x.id===fold)){fold="in";if(mode==="list")sub="open"}
   title()}
 const unreadIn=m=>!m.deleted_at&&!m.done&&!irds.has(m.id);
-function title(){const n=inbox.filter(m=>unreadIn(m)&&(mineMsg(m)||(boxesOf(m).length)||X.exec||X.ceo)).length;
+/* 배지 숫자 = 내 폴더(받은 편지함 · 내 공용 메일함 · 경영지원팀이면 미분류)에 보이는 안 읽은 메일 수
+   (다른 직원 개인 주소로 온 메일은 대표의 '전체 메일'에서만 보이니 숫자에 넣지 않아요) */
+function title(){const n=inbox.filter(m=>unreadIn(m)&&(mineMsg(m)||boxesOf(m).length||(isMgmt()&&isOrph(m)))).length;
   const t=$("ib");if(t){t.hidden=!n;t.textContent=n}
   document.title=(n?"("+n+") ":"")+"Intranet · RIF STUDIO";return n}
 async function refresh(quiet){await load();if(mode==="list"||quiet!==true)render();else drawFolders();loadUsage()}
@@ -56,7 +58,7 @@ function counts(){
   boxes.forEach(b=>{c["box:"+b.id]=live.filter(m=>!m.done&&!irds.has(m.id)&&m._t.has(b.addr)).length});
   c.orph=live.filter(m=>!m.done&&!irds.has(m.id)&&isOrph(m)).length;return c}
 const staffAddrs=()=>new Set(X.staff.map(s=>lc(s.email)));
-function isOrph(m){const sa=staffAddrs();return!mineMsg(m)&&!boxesOf(m).length&&![...m._t].some(a=>sa.has(a))}
+function isOrph(m){if(!X.staff.length)return false;/* 직원 목록을 아직 못 불러왔으면 미분류로 치지 않아요 */const sa=staffAddrs();return!mineMsg(m)&&!boxesOf(m).length&&![...m._t].some(a=>sa.has(a))}
 function go(k){fold=k;sub="open";selId=null;picked.clear();q="";filt={un:false,st:false,at:false};compose=null;mode=(k==="manage"||k==="tpl")?k:"list";render()}
 function drawFolders(){
   const f=$("of");if(!f)return;f.replaceChildren();const c=counts();
