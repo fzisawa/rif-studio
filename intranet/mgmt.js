@@ -46,6 +46,9 @@ table.mt.mtj{width:max-content;min-width:0}.mt td.fd{width:220px;min-width:220px
 .mbtn.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:700}.mbtn.p:hover{color:#fff;filter:brightness(1.08)}.mbtn:disabled{opacity:.5;cursor:default}
 .mbtn.mq{margin-top:8px;padding:3px 12px;font-size:12px}
 .mnote{font-size:13px;color:var(--mut)}.mnote.err{color:var(--bad)}
+.mtj .bsx{display:none}.mtj.bc .bs{display:none}.mtj.bc .bsx{display:table-cell;width:34px;min-width:34px;padding:0;background:color-mix(in srgb,#7c5cd6 8%,transparent)}
+.bct{border:0;background:none;color:inherit;font:inherit;font-weight:inherit;cursor:pointer;padding:2px 6px;border-radius:8px;white-space:nowrap}.bct:hover{background:color-mix(in srgb,#7c5cd6 18%,transparent)}
+.mtj.bc th.gb{width:34px;padding:0;text-align:center}
 .mhw{margin:0 0 8px;font-weight:700;overflow-wrap:anywhere}.mhl{margin:0 0 16px;padding-left:18px;font-size:14px;line-height:1.7}
 .mhk{display:grid;gap:6px;font-size:13px;color:var(--mut);margin:0 0 8px}.mhk select{width:100%}
 `;
@@ -123,7 +126,7 @@ function drawJ(){
     const tm=el("input",{className:"mm",value:r.team_memo||"",maxLength:500,placeholder:"경영지원팀 메모",readOnly:lk});
     tm.onclick=e=>e.stopPropagation();if(lk)tm.title="대표가 결정한 지원서라 수정할 수 없어요";
     tm.onchange=()=>rpcSet("jr_set_team_memo",{p_id:r.id,p_memo:tm.value.trim()},tm).then(ok=>{if(ok)r.team_memo=tm.value.trim()||null});
-    const tr=el("tr",{className:"r"+(dup?" dup":"")+(lk?" rej":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(R[r.region]||"-"),cell(flds(r),"fd"),...MC,...(boss?[...CK,el("td",{className:"bs bm br"},[bm])]:[]),el("td",{},[tm])]);
+    const tr=el("tr",{className:"r"+(dup?" dup":"")+(lk?" rej":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(R[r.region]||"-"),cell(flds(r),"fd"),...MC,...(boss?[...CK,el("td",{className:"bs bm br"},[bm]),el("td",{className:"bsx",title:"대표 전용 칸이 접혀 있어요"})]:[]),el("td",{},[tm])]);
     tr.onclick=()=>{openJ=r.id;openJD(r,lk);db.rpc("jr_seen",{p_id:r.id}).then(()=>{},()=>{});tb.querySelectorAll("tr.on").forEach(x=>x.classList.remove("on"));tr.classList.add("on")};
     if(openJ===r.id)tr.classList.add("on");
     tb.append(tr)});
@@ -146,6 +149,12 @@ function askHire(r,lang){return new Promise(res=>{
     el("p",{className:"note",textContent:"계약 형태는 관리자 › 인사정보에만 저장되고 메일에는 들어가지 않아요. 나중에 바꿀 수 있어요."}),
     el("div",{className:"wr"},[no,go])]));
   document.body.append(mod);go.focus()})}
+/* 대표 전용 칸 접기/펴기 (이 브라우저에 기억) */
+const BC="rif-boss-cols",bcGet=()=>{try{return localStorage.getItem(BC)==="1"}catch(_){return false}};
+function bossHead(t){const th=el("th",{className:"gb"}),b=el("button",{type:"button",className:"bct"});
+  const set=c=>{const tb=th.closest("table");if(tb)tb.classList.toggle("bc",c);th.colSpan=c?1:3;b.textContent=c?"▸":"▾ "+t;b.title=c?"대표 전용 칸 펼치기":"대표 전용 칸 접기";b.setAttribute("aria-expanded",String(!c))};
+  b.onclick=e=>{e.stopPropagation();const c=!th.closest("table").classList.contains("bc");try{localStorage.setItem(BC,c?"1":"0")}catch(_){}set(c)};
+  th.append(b);requestAnimationFrame(()=>set(bcGet()));return th}
 /* 지원서 상세: 오른쪽 패널에 전체 내용 (잘림 없이) */
 const lnk=v=>{v=String(v||"").trim();if(!v)return null;const u=/^https?:\/\//i.test(v)?v:/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(v)?"https://"+v:null;return u?el("a",{href:u,target:"_blank",rel:"noopener noreferrer",textContent:v}):el("span",{textContent:v})};
 function closeJD(){const p=$("mjd");if(p)p.remove();openJ=null;document.querySelectorAll("#mjb tr.on").forEach(x=>x.classList.remove("on"))}
@@ -390,8 +399,8 @@ function build(){
       el("select",{id:"mjs",title:"상태"},[["","전체 상태"],["nothanks","감사 메일 전"],["interview","면접 안내함"],...(boss?[["open","검토 중"],["hire","대표 채용"],["reject","대표 거절"]]:[])].map(([v,t])=>el("option",{value:v,textContent:t}))),
       el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("button",{className:"mbtn",type:"button",id:"mjlk",textContent:"🔒 대표 잠금 해제",hidden:!boss}),el("span",{className:"mnote",textContent:"줄을 누르면 오른쪽에 지원서 전체가 열려요 · ✉ 버튼을 누르면 메일이 나가고 자동으로 체크돼요"})]),
     el("div",{className:"mtw"},[el("table",{className:"mt mtj"},[el("thead",{},[
-      el("tr",{className:"gh"},[["기본 정보",6,""],["경영지원팀 체크",2,"gt"],["대표 전용 · 대표만 보고 수정",3,"gb"],["경영지원팀 메모",1,""]].filter(x=>boss||x[2]!=="gb").map(([t,n,c])=>el("th",{textContent:t,colSpan:n,className:c}))),
-      el("tr",{},[["No.",""],["접수일시",""],["닉네임",""],["성명",""],["출신",""],["분야",""],["감사","mk"],["면접","mk"],["대표 채용 · 채용 메일","mk bs b2 bl",1],["대표 거절 · 거절 메일","mk bs b3",1],["대표 메모 🔒","bs bm br",1],["경영지원팀 메모",""]].filter(x=>boss||!x[2]).map(([t,c])=>el("th",{textContent:t,className:c})))]),el("tbody",{id:"mjb"})])])]);
+      el("tr",{className:"gh"},[["기본 정보",6,""],["경영지원팀 체크",2,"gt"],["대표 전용 · 대표만 보고 수정",3,"gb"],["경영지원팀 메모",1,""]].filter(x=>boss||x[2]!=="gb").map(([t,n,c])=>c==="gb"?bossHead(t):el("th",{textContent:t,colSpan:n,className:c}))),
+      el("tr",{},[["No.",""],["접수일시",""],["닉네임",""],["성명",""],["출신",""],["분야",""],["감사","mk"],["면접","mk"],["대표 채용 · 채용 메일","mk bs b2 bl",1],["대표 거절 · 거절 메일","mk bs b3",1],["대표 메모 🔒","bs bm br",1],["","bsx",1],["경영지원팀 메모",""]].filter(x=>boss||!x[2]).map(([t,c])=>el("th",{textContent:t,className:c})))]),el("tbody",{id:"mjb"})])])]);
   const sel=el("select",{id:"mqs"},[["all","전체"],["new","읽지 않음"],["chk","확인함"],["rep","답장함"],["done","완료"]].map(([v,t])=>el("option",{value:v,textContent:t})));
   const pq=el("div",{id:"pq",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mqc"}),sel,el("input",{id:"mqq",placeholder:"검색 (제목·보낸 사람·내용)"}),el("button",{className:"mbtn",type:"button",id:"mqr",textContent:"새로고침"}),el("button",{className:"mbtn p",type:"button",id:"mqn",textContent:"✉ 새 메일"}),el("span",{className:"mnote",id:"mqnote",textContent:QT.inq.note})]),
