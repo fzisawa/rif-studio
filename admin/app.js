@@ -25,7 +25,7 @@ async function render(){
         try{await delItem(it)}catch(e){x.disabled=false;return alert("삭제하지 못했어요: "+(e.message||e))}render();changed()};
       g.append(el("div",{className:"row"},[(it.kind==="audio"?el("div",{className:"ico",textContent:"♪"}):el("img",{src:thumb(it),alt:"",loading:"lazy"})),
         el("div",{},[el("b",{textContent:it.caption||"(설명 없음)"}),el("div",{className:"note",textContent:({youtube:"YouTube",audio:"음원",image:"사진"}[it.kind])+(it.section?" · "+it.section:"")+" · "+new Date(it.created_at).toLocaleDateString("ko-KR")})]),
-        el("a",{href:CH[p]?"/artist/?c="+p:"../"+p+"/",target:"_blank",rel:"noopener",textContent:"보기"}),x]))});
+        el("a",{href:"/"+p+"/",target:"_blank",rel:"noopener",textContent:"보기"}),x]))});
     box.append(g)})}
 $("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:$("em").value,password:$("pw").value});
   $("lmsg").textContent=error?"로그인 실패":"";if(!error)$("pw").value="";render()};

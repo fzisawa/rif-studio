@@ -9,7 +9,7 @@ const lc=s=>String(s||"").trim().toLowerCase();
 const who=e=>staff.find(s=>lc(s.email)===lc(e));
 const label=e=>{const s=who(e);return s?(s.nickname||s.name||e):e};
 const sname=s=>(s.nickname||s.name||s.email)+(s.nickname&&s.name?" ("+s.name+")":"")+(s.team?" · "+s.team:"");
-const urlOf=c=>c.fixed?"../"+c.slug+"/":"/artist/?c="+encodeURIComponent(c.slug);
+const urlOf=c=>"/"+encodeURIComponent(c.slug)+"/";
 const ord=g=>(GO.indexOf(g)+1)||99;
 const all=()=>[...FIXED.map(f=>({...f,fixed:true,visible:true})),...chans.filter(c=>!FIXED.some(f=>f.slug===c.slug)).map(c=>({...c,fixed:false}))].sort((a,b)=>ord(a.grp)-ord(b.grp)||(a.fixed===b.fixed?0:a.fixed?-1:1)||((a.sort||0)-(b.sort||0)));
 const msg=(t,bad)=>{const m=$("chmsg");m.className="note"+(bad?" err":"");m.textContent=t||""};
@@ -29,7 +29,7 @@ function draw(){const tb=$("chtb");tb.replaceChildren();
     else if(!os.length)oc.append(el("span",{className:"note",textContent:"없음 (대표님만 수정)"}));
     else os.forEach(e=>oc.append(el("span",{className:"ownc"+(who(e)?"":" gone"),textContent:label(e),title:e+(who(e)?"":" · 직원 명단에 없는 계정이라 지금은 수정할 수 없어요")})));
     const view=el("a",{href:urlOf(c),target:"_blank",rel:"noopener",className:"btn small",textContent:"페이지 열기"});view.onclick=e=>e.stopPropagation();
-    const tr=el("tr",{className:"r"+(c.visible?"":" hid")},[el("td",{},[el("b",{textContent:c.name}),...(c.visible?[]:[el("span",{className:"hs x",textContent:"숨김"})])]),el("td",{className:"hm",textContent:G[c.grp]||c.grp||""}),el("td",{className:"hm sm",textContent:c.fixed?"/"+c.slug+"/":"/artist/?c="+c.slug}),el("td",{textContent:(cnt[c.slug]||0)+"개"}),oc,el("td",{className:"ac hm"},[view])]);
+    const tr=el("tr",{className:"r"+(c.visible?"":" hid")},[el("td",{},[el("b",{textContent:c.name}),...(c.visible?[]:[el("span",{className:"hs x",textContent:"숨김"})])]),el("td",{className:"hm",textContent:G[c.grp]||c.grp||""}),el("td",{className:"hm sm",textContent:"/"+c.slug+"/"}),el("td",{textContent:(cnt[c.slug]||0)+"개"}),oc,el("td",{className:"ac hm"},[view])]);
     const dtl=el("tr",{className:"d",hidden:!OPEN.has(c.slug)},[el("td",{colSpan:6},[detail(c,os)])]);
     tr.onclick=()=>{dtl.hidden=!dtl.hidden;if(dtl.hidden)OPEN.delete(c.slug);else OPEN.add(c.slug)};
     tb.append(tr,dtl)})}
