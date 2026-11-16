@@ -222,3 +222,8 @@ html.snoscroll{overflow:hidden}
 .stoast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:70;padding:12px 20px;border-radius:99px;background:var(--fg);color:var(--bg);font-size:14px;font-weight:600;box-shadow:0 10px 30px #0006}.stoast[hidden]{display:none}
 @media(max-width:760px){.smod{padding:0;align-items:flex-end}.spanel{max-height:92vh;border-radius:20px 20px 0 0;padding:24px 18px calc(24px + env(safe-area-inset-bottom))}.sdet{grid-template-columns:1fr;gap:20px}.sgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 12px}.sgrid.plans{grid-template-columns:1fr}.sbuy h2{font-size:22px}}
 @media(prefers-reduced-motion:reduce){.sth img{transition:none}}
+/* Members 메뉴: 분야(Vocal · Sound · Art · Content)별 작은 제목 */
+.nm.nmg{min-width:200px}
+.nm .nh{margin:10px 12px 2px;font-size:11px;letter-spacing:.2em;color:var(--mut);font-weight:700;text-transform:uppercase}
+.nm .nh:first-child{margin-top:4px}.nm .nh.emp{display:none}
+.nm .nh+a{margin-top:0}
