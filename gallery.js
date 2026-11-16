@@ -5,7 +5,7 @@
   let list=[],meta={},active=null,top=hash()==="portfolio"?"Portfolio":"Tracks";
   const bar=el("div",{className:"tabs"}),topBar=el("div",{className:"tabs top"});
   g.before(bar);if(tracks)tracks.before(topBar);
-  const allTabs=()=>{const hide=meta.hide||[],base=(CATS[page]||[]).filter(n=>!hide.includes(n)),mt=(meta.tabs||[]).filter(n=>!base.includes(n)),ex=[...new Set(list.map(i=>i.section).filter(Boolean))].filter(n=>!base.includes(n)&&!mt.includes(n));return [...base,...mt,...ex]};
+  const allTabs=()=>{const hide=meta.hide||[],base=(CATS[page]||[]).filter(n=>!hide.includes(n)),mt=(meta.tabs||[]).filter(n=>!base.includes(n)),ex=[...new Set(list.map(i=>i.section).filter(Boolean))].filter(n=>!base.includes(n)&&!mt.includes(n));const all=[...base,...mt,...ex];/* 방문자에게는 빈 탭을 숨겨요 (주인은 그대로 보여서 채울 수 있어요) */return admin?all:all.filter(n=>list.some(i=>i.section===n))};
   const form=addForm(()=>page,s=>{if(s)active=s;if(tracks)top=s||"Portfolio";form.hidden=true;load()},[],()=>active,allTabs);form.hidden=true;g.after(form);
   /* 올린 음원은 RIF 페이지의 Tracks 와 같은 디자인으로 (사진·영상 아래 한 줄씩) */
   const tl=el("ol"),tw=el("div",{className:"tracks up",hidden:true},[tl]);g.after(tw);
