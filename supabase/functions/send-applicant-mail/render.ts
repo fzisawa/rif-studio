@@ -42,24 +42,67 @@ const REPL: Record<string, Record<string, [string, string]>> = {
     en: ["You're officially part of RIF STUDIO!", "You're officially part of RIF STUDIO, joining us for {F}!"],
   },
 };
+// 채용 메일에 함께 들어가는 사번 · 인트라넷 가입 안내 ({URL} = 가입 링크, @@EMPNO@@ = 사번 상자)
+const EMP: Record<string, string[][]> = {
+  ko: [
+    ["아래 8자리 사번으로 사내 인트라넷(Intranet)에 가입해 주세요.", "공지·업무·자료·직원 정보·사원용 메일을 이곳에서 쓸 수 있어요."],
+    ["@@EMPNO@@"],
+    ["가입 링크: {URL}", "가입할 때 사번, 이름, 닉네임, 전화번호를 입력하고, 로그인에 쓸 아이디(이름@rif-studio.com)와 비밀번호(8자 이상)를 직접 정해 주세요."],
+    ["사번은 이 메일을 보낸 날부터 14일 동안 쓸 수 있고, 본인 외에는 공유하지 말아 주세요."],
+  ],
+  ja: [
+    ["下記の8桁の社員番号で、社内イントラネット（Intranet）に登録してください。", "お知らせ・業務・資料・社員情報・社員用メールをここでご利用いただけます。"],
+    ["@@EMPNO@@"],
+    ["登録リンク: {URL}", "登録時には、社員番号・お名前・ニックネーム・電話番号を入力し、ログイン用のアカウントID（名前@rif-studio.com）とパスワード（8文字以上）をご自身で決めてください。"],
+    ["社員番号はこのメールの送信日から14日間有効です。ご本人以外には共有しないでください。"],
+  ],
+  en: [
+    ["Please use the 8-digit employee number below to sign up for our company Intranet, where you'll find announcements, tasks, shared documents, the staff directory and your employee mail."],
+    ["@@EMPNO@@"],
+    ["Sign-up link: {URL}", "You'll enter your employee number, name, nickname and phone number, then choose your own login ID (yourname@rif-studio.com) and a password (8+ characters)."],
+    ["Your employee number is valid for 14 days from the date of this email. Please don't share it with anyone else."],
+  ],
+};
+const EMP_AT = 4; // 채용 메일에서 '온보딩 · 계약서 안내' 문단 다음, '궁금한 점' 문단 앞
+const MASK = "●●●●●●●●";
+const SIGNUP = "https://rif-studio.com/intranet/";
 const ORDER = ["ko", "ja", "en"];
 const bare = (s: string) => s.replace(/^\s*(\[RIF STUDIO\]|【RIF STUDIO】)\s*/, "");
 // inner: 본문+서명 HTML (바깥 div 없이). 발송할 때 바깥 div 안에 읽음 확인 픽셀을 넣어요.
-export function render(type: string, lang: string, rawName: string, fields: unknown = "", other: unknown = "") {
+// empNo 를 주면(채용 메일) 사번과 인트라넷 가입 안내가 함께 들어가요.
+// innerSafe / textSafe 는 사번을 가린 사본이에요. 보낸 편지함 기록에는 이쪽을 남겨요(사번은 가입에 쓰는 번호라서).
+export function render(type: string, lang: string, rawName: string, fields: unknown = "", other: unknown = "", empNo = "") {
   const langs = lang === "multi" ? ORDER : [lang];
+  const withEmp = type === "hire" && /^\S{1,20}$/.test(empNo);
   // 지원 분야 문장 반영 (분야 정보가 없으면 원문 그대로)
   const para = (l: string): string[][] => {
     const f = fieldText(l, fields, other), rp = REPL[type]?.[l];
-    if (!f || !rp) return TPL[type][l];
-    return TPL[type][l].map((p) => p.map((s) => (s.includes(rp[0]) ? s.replace(rp[0], rp[1].replace("{F}", f)) : s)));
+    const base = !f || !rp ? TPL[type][l] : TPL[type][l].map((p) => p.map((s) => (s.includes(rp[0]) ? s.replace(rp[0], rp[1].replace("{F}", f)) : s)));
+    if (!withEmp) return base;
+    const at = Math.min(EMP_AT, base.length);
+    return [...base.slice(0, at), ...EMP[l], ...base.slice(at)];
   };
-  const block = (l: string) =>
-    para(l).map((p) => `<p>${p.map((s) => esc(s).replace(/\{N\}/g, esc(rawName))).join("<br>")}</p>`).join("");
-  const textBlock = (l: string) => para(l).map((p) => p.map((s) => s.replace(/\{N\}/g, rawName)).join("\n")).join("\n\n");
+  const urlOf = (mask: boolean) => SIGNUP + (mask ? "" : "?n=" + encodeURIComponent(empNo));
+  const box = (mask: boolean) =>
+    `<div style="margin:6px 0;padding:14px 18px;border-radius:12px;background:#f3effc;border:1px solid #d9cdf5;font-size:28px;font-weight:800;letter-spacing:6px;color:#7c5cd6;text-align:center">${mask ? MASK : esc(empNo)}</div>`;
+  const line = (s: string, mask: boolean) => {
+    const hasUrl = s.includes("{URL}");
+    let h = esc(s.replace(/\{URL\}/g, urlOf(mask)));
+    if (hasUrl) h = h.replace(/(https:\/\/[^\s<]+)/g, '<a href="$1" style="color:#7c5cd6">$1</a>');
+    return h.replace(/\{N\}/g, esc(rawName));
+  };
+  const block = (l: string, mask: boolean) =>
+    para(l).map((p) => (p[0] === "@@EMPNO@@" ? box(mask) : `<p>${p.map((s) => line(s, mask)).join("<br>")}</p>`)).join("");
+  const textBlock = (l: string, mask: boolean) =>
+    para(l).map((p) => p.map((s) => (s === "@@EMPNO@@" ? "[ " + (mask ? MASK : empNo) + " ]" : s.replace(/\{URL\}/g, urlOf(mask)).replace(/\{N\}/g, rawName))).join("\n")).join("\n\n");
   const HR = `<hr style="border:0;border-top:1px dashed #c9c5d3;margin:26px 0">`;
   const open = `<div style="font-family:'Noto Sans KR','Noto Sans JP','Hiragino Sans',Arial,sans-serif;font-size:15px;line-height:1.75;color:#1d1b22;max-width:600px">`;
-  const inner = langs.map(block).join(HR) + SIG;
-  const text = langs.map(textBlock).join("\n\n----------\n\n") + "\n\nRIF STUDIO\nPANGYO / TOKYO / NEW YORK\nhttps://rif-studio.com";
+  const TAIL = "\n\nRIF STUDIO\nPANGYO / TOKYO / NEW YORK\nhttps://rif-studio.com";
+  const inner = langs.map((l) => block(l, false)).join(HR) + SIG;
+  const text = langs.map((l) => textBlock(l, false)).join("\n\n----------\n\n") + TAIL;
+  const NOTE = "※ 사번은 가입에 쓰는 번호라서 보낸 메일 기록에는 가려서 남겨요. (대표님은 관리자 › 인사정보에서 볼 수 있어요)";
+  const innerSafe = withEmp ? langs.map((l) => block(l, true)).join(HR) + `<p style="font-size:13px;color:#7a7783">${esc(NOTE)}</p>` + SIG : inner;
+  const textSafe = withEmp ? langs.map((l) => textBlock(l, true)).join("\n\n----------\n\n") + "\n\n" + NOTE + TAIL : text;
   const subject = lang === "multi" ? "[RIF STUDIO] " + ORDER.map((l) => bare(SUBJ[type][l])).join(" / ") : SUBJ[type][lang];
-  return { open, inner, html: open + inner + "</div>", text, subject };
+  return { open, inner, html: open + inner + "</div>", text, subject, innerSafe, textSafe };
 }

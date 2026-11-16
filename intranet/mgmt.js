@@ -46,6 +46,8 @@ table.mt.mtj{width:max-content;min-width:0}.mt td.fd{width:220px;min-width:220px
 .mbtn.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:700}.mbtn.p:hover{color:#fff;filter:brightness(1.08)}.mbtn:disabled{opacity:.5;cursor:default}
 .mbtn.mq{margin-top:8px;padding:3px 12px;font-size:12px}
 .mnote{font-size:13px;color:var(--mut)}.mnote.err{color:var(--bad)}
+.mhw{margin:0 0 8px;font-weight:700;overflow-wrap:anywhere}.mhl{margin:0 0 16px;padding-left:18px;font-size:14px;line-height:1.7}
+.mhk{display:grid;gap:6px;font-size:13px;color:var(--mut);margin:0 0 8px}.mhk select{width:100%}
 `;
 document.head.appendChild(css);
 
@@ -100,15 +102,20 @@ function drawJ(){
       const c=el("input",{className:"cb b"+(i+2),type:"checkbox",checked:!!r[k],disabled:!boss||lk,title:lk?"결정된 지원서는 잠겨 있어요 (🔒 대표 잠금 해제)":"대표 "+t+" · 체크하면 이 지원서가 잠겨요"});c.onclick=e=>e.stopPropagation();
       c.onchange=async()=>{const v=c.checked;c.disabled=true;const ok=await rpcSet("jr_set_ceo_flag",{p_id:r.id,p_field:k,p_val:v},null,()=>{c.checked=!v});if(ok){r[k]=v;r.locked=!!(r.ceo_hire||r.ceo_reject);drawJ()}else c.disabled=false};
       const done=el("span",{className:"msent",textContent:"✉ 발송됨",title:"지원자에게 "+t+" 메일을 보냈어요",hidden:!r[mk]});
-      const sb=el("button",{type:"button",className:"msend",textContent:"✉ "+t+" 메일",hidden:!!r[mk],title:"지원자에게 "+t+" 메일 보내기 (support@)"});
+      const hire=mk==="mail_hire";
+      const sb=el("button",{type:"button",className:"msend",textContent:"✉ "+t+" 메일",hidden:!!r[mk],title:"지원자에게 "+t+" 메일 보내기 (support@)"+(hire?" · 사번도 함께 발급돼요":"")});
       sb.onclick=async e=>{e.stopPropagation();
         const lang={korea:"한국어",japan:"일본어",english:"영어",other:"영어"}[r.region]||"한국어·일본어·영어 한 통";
-        if(!confirm((r.nickname||r.name)+" 님("+r.email+")에게 '"+t+"' 메일을 보낼까요?\n\n· 보내는 주소: support@rif-studio.com\n· 언어: "+lang+"\n· 내 보낸 편지함에 기록되고, 상대가 열면 '읽음'으로 표시돼요"))return;
+        const body={type:TYPE2[mk],id:r.id};
+        if(hire){const a=await askHire(r,lang);if(!a)return;body.kind=a.kind}
+        else if(!confirm((r.nickname||r.name)+" 님("+r.email+")에게 '"+t+"' 메일을 보낼까요?\n\n· 보내는 주소: support@rif-studio.com\n· 언어: "+lang+"\n· 내 보낸 편지함에 기록되고, 상대가 열면 '읽음'으로 표시돼요"))return;
         sb.disabled=true;sb.textContent="보내는 중…";
-        const {data,error}=await db.functions.invoke("send-applicant-mail",{body:{type:TYPE2[mk],id:r.id}});
+        const {data,error}=await db.functions.invoke("send-applicant-mail",{body});
         let msg=data&&data.error;if(error&&!msg){try{msg=(await error.context.json()).error}catch(_){msg="보내지 못했어요"}}
         if(msg){alert(msg);sb.disabled=false;sb.textContent="✉ "+t+" 메일";return}
-        r[mk]=true;sb.hidden=true;done.hidden=false;if(data&&data.warn)alert(data.warn)};
+        r[mk]=true;sb.hidden=true;done.hidden=false;
+        if(hire&&data)alert(data.emp_used?"채용 메일을 보냈어요.\n\n이미 인트라넷에 가입한 분이라 사번은 새로 발급하지 않았어요.":data.emp_no?"채용 메일을 보냈어요.\n\n· 사번 "+data.emp_no+(data.emp_reused?" (이미 발급돼 있던 사번을 다시 안내했어요)":" 을 발급해 메일에 함께 안내했어요")+"\n· 14일 안에 가입하면 돼요\n· 가입 대기 중인 사번은 관리자 › 인사정보에서 볼 수 있어요":"채용 메일을 보냈어요.");
+        if(data&&data.warn)alert(data.warn)};
       return el("td",{className:"mk bs b"+(i+2)+(i===0?" bl":"")},[el("div",{className:"mdec"},[c,sb,done])])});
     const bm=el("input",{className:"mm",value:r.memo||"",maxLength:500,placeholder:"대표 메모",readOnly:lk});
     bm.title=lk?"결정된 지원서라 수정할 수 없어요":"대표만 쓸 수 있는 메모";bm.onclick=e=>e.stopPropagation();
@@ -121,6 +128,24 @@ function drawJ(){
     if(openJ===r.id)tr.classList.add("on");
     tb.append(tr)});
   if(openJ&&!view.some(r=>r.id===openJ))closeJD()}
+/* 채용 메일 확인 창 — 보내면 사번이 자동 발급돼 메일에 함께 들어가요. 계약 형태를 같이 정할 수 있어요 */
+function askHire(r,lang){return new Promise(res=>{
+  const old=$("mhire");if(old)old.remove();
+  const mod=el("div",{className:"mod",id:"mhire"}),done=v=>{mod.remove();document.removeEventListener("keydown",esc);res(v)};
+  const esc=e=>{if(e.key==="Escape")done(null)};document.addEventListener("keydown",esc);
+  mod.onclick=e=>{if(e.target===mod)done(null)};
+  const x=el("button",{type:"button",className:"mx",textContent:"×",ariaLabel:"닫기"});x.onclick=()=>done(null);
+  const kd=el("select",{id:"mhkd"},[["","나중에 정하기"],["정규직","정규직"],["계약직","계약직"],["인턴","인턴"]].map(([v,t])=>el("option",{value:v,textContent:t})));
+  const go=el("button",{type:"button",className:"btn",textContent:"채용 메일 보내기"}),no=el("button",{type:"button",className:"btn ghost",textContent:"취소"});
+  go.onclick=()=>done({kind:kd.value});no.onclick=()=>done(null);
+  const li=t=>el("li",{textContent:t});
+  mod.append(el("div",{className:"mbox"},[x,el("h2",{textContent:"채용 메일 보내기"}),
+    el("p",{className:"mhw",textContent:(r.nickname||r.name||"")+" 님 ("+(r.email||"")+")"}),
+    el("ul",{className:"mhl"},[li("보내는 주소 support@rif-studio.com · 언어 "+lang),li("사번이 자동으로 발급되고, 인트라넷 가입 안내와 함께 메일에 들어가요 (14일 안에 가입)"),li("내 보낸 편지함에 기록되고, 보낸 뒤에는 취소할 수 없어요")]),
+    el("label",{className:"mhk"},[el("span",{textContent:"계약 형태"}),kd]),
+    el("p",{className:"note",textContent:"계약 형태는 관리자 › 인사정보에만 저장되고 메일에는 들어가지 않아요. 나중에 바꿀 수 있어요."}),
+    el("div",{className:"wr"},[no,go])]));
+  document.body.append(mod);go.focus()})}
 /* 지원서 상세: 오른쪽 패널에 전체 내용 (잘림 없이) */
 const lnk=v=>{v=String(v||"").trim();if(!v)return null;const u=/^https?:\/\//i.test(v)?v:/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(v)?"https://"+v:null;return u?el("a",{href:u,target:"_blank",rel:"noopener noreferrer",textContent:v}):el("span",{textContent:v})};
 function closeJD(){const p=$("mjd");if(p)p.remove();openJ=null;document.querySelectorAll("#mjb tr.on").forEach(x=>x.classList.remove("on"))}
@@ -414,7 +439,7 @@ function openUnlock(){
       b.onclick=async()=>{const nm=r.nickname||r.name||r.email;if(!confirm(nm+" 지원서의 채용/거절 결정을 풀까요?"))return;
         b.disabled=true;const {error}=await db.rpc("jr_unlock",{p_id:r.id,p_pin:p});if(error){b.disabled=false;alert("풀지 못했어요");return}
         await list(p);loadJ()};
-      body.append(el("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)"},[el("span",{textContent:(r.nickname||r.name||"")+" · "+(r.email||"")+" · "+(r.decision==="hire"?"대표 채용":"대표 거절")}),b]))});
+      body.append(el("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--ln)"},[el("span",{textContent:(r.nickname||r.name||"")+" · "+(r.email||"")+" · "+(r.decision==="hire"?"대표 채용":"대표 거절")}),b]))});
     return true};
   const go=async()=>{if(!pin.value)return;err.textContent="";ok.disabled=true;await list(pin.value);ok.disabled=false};
   ok.onclick=go;pin.onkeydown=e=>{if(e.key==="Enter")go()}}
@@ -424,6 +449,6 @@ async function start(){
   started=true;
   const [m,b]=await Promise.all([db.rpc("is_mgmt"),db.rpc("is_boss")]);
   mgmt=!!m.data;boss=!!b.data;{const l=$("admlink");if(l)l.hidden=!boss}if(!mgmt)return;build()}
-function teardown(){{const l=$("admlink");if(l)l.hidden=true}started=false;mgmt=boss=false;{const tb=document.querySelector('#tabs button[data-t="q"]');if(tb)tb.hidden=true}rows=[];msgs=[];reps={};threads=[];sent=[];qchan="inq";showSub=null;joinOk=false;joinIn=new Set();joinOut=new Set();openJ=openQ=openS=null;const pt=$("pt"),w=$("ptw");if(w&&pt){[...w.childNodes].forEach(n=>pt.insertBefore(n,w));w.remove()}["msub","pj","pq","pbq","pjs","mjd","mqnew"].forEach(i=>{const e=$(i);if(e)e.remove()})}
+function teardown(){{const l=$("admlink");if(l)l.hidden=true}started=false;mgmt=boss=false;{const tb=document.querySelector('#tabs button[data-t="q"]');if(tb)tb.hidden=true}rows=[];msgs=[];reps={};threads=[];sent=[];qchan="inq";showSub=null;joinOk=false;joinIn=new Set();joinOut=new Set();openJ=openQ=openS=null;const pt=$("pt"),w=$("ptw");if(w&&pt){[...w.childNodes].forEach(n=>pt.insertBefore(n,w));w.remove()}["msub","pj","pq","pbq","pjs","mjd","mqnew","mhire"].forEach(i=>{const e=$(i);if(e)e.remove()})}
 try{const ap=$("app");new MutationObserver(()=>{if(ap.hidden)teardown();else start()}).observe(ap,{attributes:true,attributeFilter:["hidden"]});if(!ap.hidden)start()}catch(_){}
 })();

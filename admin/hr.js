@@ -1,87 +1,118 @@
 (()=>{
-const $=i=>document.getElementById(i),DAYS=14;
-let PIN=null,rows=[],edit=null,tm=null;const OPEN=new Set();
+const $=i=>document.getElementById(i),DAYS=14,SOON=30,CEO="takanashi@rif-studio.com",KINDS=["정규직","계약직","인턴"],KC={"정규직":"reg","계약직":"con","인턴":"int"};
+let PIN=null,rows=[],view=[],owners={},edit=null,tm=null,filt="all";const OPEN=new Set();
 const dt=s=>s?new Date(s).toLocaleDateString("ko-KR"):"";
+/* 날짜만 있는 값(2026-11-16)은 시간대에 흔들리지 않게 글자 그대로 읽어요 */
+const DRE=/^(\d{4})-(\d{2})-(\d{2})/,ymd=s=>DRE.test(String(s||""))?String(s).slice(0,10):"",day=s=>{const m=DRE.exec(String(s||""));return m?m[1]+". "+(+m[2])+". "+(+m[3])+".":""};
+const dleft=s=>{const m=DRE.exec(String(s||""));if(!m)return null;const n=new Date();return Math.round((new Date(+m[1],+m[2]-1,+m[3])-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/86400000)};
+const dday=d=>d<0?"만료 "+(-d)+"일 지남":d===0?"오늘 만료":"D-"+d;
 const expired=r=>!r.used_at&&Date.now()-new Date(r.issued_at).getTime()>DAYS*86400000;
-const lock=()=>{PIN=null;rows=[];edit=null;OPEN.clear();clearTimeout(tm);$("hr-body").hidden=true;$("hmod").hidden=true;$("hrq").value="";$("hrcnt").textContent="";$("hrlock").textContent="🔒 대표 잠금 해제"};
-const tab=n=>{$("p3").hidden=n!==3;$("t3").setAttribute("aria-pressed",n===3);
-  if(n===3){$("p1").hidden=true;$("p2").hidden=true;$("t1").setAttribute("aria-pressed",false);$("t2").setAttribute("aria-pressed",false);$("mn").classList.add("wide")}};
-$("t3").onclick=()=>tab(3);
-$("t1").addEventListener("click",()=>tab(0));$("t2").addEventListener("click",()=>tab(0));
-const err=e=>/bad pin/.test(e.message)?"비밀번호가 맞지 않아요":/only unused/.test(e.message)?"이미 가입한 사번은 삭제할 수 없어요 (퇴사 처리를 쓰세요)":/8 digits|emp_no invalid/.test(e.message)?"사번은 공백 없이 1~20자여야 해요":/already used/.test(e.message)?"이미 있는 사번이에요":/bad division|bad team/.test(e.message)?"부서/팀 값이 올바르지 않아요":/bad email/.test(e.message)?"이메일 형식이 올바르지 않아요":e.message;
+const live=r=>r.status!=="left",soon=r=>live(r)&&!!ymd(r.contract_end)&&dleft(r.contract_end)<=SOON;
+const lock=()=>{PIN=null;rows=[];view=[];owners={};edit=null;filt="all";OPEN.clear();clearTimeout(tm);$("hr-body").hidden=true;$("hmod").hidden=true;$("hrq").value="";$("hrcnt").textContent="";$("hsum").replaceChildren();$("hrtb").replaceChildren();$("jlkl").replaceChildren();$("hrlock").textContent="🔒 대표 잠금 해제"};
+const err=e=>{const m=String((e&&e.message)||e||"");return /bad pin/.test(m)?"비밀번호가 맞지 않아요":/only unused/.test(m)?"이미 가입한 사번은 삭제할 수 없어요 (퇴사 처리를 쓰세요)":/8 digits|emp_no invalid/.test(m)?"사번은 공백 없이 1~20자여야 해요":/already used/.test(m)?"이미 있는 사번이에요":/bad division|bad team/.test(m)?"부서/팀 값이 올바르지 않아요":/bad email/.test(m)?"이메일 형식이 올바르지 않아요":/bad kind/.test(m)?"계약 형태 값이 올바르지 않아요":/bad contract dates/.test(m)?"계약 만료일이 입사일보다 빨라요":/ceo account/.test(m)?"대표님 계정은 퇴사 처리할 수 없어요":/admin only/.test(m)?"대표 계정으로 로그인해 주세요":m};
+const fnErr=async(data,error)=>{if(error){try{return (await error.context.json()).error}catch(_){return error.message}}return data&&data.ok?"":(data&&data.error)||"알 수 없는 오류"};
 async function load(){
-  const {data,error}=await db.rpc("hr_list",{p_pin:PIN});
-  if(error){alert("불러오지 못했어요: "+err(error));lock();return}
-  rows=data||[];draw()}
-async function sendMail(r,fromIssue){
-  const {data,error}=await db.functions.invoke("send-onboarding",{body:{id:r.id}});
-  let m="";if(error){try{m=(await error.context.json()).error}catch(_){m=error.message}}else if(!(data&&data.ok))m=(data&&data.error)||"알 수 없는 오류";
-  return m}
+  const [a,o]=await Promise.all([db.rpc("hr_list",{p_pin:PIN}),db.from("page_owners").select("page,email")]);
+  if(a.error){alert("불러오지 못했어요: "+err(a.error));lock();return}
+  rows=a.data||[];owners={};((o&&o.data)||[]).forEach(x=>{(owners[x.page]=owners[x.page]||[]).push(String(x.email||"").toLowerCase())});draw()}
+async function sendMail(r){const {data,error}=await db.functions.invoke("send-onboarding",{body:{id:r.id}});return fnErr(data,error)}
 const kv=(k,v,c)=>el("div",{className:c||""},[el("b",{textContent:k}),el("span",{textContent:v||"-"})]);
 const td=(t,c)=>el("td",{className:c||"",textContent:t||"",title:t||""});
+/* 이 사람이 쓸 수 있는 권한 (직책·팀·채널 담당에서 정해져요) */
+const chOf=r=>{const em=(r.user_email||"").toLowerCase();return em?Object.keys(owners).filter(p=>owners[p].includes(em)):[]};
+const rights=r=>{const em=(r.user_email||"").toLowerCase();if(!em||!r.used_at)return"";if(!live(r))return"없음 (퇴사)";
+  if(em===CEO||r.position==="대표이사")return"대표 (전체)";const a=[];if(r.team==="경영지원팀")a.push("업무 탭 (지원서 · 문의 메일)");
+  const ch=chOf(r);if(ch.length)a.push("포트폴리오 수정: "+ch.join(", "));return a.join(" · ")||"기본 (게시판 · 메일 · 채팅)"};
+/* 현황 칩 = 골라 보기 */
+const FILTERS=[["all","전체",()=>true,1],["정규직","정규직",r=>live(r)&&r.kind==="정규직",1],["계약직","계약직",r=>live(r)&&r.kind==="계약직",1],["인턴","인턴",r=>live(r)&&r.kind==="인턴",1],["none","미지정",r=>live(r)&&!KINDS.includes(r.kind),1],["pend","가입 대기",r=>live(r)&&!r.used_at,0],["soon","계약 만료 임박",soon,0,1],["left","퇴사",r=>!live(r),0]];
+function chips(){const box=$("hsum");box.replaceChildren();
+  FILTERS.forEach(([k,t,f,always,warn],i)=>{const n=rows.filter(f).length;if(!always&&!n&&filt!==k)return;
+    if(i===5||(i>5&&!box.querySelector(".sep")))box.append(el("span",{className:"sep"}));
+    const b=el("button",{type:"button",className:"chip"+(filt===k?" on":"")+(warn?" w":""),title:warn?"계약 만료일이 "+SOON+"일 안으로 남았거나 지난 직원":t+"만 골라 보기"},[t,el("b",{textContent:String(n)})]);
+    b.setAttribute("aria-pressed",String(filt===k));b.onclick=()=>{filt=filt===k?"all":k;draw()};box.append(b)})}
+function openEdit(r){edit=r;$("hft").textContent="정보 수정 · "+r.emp_no;$("hno").value=r.emp_no;$("hn").value=r.name||"";$("hnk").value=r.nickname||"";$("he").value=r.email||"";$("hph").value=fmtPhone(r.phone);$("hp").value=r.position||"";$("hrk").value=r.rank||"";setDT(r.division||"",r.team||"");
+  $("hkd").value=KINDS.includes(r.kind)?r.kind:"";$("hjd").value=ymd(r.joined);$("hce").value=ymd(r.contract_end);$("hlfw").hidden=live(r);$("hlf").value=ymd(r.left_at);
+  $("hdc").value=r.discord||"";$("htw").value=r.twitter||"";$("hm").value=r.memo||"";$("hmod").hidden=false;$("hn").focus()}
 function draw(){
-  const tb=$("hrtb"),q=($("hrq").value||"").trim().toLowerCase();tb.replaceChildren();
-  const view=rows.filter(r=>!q||[r.emp_no,r.name,r.nickname,r.email,r.user_email,r.invite_email,r.division,r.team,r.position,r.rank,r.discord,r.twitter,r.memo].join(" ").toLowerCase().includes(q));
-  $("hrcnt").textContent="총 "+rows.length+"명 · 가입 완료 "+rows.filter(r=>r.used_at&&r.status==="active").length+"명"+(q?" · 검색 결과 "+view.length+"명":"");
+  const tb=$("hrtb"),q=($("hrq").value||"").trim().toLowerCase();tb.replaceChildren();chips();
+  const ff=(FILTERS.find(x=>x[0]===filt)||FILTERS[0])[2];
+  view=rows.filter(r=>ff(r)&&(!q||[r.emp_no,r.name,r.nickname,r.email,r.user_email,r.invite_email,r.division,r.team,r.position,r.rank,r.kind||"미지정",r.discord,r.twitter,r.memo].join(" ").toLowerCase().includes(q)));
+  $("hrcnt").textContent="총 "+rows.length+"명 · 가입 완료 "+rows.filter(r=>r.used_at&&r.status==="active").length+"명"+(q||filt!=="all"?" · 지금 보이는 목록 "+view.length+"명":"");
   view.forEach(r=>{
     const st=r.status==="left"?["퇴사","x"]:r.used_at?["가입 완료","on"]:expired(r)?["기간 만료","x"]:["가입 대기","wt"];
     const pend=!r.used_at&&r.invite_email;
     const b1=el("button",{className:"btn small",textContent:"수정"});
-    b1.onclick=e=>{e.stopPropagation();edit=r;$("hft").textContent="정보 수정 · "+r.emp_no;$("hno").value=r.emp_no;$("hn").value=r.name;$("hnk").value=r.nickname;$("he").value=r.email;$("hph").value=fmtPhone(r.phone);$("hp").value=r.position;$("hrk").value=r.rank||"";setDT(r.division||"",r.team||"");$("hdc").value=r.discord||"";$("htw").value=r.twitter||"";$("hm").value=r.memo;$("hmod").hidden=false;$("hn").focus()};
+    b1.onclick=e=>{e.stopPropagation();openEdit(r)};
+    /* 계약 형태: 표에서 바로 바꿔요 */
+    const ks=el("select",{className:"kd "+(KC[r.kind]||"none"),title:"계약 형태 (여기서 바로 바꿀 수 있어요)"},[el("option",{value:"",textContent:"미지정"}),...KINDS.map(k=>el("option",{value:k,textContent:k}))]);
+    if(r.kind&&!KINDS.includes(r.kind))ks.append(el("option",{value:r.kind,textContent:r.kind}));
+    ks.value=r.kind||"";ks.setAttribute("aria-label",(r.name||r.emp_no)+" 계약 형태");ks.onclick=e=>e.stopPropagation();
+    ks.onchange=async()=>{const v=ks.value;ks.disabled=true;const {error}=await db.rpc("hr_set_kind",{p_pin:PIN,p_id:r.id,p_kind:v});ks.disabled=false;
+      if(error){ks.value=r.kind||"";alert("바꾸지 못했어요: "+err(error));return}r.kind=v;draw()};
+    const dl=live(r)&&ymd(r.contract_end)?dleft(r.contract_end):null,kc=el("td",{className:"kc"},[ks]);
+    if(dl!==null)kc.append(el("span",{className:"dd"+(dl<0?" over":dl<=SOON?" soon":""),textContent:dday(dl),title:"계약 만료일 "+day(r.contract_end)}));
     /* 아래 버튼들은 줄을 눌렀을 때 펼쳐지는 곳에 들어가요 */
     const acts=[];
-    if(!r.used_at&&r.status==="active"&&r.invite_email){const b=el("button",{className:"btn small",textContent:r.onboard_sent_at?"메일 재발송":"축하 메일 보내기"});
-      b.onclick=async()=>{if(!confirm(r.invite_email+" 에게 입사 축하 메일(한/일/영, 사번 "+r.emp_no+" 포함)을 보낼까요?"))return;b.disabled=true;const m=await sendMail(r);b.disabled=false;if(m)alert("메일을 보내지 못했어요: "+m);else{alert("보냈어요.");load()}};acts.push(b)}
+    {const be=el("button",{className:"btn small mo",textContent:"정보 수정"});be.onclick=()=>openEdit(r);acts.push(be)}
+    if(!r.used_at&&r.status==="active"&&r.invite_email){const b=el("button",{className:"btn small",textContent:r.onboard_sent_at?"사번 안내 메일 다시 보내기":"사번 안내 메일 보내기"});
+      b.onclick=async()=>{if(!confirm(r.invite_email+" 에게 사번 안내 메일(한/일/영, 사번 "+r.emp_no+" 포함)을 보낼까요?"))return;b.disabled=true;const m=await sendMail(r);b.disabled=false;if(m)alert("메일을 보내지 못했어요: "+m);else{alert("보냈어요.");load()}};acts.push(b)}
     if(expired(r)){const b=el("button",{className:"btn small",textContent:"기간 연장"});b.onclick=async()=>{const {error}=await db.rpc("hr_renew",{p_pin:PIN,p_id:r.id});if(error)return alert(err(error));load()};acts.push(b)}
-    if(r.used_at&&r.user_email&&r.status==="active"){const bp=el("button",{className:"btn small",textContent:"비밀번호 재설정"});
+    const isCeo=(r.user_email||"").toLowerCase()===CEO;
+    if(r.used_at&&r.user_email&&r.status==="active"&&!isCeo){const bp=el("button",{className:"btn small",textContent:"비밀번호 재설정"});
       bp.onclick=async()=>{const pw=prompt(r.user_email+" 의 새 비밀번호를 입력하세요 (8자 이상).\n입력한 비밀번호는 직원에게 직접 알려 주세요.");if(!pw)return;
         if(pw.length<8)return alert("8자 이상으로 입력해 주세요.");
         const {data,error}=await db.functions.invoke("admin-account",{body:{action:"setpw",pin:PIN,email:r.user_email,password:pw}});
-        let m="";if(error){try{m=(await error.context.json()).error}catch(_){m=error.message}}else if(!(data&&data.ok))m=(data&&data.error)||"알 수 없는 오류";
+        const m=await fnErr(data,error);
         alert(m?"바꾸지 못했어요: "+m:"비밀번호를 바꿨어요. 직원에게 새 비밀번호를 전달해 주세요.")};acts.push(bp)}
-    const b2=el("button",{className:"btn small",textContent:r.status==="left"?"복직":"퇴사 처리"});
-    b2.onclick=async()=>{const to=r.status==="left"?"active":"left";if(to==="left"&&!confirm((r.name||r.emp_no)+" 님을 퇴사 처리할까요?\n메일 사용 권한이 바로 사라져요."))return;
+    const b2=el("button",{className:"btn small",textContent:r.status==="left"?"복직":"퇴사 처리"});if(isCeo&&live(r)){b2.disabled=true;b2.title="대표님 계정은 퇴사 처리할 수 없어요"}
+    b2.onclick=async()=>{const to=r.status==="left"?"active":"left";if(to==="left"&&!confirm((r.name||r.emp_no)+" 님을 퇴사 처리할까요?\n\n· 인트라넷·메일 사용 권한이 바로 사라져요\n· 포트폴리오 채널 담당이었다면 수정 권한도 같이 꺼져요\n· 오늘 날짜가 퇴사일로 남아요 (수정에서 바꿀 수 있어요)"))return;
       const {error}=await db.rpc("hr_set_status",{p_pin:PIN,p_id:r.id,p_status:to});if(error)return alert(err(error));load()};acts.push(b2);
-    const b3=el("button",{className:"btn small danger",textContent:"삭제"});const isCeo=(r.user_email||"").toLowerCase()==="takanashi@rif-studio.com";b3.disabled=isCeo;if(isCeo)b3.title="대표님 계정은 지울 수 없어요";
+    const b3=el("button",{className:"btn small danger",textContent:"삭제"});b3.disabled=isCeo;if(isCeo)b3.title="대표님 계정은 지울 수 없어요";
     b3.onclick=async()=>{
-      if(!r.used_at){if(!confirm(r.emp_no+" 을 삭제할까요?"))return;const {error}=await db.rpc("hr_delete",{p_pin:PIN,p_id:r.id});if(error)return alert(err(error));load();return}
+      if(!r.used_at){if(!confirm("사번 "+r.emp_no+" 을 삭제할까요?\n아직 가입하지 않은 사번이라 이 번호로는 더 이상 가입할 수 없게 돼요."))return;const {error}=await db.rpc("hr_delete",{p_pin:PIN,p_id:r.id});if(error)return alert(err(error));load();return}
       if(!confirm((r.name||r.user_email)+" ("+r.user_email+") 계정을 완전히 삭제할까요?\n\n· 로그인 계정, 메일 권한, 프로필 사진, 인사정보가 모두 지워져요\n· 되돌릴 수 없어요\n· 이미 보낸 메일 기록과 올린 공지·자료는 남아요"))return;
       b3.disabled=true;const {data,error}=await db.functions.invoke("admin-account",{body:{action:"delete",pin:PIN,email:r.user_email}});
-      let m="";if(error){try{m=(await error.context.json()).error}catch(_){m=error.message}}else if(!(data&&data.ok))m=(data&&data.error)||"알 수 없는 오류";
+      const m=await fnErr(data,error);
       b3.disabled=false;if(m)return alert("지우지 못했어요: "+m);load()};acts.push(b3);
     const idTxt=pend?"초대: "+r.invite_email:(r.email||"").replace(/@rif-studio\.com$/i,"");
-    const tr=el("tr",{className:"r"+(r.status==="left"?" lft":"")},[td(r.emp_no,"en"),td(r.name+(r.nickname?" ("+r.nickname+")":"")),td(idTxt,pend?"sm hm":"hm"),td(fmtPhone(r.phone),"hm"),td([r.position,r.rank].filter(Boolean).join(" / "),"hm"),td([r.division,r.team].filter(Boolean).join(" · "),"hm"),
-      el("td",{},[el("span",{className:"hs "+st[1],textContent:st[0]})]),td(dt(r.issued_at),"dt hm sm"),el("td",{className:"ac"},[b1])]);
-    const info=el("div",{className:"dg"},[kv("아이디",idTxt,"mo"),kv("전화",fmtPhone(r.phone),"mo"),kv("직책 · 직위",[r.position,r.rank].filter(Boolean).join(" / "),"mo"),kv("부서 · 팀",[r.division,r.team].filter(Boolean).join(" · "),"mo"),kv("발급일",dt(r.issued_at),"mo"),kv("Discord",r.discord),kv("X",r.twitter),kv("메모",r.memo),...(pend?[kv("초대 이메일",r.invite_email)]:[]),...(r.onboard_sent_at&&!r.used_at?[kv("축하 메일 발송",dt(r.onboard_sent_at))]:[])]);
-    const dtl=el("tr",{className:"d",hidden:!OPEN.has(r.id)},[el("td",{colSpan:9},[info,el("div",{className:"dact"},acts)])]);
+    const tr=el("tr",{className:"r"+(r.status==="left"?" lft":"")},[td(r.emp_no,"en hm"),td((r.name||"")+(r.nickname?" ("+r.nickname+")":"")||"(이름 미입력)","pn"+(r.name||r.nickname?"":" sm")),kc,td(idTxt,pend?"sm hm":"hm"),td(fmtPhone(r.phone),"hm"),td([r.position,r.rank].filter(Boolean).join(" / "),"hm"),td([r.division,r.team].filter(Boolean).join(" · "),"hm"),
+      el("td",{},[el("span",{className:"hs "+st[1],textContent:st[0]})]),td(r.used_at?day(r.joined):"발급 "+dt(r.issued_at),"dt hm sm"),el("td",{className:"ac hm"},[b1])]);
+    const rt=rights(r);
+    const info=el("div",{className:"dg"},[kv("사번",r.emp_no,"mo"),kv("아이디",idTxt,"mo"),kv("전화",fmtPhone(r.phone),"mo"),kv("직책 · 직위",[r.position,r.rank].filter(Boolean).join(" / "),"mo"),kv("부서 · 팀",[r.division,r.team].filter(Boolean).join(" · "),"mo"),kv(r.used_at?"입사일":"사번 발급일",r.used_at?day(r.joined):dt(r.issued_at),"mo"),
+      ...(ymd(r.contract_end)?[kv("계약 만료일",day(r.contract_end)+(dl!==null?" ("+dday(dl)+")":""))]:[]),...(live(r)?[]:[kv("퇴사일",day(r.left_at))]),
+      kv("Discord",r.discord),kv("X",r.twitter),kv("메모",r.memo),...(rt?[kv("권한",rt)]:[]),...(pend?[kv("초대 이메일",r.invite_email)]:[]),...(r.onboard_sent_at&&!r.used_at?[kv("사번 안내 메일 발송",dt(r.onboard_sent_at))]:[])]);
+    const dtl=el("tr",{className:"d",hidden:!OPEN.has(r.id)},[el("td",{colSpan:10},[info,el("div",{className:"dact"},acts)])]);
     tr.onclick=()=>{dtl.hidden=!dtl.hidden;if(dtl.hidden)OPEN.delete(r.id);else OPEN.add(r.id)};
     tb.append(tr,dtl)});
-  if(!view.length)tb.append(el("tr",{},[el("td",{colSpan:9,textContent:rows.length?"검색 결과가 없어요.":"아직 발급된 사번이 없어요."})]))}
+  if(!view.length)tb.append(el("tr",{},[el("td",{colSpan:10,textContent:rows.length?"조건에 맞는 직원이 없어요.":"아직 등록된 직원이 없어요."})]))}
 $("hrq").oninput=draw;
+/* 명단 내보내기: 지금 보이는 목록을 엑셀에서 열리는 CSV로 (대표 잠금이 풀려 있을 때만) */
+$("hrcsv").onclick=()=>{if(!PIN)return;if(!view.length)return alert("내보낼 직원이 없어요.");
+  const H=["사번","이름","닉네임","아이디","전화","계약 형태","입사일","계약 만료일","직책","직위","부서","팀","상태","퇴사일","Discord","X","포트폴리오 담당","메모"];
+  const stt=r=>!live(r)?"퇴사":r.used_at?"재직":expired(r)?"가입 기간 만료":"가입 대기";
+  const L=view.map(r=>[r.emp_no,r.name,r.nickname,r.used_at?r.email:(r.invite_email?"초대: "+r.invite_email:""),fmtPhone(r.phone),r.kind||"미지정",ymd(r.joined),ymd(r.contract_end),r.position,r.rank,r.division,r.team,stt(r),ymd(r.left_at),r.discord,r.twitter,chOf(r).join(" / "),r.memo]);
+  /* 수식으로 읽힐 수 있는 값(=,+,-,@ 로 시작)은 앞에 ' 를 붙여 글자로만 열리게 해요 */
+  const cell=v=>{let s=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+  const n=new Date(),fn="RIF_직원명단_"+n.getFullYear()+String(n.getMonth()+1).padStart(2,"0")+String(n.getDate()).padStart(2,"0")+".csv";
+  const a=el("a",{href:URL.createObjectURL(new Blob(["﻿"+[H,...L].map(l=>l.map(cell).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"})),download:fn});
+  document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)};
 $("cshow").onchange=()=>{$("cpw").type=$("cshow").checked?"text":"password"};
 $("cform").onsubmit=async e=>{e.preventDefault();const m=$("cmsg");
-  const id=$("cid").value.trim(),nm=$("cn").value.trim(),pw=$("cpw").value;
+  const id=$("cid").value.trim(),nm=$("cn").value.trim(),pw=$("cpw").value,kind=$("ckd").value;
   if(!id||!nm||!pw){m.className="note err";m.textContent="아이디·이름·비밀번호를 모두 써 주세요.";return}
   if(!confirm(id.replace(/@rif-studio\.com$/i,"")+"@rif-studio.com 계정을 만들까요?"))return;
   const b=$("cgo");b.disabled=true;m.className="note";m.textContent="만드는 중…";
   const {data,error}=await db.functions.invoke("admin-account",{body:{action:"create",pin:PIN,loginId:id,name:nm,nickname:$("cnk").value,phone:$("cph").value,password:pw}});
-  b.disabled=false;let msg2="";if(error){try{msg2=(await error.context.json()).error}catch(_){msg2=error.message}}else if(!(data&&data.ok))msg2=(data&&data.error)||"알 수 없는 오류";
+  b.disabled=false;const msg2=await fnErr(data,error);
   if(msg2){m.className="note err";m.textContent=msg2;return}
-  m.textContent=data.email+" 계정을 만들었어요 ✓ 아이디와 비밀번호를 직원에게 전달해 주세요.";["cid","cn","cnk","cph","cpw"].forEach(x=>$(x).value="");$("cpw").type="password";$("cshow").checked=false;load()};
-$("iform").onsubmit=async e=>{e.preventDefault();
-  const em=$("iem").value.trim(),send=$("isend").checked&&em;
-  if(!em&&$("isend").checked&&!confirm("이메일이 없어서 축하 메일은 보내지 않아요. 사번만 발급할까요?"))return;
-  if(send&&!confirm(em+" 에게 입사 축하 메일(한국어/일본어/영어)을 보내고 사번을 발급할까요?"))return;
-  const b=$("iissue");b.disabled=true;
-  const {data,error}=await db.rpc("hr_issue",{p_pin:PIN,p_invite:em});
-  if(error){b.disabled=false;return alert("발급하지 못했어요: "+err(error))}
-  const row=Array.isArray(data)?data[0]:data;let note="";
-  if(send){const m=await sendMail({id:row.id});note=m?"  ⚠ 메일은 보내지 못했어요: "+m+" (표에서 '축하 메일 보내기'로 다시 시도)":"  ✓ 축하 메일을 보냈어요."}
-  b.disabled=false;$("iem").value="";
-  const box=$("issued");box.hidden=false;box.replaceChildren(el("b",{textContent:"사번: "}),el("span",{className:"big",textContent:row.emp_no}),el("span",{className:"note",textContent:note||"  — 직원에게 전달해 주세요."}));
-  load()};
+  m.textContent=data.email+" 계정을 만들었어요 ✓ 아이디와 비밀번호를 직원에게 전달해 주세요.";["cid","cn","cnk","cph","cpw"].forEach(x=>$(x).value="");$("cpw").type="password";$("cshow").checked=false;$("ckd").value="";
+  await load();
+  /* 고른 계약 형태를 방금 만든 직원에게 넣어요 */
+  if(kind){const row=rows.find(r=>(r.user_email||"").toLowerCase()===String(data.email||"").toLowerCase());
+    if(row){const r2=await db.rpc("hr_set_kind",{p_pin:PIN,p_id:row.id,p_kind:kind});if(r2.error)m.textContent+=" (계약 형태는 저장하지 못했어요. 표에서 다시 골라 주세요)";else{row.kind=kind;draw()}}}};
 $("hform").onsubmit=async e=>{e.preventDefault();if(!edit)return;
-  const {error}=await db.rpc("hr_save2",{p_pin:PIN,p_id:edit.id,p_emp_no:$("hno").value.trim(),p_name:$("hn").value,p_nick:$("hnk").value,p_email:$("he").value,p_phone:$("hph").value,p_position:$("hp").value,p_rank:$("hrk").value,p_division:$("hdv").value,p_team:$("htm").value,p_discord:$("hdc").value,p_twitter:$("htw").value,p_memo:$("hm").value});
+  const {error}=await db.rpc("hr_save3",{p_pin:PIN,p_id:edit.id,p_emp_no:$("hno").value.trim(),p_name:$("hn").value,p_nick:$("hnk").value,p_email:$("he").value,p_phone:$("hph").value,p_position:$("hp").value,p_rank:$("hrk").value,p_division:$("hdv").value,p_team:$("htm").value,p_discord:$("hdc").value,p_twitter:$("htw").value,p_memo:$("hm").value,
+    p_kind:$("hkd").value,p_joined:$("hjd").value||null,p_contract_end:$("hce").value||null,p_left_at:$("hlf").value||null});
   if(error)return alert("저장하지 못했어요: "+err(error));
   edit=null;$("hmod").hidden=true;load()};
 let TD={"경영지원팀":"경영부","보컬팀":"프로덕션부","사운드제작팀":"프로덕션부","일러스트팀":"프로덕션부","영상제작팀":"프로덕션부"},DV=["경영부","프로덕션부"];
@@ -91,7 +122,7 @@ async function loadOrgU(){const {data,error}=await db.from("org_units").select("
   const o=[];data.forEach(r=>{let d=o.find(x=>x.division===r.division);if(!d){d={division:r.division,teams:[]};o.push(d)}if(r.team)d.teams.push(r.team)});
   DV=o.map(d=>d.division);TD={};o.forEach(d=>d.teams.forEach(t=>TD[t]=d.division));fillDivs();return o}
 function orgRow(d){const nm=el("input",{className:"odn",maxLength:40,placeholder:"부서 이름 (예: 프로덕션부)",value:d.division||""}),tm=el("textarea",{className:"otm",rows:Math.max(3,(d.teams||[]).length+1),placeholder:"팀 이름 (한 줄에 하나)",value:(d.teams||[]).join("\n")});
-  const x=el("button",{type:"button",className:"btn small ghost",textContent:"부서 삭제"});const row=el("div",{className:"orow",style:"display:grid;grid-template-columns:minmax(140px,1fr) 2fr auto;gap:10px;align-items:start;padding:12px 0;border-top:1px solid var(--line)"},[nm,tm,x]);
+  const x=el("button",{type:"button",className:"btn small ghost",textContent:"부서 삭제"});const row=el("div",{className:"orow"},[nm,tm,x]);
   x.onclick=()=>{if(confirm((nm.value||"이 부서")+" 을(를) 목록에서 지울까요? (저장을 눌러야 반영돼요)"))row.remove()};return row}
 async function drawOrgU(){const o=await loadOrgU()||DV.map(d=>({division:d,teams:Object.keys(TD).filter(t=>TD[t]===d)}));$("orgl").replaceChildren(...o.map(orgRow))}
 $("orgadd").onclick=()=>{const r=orgRow({});$("orgl").append(r);r.querySelector("input").focus()};
@@ -100,13 +131,14 @@ $("orgsave").onclick=async()=>{const units=[...document.querySelectorAll("#orgl 
   const b=$("orgsave");b.disabled=true;const {error}=await db.rpc("org_save",{p_pin:PIN,p_units:units});b.disabled=false;
   if(error){$("orgmsg").textContent="저장하지 못했어요: "+err(error);return}$("orgmsg").textContent="저장했어요. 인트라넷은 새로고침하면 반영돼요.";drawOrgU();fillTeams()};
 /* 부서를 고르면 그 부서의 팀만 팀 목록에 나와요 */
-function fillTeams(keep){const d=$("hdv").value,cur=keep===undefined?$("htm").value:keep,sel=$("htm");
-  sel.replaceChildren(el("option",{value:"",textContent:"없음"}),...Object.keys(TD).filter(t=>TD[t]===d).map(t=>el("option",{value:t,textContent:t})));
-  sel.value=Object.keys(TD).some(t=>t===cur&&TD[t]===d)?cur:""}
-function setDT(d,t){$("hdv").value=d;fillTeams(t)}
+/* 목록에서 지운 부서·팀에 배정돼 있던 직원은 그 값을 그대로 지킬 수 있게 선택지에 남겨 둬요 */
+function fillTeams(keep){const d=$("hdv").value,cur=keep===undefined?$("htm").value:keep,sel=$("htm"),old=edit&&edit.team&&!(edit.team in TD)&&(edit.division||"")===d?edit.team:"";
+  sel.replaceChildren(el("option",{value:"",textContent:"없음"}),...Object.keys(TD).filter(t=>TD[t]===d).map(t=>el("option",{value:t,textContent:t})),...(old?[el("option",{value:old,textContent:old+" (목록에 없는 팀)"})]:[]));
+  sel.value=Object.keys(TD).some(t=>t===cur&&TD[t]===d)||(old&&cur===old)?cur:""}
+function setDT(d,t){const sel=$("hdv");sel.replaceChildren(el("option",{value:"",textContent:"미배정"}),...DV.map(x=>el("option",{value:x,textContent:x})));if(d&&!DV.includes(d))sel.append(el("option",{value:d,textContent:d+" (목록에 없는 부서)"}));sel.value=d;fillTeams(t)}
 $("hdv").addEventListener("change",()=>fillTeams());
 $("htm").addEventListener("mousedown",()=>fillTeams());$("htm").addEventListener("focus",()=>fillTeams());
-$("htm").onchange=()=>{const t=$("htm").value;if(t)$("hdv").value=TD[t]};
+$("htm").onchange=()=>{const t=$("htm").value;if(t&&TD[t])$("hdv").value=TD[t]};
 loadOrgU().then(()=>fillTeams());fillTeams();
 const closeEdit=()=>{edit=null;$("hmod").hidden=true};$("hcancel").onclick=closeEdit;$("hmx").onclick=closeEdit;$("hmod").onclick=e=>{if(e.target===$("hmod"))closeEdit()};
 const pm=$("hpm");
@@ -117,7 +149,7 @@ $("hpo").onclick=async()=>{const p=$("hpi").value;if(!p)return;
   const {data,error}=await db.rpc("check_ceo_pin",{p_pin:p});
   if(error&&/permission denied|JWT|401/i.test(error.message||"")){$("hpe").textContent="로그인이 풀렸어요. 로그아웃 후 다시 로그인해 주세요";try{await db.auth.signOut()}catch(_){}setTimeout(()=>location.reload(),1500);return}
   if(error||!data){$("hpe").textContent="비밀번호가 맞지 않아요";return}
-  PIN=p;pm.hidden=true;$("hr-body").hidden=false;$("hrlock").textContent="🔓 잠금 (열림)";clearTimeout(tm);tm=setTimeout(lock,10*60*1000);load();loadLocked();drawOrgU()};
+  PIN=p;$("hpi").value="";pm.hidden=true;$("hr-body").hidden=false;$("hrlock").textContent="🔓 잠금 (열림)";clearTimeout(tm);tm=setTimeout(lock,10*60*1000);load();loadLocked();drawOrgU()};
 async function loadLocked(){const box=$("jlkl");box.replaceChildren();
   const {data,error}=await db.rpc("jr_locked_list",{p_pin:PIN});
   if(error){box.append(el("p",{className:"note err",textContent:"불러오지 못했어요"}));return}
@@ -125,11 +157,11 @@ async function loadLocked(){const box=$("jlkl");box.replaceChildren();
   data.forEach(r=>{const b=el("button",{type:"button",className:"btn small",textContent:"잠금 풀기"});
     b.onclick=async()=>{const nm=(r.nickname||r.name||r.email);if(!confirm(nm+" 지원서의 채용/거절 결정을 풀까요?\n풀면 경영지원팀에 다시 보이고 수정할 수 있어요."))return;
       b.disabled=true;const {error}=await db.rpc("jr_unlock",{p_id:r.id,p_pin:PIN});if(error){b.disabled=false;alert("풀지 못했어요: "+err(error));return}loadLocked()};
-    box.append(el("div",{className:"idrow",style:"justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);display:flex;align-items:center"},[el("span",{textContent:(r.nickname||r.name||"")+" · "+(r.email||"")+" · "+(r.decision==="hire"?"대표 채용":"대표 거절")+" · "+new Date(r.created_at).toLocaleDateString("ko-KR")}),b]))})}
+    box.append(el("div",{className:"lrow"},[el("span",{textContent:(r.nickname||r.name||"")+" · "+(r.email||"")+" · "+(r.decision==="hire"?"대표 채용":"대표 거절")+" · "+new Date(r.created_at).toLocaleDateString("ko-KR")}),b]))})}
 $("hpi").onkeydown=e=>{if(e.key==="Enter")$("hpo").click()};
 $("out").addEventListener("click",lock);
-/* 로그인 직후(스크립트가 다 불러와지기 전/후 어느 쪽이든) 인사정보 화면을 반드시 보여줘요 */
-try{const ap=$("app"),go=()=>{if(!ap.hidden)tab(3)};new MutationObserver(go).observe(ap,{attributes:true,attributeFilter:["hidden"]});go()}catch(_){}
+/* 로그아웃되면(다른 탭에서 로그아웃 포함) 바로 잠가요 */
+try{const ap=$("app");new MutationObserver(()=>{if(ap.hidden&&PIN)lock()}).observe(ap,{attributes:true,attributeFilter:["hidden"]})}catch(_){}
 })();
 
 bindPhone($("hph"));
