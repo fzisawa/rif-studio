@@ -1,0 +1,12 @@
+name: fn-test
+on: {push: {branches: [fn-test]}}
+permissions: {contents: write}
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          mkdir out
+          curl -s -X POST https://noqtyhmgdfzziymfclnx.supabase.co/functions/v1/news-translate -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcXR5aG1nZGZ6eml5bWZjbG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4OTg1MzMsImV4cCI6MjEwOTQ3NDUzM30.fMmKix0TBw_LLaXrPVapMpKj6DciSVVUKX1XvBFtfaM" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcXR5aG1nZGZ6eml5bWZjbG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4OTg1MzMsImV4cCI6MjEwOTQ3NDUzM30.fMmKix0TBw_LLaXrPVapMpKj6DciSVVUKX1XvBFtfaM" -H "Content-Type: application/json" -d '{"ping":true}' > out/ping.json; cat out/ping.json
+          curl -s -X POST https://noqtyhmgdfzziymfclnx.supabase.co/functions/v1/news-translate -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcXR5aG1nZGZ6eml5bWZjbG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4OTg1MzMsImV4cCI6MjEwOTQ3NDUzM30.fMmKix0TBw_LLaXrPVapMpKj6DciSVVUKX1XvBFtfaM" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcXR5aG1nZGZ6eml5bWZjbG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4OTg1MzMsImV4cCI6MjEwOTQ3NDUzM30.fMmKix0TBw_LLaXrPVapMpKj6DciSVVUKX1XvBFtfaM" -H "Content-Type: application/json" -d '{"title":"x"}' > out/noauth.json; cat out/noauth.json
+          cd out && git init -q && git checkout -q -b fn-test-out && git add . && git -c user.name=ci -c user.email=ci@x commit -qm "result ${GITHUB_SHA::7}" && git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" fn-test-out
