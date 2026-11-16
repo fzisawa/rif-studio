@@ -1,12 +1,12 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Admin · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=62"><link rel="icon" href="../img/favicon.png" type="image/png">
-<link rel="stylesheet" href="../app.css?v=1"><link rel="stylesheet" href="admin.css?v=2"></head><body>
+<title>Admin · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=63"><link rel="icon" href="../img/favicon.png" type="image/png">
+<link rel="stylesheet" href="../app.css?v=1"><link rel="stylesheet" href="admin.css?v=3"></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.vocal">Vocal</button><div class="nm"><a href="../rif/">RIF</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.sound">Sound</button><div class="nm"><a href="../charmbung/">Charmbung</a><a href="../se1c/">SE1C</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.art">Art</button><div class="nm"><a href="../woljae/">Woljae</a><a href="../gugugong/">gugugong</a></div></div><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.content">Content</button><div class="nm"></div></div><a class="nl" href="/store/">Store</a><a class="nl" href="../join/">Join Us</a><a class="nl" href="../contact/">Contact</a><a class="nl" href="../board/">Board</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
 <main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>Admin</h1>
 <form id="login"><input id="em" type="email" value="takanashi@rif-studio.com" hidden autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password"><button class="btn">로그인</button><p class="note err" id="lmsg"></p></form>
 <div id="app" hidden><p class="lead"><a href="../intranet/">Intranet</a> · <a href="#" id="out">로그아웃</a></p>
-<div class="tabs" id="atabs"><button type="button" id="t3" aria-pressed="true">인사정보</button><button type="button" id="t1" aria-pressed="false">포트폴리오 관리</button></div>
+<div class="tabs" id="atabs"><button type="button" id="t3" aria-pressed="true">인사정보</button><button type="button" id="t1" aria-pressed="false">포트폴리오 관리</button><button type="button" id="t4" aria-pressed="false">스토어</button></div>
 
 <div id="p3"><div class="tbar"><h2>인사정보</h2><span class="sp"></span><button class="btn ghost" id="hrlock" type="button">🔒 대표 잠금 해제</button></div>
 <p class="note" style="margin:0 0 16px">직원 정보와 사번은 대표 비밀번호로 잠금을 풀어야 보이고, 서버에서도 비밀번호 없이는 읽을 수 없어요. 10분 뒤 자동으로 잠겨요.</p>
@@ -24,6 +24,36 @@
 <div class="pnl pad" style="margin-top:26px"><h2>잠긴 지원서</h2><p class="note">대표 채용·대표 거절을 누른 지원서는 인트라넷에서 아무도 보거나 고칠 수 없어요(경영지원팀에는 안 보여요). 여기서 대표 비밀번호로 잠금을 풀 수 있어요.</p><div id="jlkl"></div></div>
 <div class="pnl pad" style="margin-top:26px"><h2>부서 · 팀 관리</h2><p class="note">여기서 바꾼 부서·팀이 인트라넷 사원 정보와 위 정보 수정 창의 목록에 그대로 나와요. 팀은 한 줄에 하나씩 적어 주세요. 부서·팀 이름을 지워도 이미 배정된 직원의 정보는 지워지지 않아요.</p><div id="orgl"></div><div class="wr" style="margin-top:12px"><button class="btn ghost" id="orgadd" type="button">＋ 부서 추가</button><button class="btn" id="orgsave" type="button">부서 · 팀 저장</button></div><p class="note" id="orgmsg"></p></div>
 </div></div>
+
+<div id="p4" hidden><div class="tbar"><h2>스토어</h2><span class="sp"></span><a class="btn ghost" href="/store/" target="_blank" rel="noopener">스토어 열기</a><button class="btn" id="spnew" type="button">＋ 상품 추가</button></div>
+<div class="sstat0" id="sst"></div>
+<h3 style="margin:22px 0 10px">주문</h3><div class="tbar"><select id="sof"><option value="">전체 주문</option><option value="new">접수 · 입금 확인 중</option><option value="paid">입금 확인</option><option value="shipped">발송함</option><option value="done">완료</option><option value="cancel">취소</option></select><span class="sp"></span><button class="btn small" id="socsv" type="button">주문 CSV 받기</button></div>
+<div class="tbw"><table class="jt"><thead><tr><th>주문번호</th><th>주문자</th><th class="hm">상품</th><th>금액</th><th>상태</th><th class="hm">주문일</th></tr></thead><tbody id="sotb"></tbody></table></div>
+<h3 style="margin:30px 0 10px">상품</h3><div class="tbw"><table class="jt"><thead><tr><th></th><th>상품</th><th class="hm">구분</th><th>가격</th><th class="hm">재고</th><th>판매 상태</th><th class="hm">구매 방식</th><th></th></tr></thead><tbody id="sptb"></tbody></table></div>
+<form id="ssf" class="fr pnl pad" style="margin-top:26px"><h2>스토어 설정</h2>
+<label class="ck2"><input type="checkbox" id="sopen"><span>주문 받기 (끄면 상품은 보이지만 '구매하기'가 잠겨요)</span></label>
+<div class="hg"><label>기본 배송비 (원)<input id="sship" type="number" min="0" step="100"></label><label>무료배송 기준 (원, 비우면 없음)<input id="sfree" type="number" min="0" step="1000"></label></div>
+<label>입금 · 결제 안내 (주문 완료 화면과 주문 조회에 보여요)<textarea id="spay" rows="3" maxlength="1000" placeholder="예: 아래 계좌로 24시간 안에 입금해 주세요. 입금자명은 주문자 이름과 같게 해 주세요."></textarea></label>
+<label>배송 · 교환 · 반품 안내<textarea id="spol" rows="5" maxlength="3000"></textarea></label>
+<p class="note">사업자 정보는 스토어 맨 아래에 보여요. 통신판매업 신고 후 신고번호를 꼭 넣어 주세요.</p>
+<div class="hg"><label>상호<input id="sb_name" maxlength="60"></label><label>대표<input id="sb_ceo" maxlength="30"></label><label>사업자등록번호<input id="sb_reg" maxlength="30"></label><label>통신판매업 신고번호<input id="sb_mail_order" maxlength="40"></label><label>주소<input id="sb_addr" maxlength="120"></label><label>연락처 (이메일 · 전화)<input id="sb_contact" maxlength="80"></label></div>
+<div class="jbar"><button class="btn" id="ssave">설정 저장</button><span class="note" id="ssmsg"></span></div></form>
+</div>
+
+<div id="pmod" class="mod" role="dialog" aria-modal="true" aria-labelledby="pmt" hidden><div class="mbox wd"><button type="button" class="mx" id="pmx" aria-label="닫기">×</button><h2 id="pmt">상품</h2>
+<form id="pform" class="fr">
+<div class="hg"><label>구분<select id="pk"><option value="goods">Goods (굿즈 · 배송)</option><option value="plan">Plan (작업 플랜 · 배송 없음)</option></select></label><label>판매 상태<select id="pst"><option value="draft">숨김 (준비 중)</option><option value="sale">판매 중</option><option value="soldout">품절</option></select></label></div>
+<label>상품 이름<input id="pn" maxlength="80" required></label>
+<div class="hg"><label>일본어 이름 (선택)<input id="pnj" maxlength="80"></label><label>영어 이름 (선택)<input id="pne" maxlength="80"></label></div>
+<div class="hg"><label>정가 (원)<input id="pp" type="number" min="0" step="100" required></label><label>할인가 (원, 선택)<input id="psp" type="number" min="0" step="100"></label><label>재고 (비우면 무제한)<input id="pstk" type="number" min="0"></label><label>한 번에 최대 수량<input id="pmq" type="number" min="1" max="999" value="10"></label></div>
+<label>한 줄 소개 (선택)<input id="psu" maxlength="300"></label>
+<div class="hg"><label>한 줄 소개 · 일본어<input id="psuj" maxlength="300"></label><label>한 줄 소개 · 영어<input id="psue" maxlength="300"></label></div>
+<label>옵션 (한 줄에 하나: 옵션명: 값, 값 · 예) 사이즈: S, M, L)<textarea id="pop" rows="2" maxlength="600"></textarea></label>
+<label>상세 설명<textarea id="pd" rows="6" maxlength="8000"></textarea></label>
+<div><span class="note">사진 (첫 사진이 대표 사진 · 끌어서 순서 바꾸기는 안 되고, ← → 로 옮겨요)</span><div class="pimgs" id="pim"></div><input type="file" id="pfile" accept="image/*" multiple></div>
+<div class="hg"><label>구매 방식<select id="pbm"><option value="order">이 사이트에서 주문 받기</option><option value="link">외부 스토어로 연결 (네이버 스마트스토어 등)</option><option value="inquiry">문의하기 (Contact 로 연결)</option></select></label><label id="pbuw">외부 스토어 주소 (https://)<input id="pbu" type="url" maxlength="400" placeholder="https://smartstore.naver.com/..."></label><label>순서 (작을수록 앞)<input id="pso" type="number" value="0"></label></div>
+<div class="wr"><button type="button" class="btn danger" id="pdel">상품 삭제</button><span class="sp"></span><button type="button" class="btn ghost" id="pcancel">취소</button><button class="btn" id="psave">저장</button></div><p class="note" id="pmsg"></p>
+</form></div></div>
 
 <div id="p1" hidden><div class="tbar"><h2>포트폴리오 관리</h2><span class="sp"></span><button class="btn" id="chnew" type="button">＋ 새 채널(인원) 추가</button></div>
 <p class="note" style="margin:0 0 16px">채널은 한 사람의 포트폴리오 페이지예요. 담당자로 지정한 계정은 자기 채널에서 사진·영상·음원, 탭, 캐치프레이즈, 경력을 직접 고칠 수 있고, 대표님은 모든 채널을 고칠 수 있어요. 줄을 누르면 담당자를 넣고 뺄 수 있어요.</p>
@@ -44,4 +74,4 @@
 <div id="hpm" class="mod" role="dialog" aria-modal="true" aria-labelledby="hpt" hidden><div class="mbox"><button type="button" class="mx" id="hpx" aria-label="닫기">×</button><h2 id="hpt">대표 확인</h2><p class="note">인사정보는 대표만 볼 수 있어요. 대표 비밀번호를 입력해 주세요.</p><input id="hpi" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="20" aria-label="대표 비밀번호"><p class="note err" id="hpe"></p><div class="wr"><button class="btn ghost" id="hpc" type="button">취소</button><button class="btn" id="hpo" type="button">확인</button></div></div></div>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=6"></script><script src="app.js?v=3"></script><script src="hr.js?v=19"></script><script src="chan.js?v=2"></script><script src="../nav.js?v=2" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=6"></script><script src="app.js?v=4"></script><script src="hr.js?v=19"></script><script src="chan.js?v=2"></script><script src="store.js?v=1"></script><script src="../nav.js?v=2" defer></script></body></html>

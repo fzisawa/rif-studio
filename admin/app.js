@@ -1,9 +1,9 @@
-const $=i=>document.getElementById(i),L={rif:"RIF",charmbung:"Charmbung",se1c:"SE1C",woljae:"Woljae",gugugong:"gugugong",store:"Official Store"},CH={};
+const $=i=>document.getElementById(i),L={rif:"RIF",charmbung:"Charmbung",se1c:"SE1C",woljae:"Woljae",gugugong:"gugugong"},CH={};
 /* 탭: 인사정보 / 포트폴리오 관리 (주소 끝에 #portfolio 를 붙이면 포트폴리오 관리가 바로 열려요) */
-const TABS={t3:"p3",t1:"p1"};
-function showTab(t){Object.keys(TABS).forEach(b=>{$(b).setAttribute("aria-pressed",String(b===t));$(TABS[b]).hidden=b!==t});try{history.replaceState(null,"",t==="t1"?"#portfolio":"#hr")}catch(_){}}
-$("t3").onclick=()=>showTab("t3");$("t1").onclick=()=>showTab("t1");
-showTab(location.hash==="#portfolio"?"t1":"t3");
+const TABS={t3:"p3",t1:"p1",t4:"p4"};
+function showTab(t){Object.keys(TABS).forEach(b=>{$(b).setAttribute("aria-pressed",String(b===t));$(TABS[b]).hidden=b!==t});try{history.replaceState(null,"",t==="t1"?"#portfolio":t==="t4"?"#store":"#hr")}catch(_){}}
+$("t3").onclick=()=>showTab("t3");$("t1").onclick=()=>showTab("t1");$("t4").onclick=()=>showTab("t4");
+showTab(location.hash==="#portfolio"?"t1":location.hash==="#store"?"t4":"t3");
 /* 여기서 바로 올리기 */
 const sel=el("select",{},Object.entries(L).map(([v,t])=>el("option",{value:v,textContent:t+" 페이지"})));
 const changed=()=>document.dispatchEvent(new Event("rif-items"));

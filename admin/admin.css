@@ -72,3 +72,14 @@ main.wide .chadd select,main.wide .chadd input{padding:6px 12px;font-size:13px}
   #hrtb td.pn,#chtb tr.r td:first-child{white-space:normal;overflow-wrap:anywhere}#hrtb td.kc{white-space:normal}.dd{margin:4px 0 0}
   #chtb td.oc{max-width:none}#chtb td.oc .ownc{white-space:normal;overflow-wrap:anywhere;margin-right:0}.ownc.big{flex-wrap:wrap}.jt tr.d td{padding:14px 12px}}
 @media(max-width:700px){#tw2 .jt th,#tw2 .jt td{padding-left:8px;padding-right:8px}#hrtb td.en{letter-spacing:0}.hm{display:none}.dg .mo{display:grid}#hrcnt{flex:1 1 100%}.tbar .sp{display:none}.tbar input[type=search]{min-width:0;flex:1 1 100%}}
+/* 스토어 */
+.sstat0{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
+.pth{display:block;width:44px;height:54px;border-radius:8px;object-fit:cover;background:var(--hv)}
+#sptb td:first-child{width:60px;padding-right:0}
+.oit{margin:12px 0;padding-left:18px;font-size:14px;line-height:1.7}
+#sotb .dact{display:flex;gap:8px;align-items:flex-start}#sotb .dact textarea{flex:1;min-width:0}
+.pimgs{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 10px}
+.pimg{width:96px;display:flex;flex-direction:column;gap:4px}.pimg img{width:96px;height:120px;object-fit:cover;border-radius:10px;background:var(--hv)}
+.pimg div{display:flex;gap:4px}.pimg button{flex:1;padding:2px 0;border:1px solid var(--ln2);border-radius:8px;background:none;color:var(--fg);cursor:pointer;font:inherit;font-size:12px}.pimg button:hover:not(:disabled){border-color:var(--ac);color:var(--ac)}.pimg button:disabled{opacity:.3}
+.pimg:first-child img{outline:2px solid var(--ac);outline-offset:2px}
+#pform .wr .sp{flex:1}
