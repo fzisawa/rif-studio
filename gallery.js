@@ -24,12 +24,24 @@
     if(admin){const x=el("button",{className:"del",textContent:"×",ariaLabel:"삭제"});x.onclick=async()=>{if(confirm("삭제할까요?")){try{await delItem(it)}catch(e){alert("삭제하지 못했어요: "+e.message)}load()}};c.append(x)}
     return c};
   /* 주인에게는 탭마다 × (탭 삭제). 탭 안의 작품은 지우지 않고 기본 칸(Portfolio · More)으로 옮겨요 */
-  const FIXEDT=["Tracks","Portfolio","More"];
-  async function delTab(n,done){const k=list.filter(i=>i.section===n).length,home=tracks?"Portfolio":"More";
-    if(!confirm("'"+n+"' 탭을 지울까요?"+(k?"\n\n이 탭에 있는 "+k+"개는 지워지지 않고 '"+home+"' 탭으로 옮겨져요.":"")))return;
-    try{if(k){const {error}=await db.from("items").update({section:null}).eq("page",page).eq("section",n);if(error)throw error}
-      const hide=(CATS[page]||[]).includes(n)?[...new Set([...(meta.hide||[]),n])]:(meta.hide||[]);
+  /* 기본 칸(RIF: Portfolio, 다른 채널: More)도 지울 수 있어요. 지운 탭은 같은 이름으로 '탭 추가'하면 다시 나와요 */
+  const FIXEDT=["Tracks"],HOME=tracks?"Portfolio":"More",hidden=n=>(meta.hide||[]).includes(n),noSec=i=>!i.section;
+  async function delTab(n,done){const isHome=n===HOME,mine=isHome?list.filter(noSec):list.filter(i=>i.section===n),k=mine.length;
+    const others=allTabs().filter(x=>x!==n);let to=null;
+    if(k){if(!isHome&&!hidden(HOME))to="";
+      else{if(!others.length)return alert("'"+n+"' 탭에 "+k+"개가 있어요. 옮길 다른 탭을 먼저 만들어 주세요.");
+        const t=(prompt("'"+n+"' 탭에 있는 "+k+"개를 어느 탭으로 옮길까요?\n("+others.join(", ")+")",others[0])||"").trim();if(!t)return;
+        if(!others.includes(t))return alert("'"+t+"' 탭이 없어요. 위 목록에 있는 이름을 그대로 적어 주세요.");to=t}}
+    if(!confirm("'"+n+"' 탭을 지울까요?"+(k?"\n\n이 탭에 있는 "+k+"개는 지워지지 않고 '"+(to||HOME)+"' 탭으로 옮겨져요.":"")))return;
+    try{if(k){const v=to||null;
+        const q=isHome?[db.from("items").update({section:v}).eq("page",page).is("section",null),db.from("items").update({section:v}).eq("page",page).eq("section","")]:[db.from("items").update({section:v}).eq("page",page).eq("section",n)];
+        for(const r of await Promise.all(q))if(r.error)throw r.error}
+      const hide=isHome||(CATS[page]||[]).includes(n)?[...new Set([...(meta.hide||[]),n])]:(meta.hide||[]);
       await saveMeta({tabs:(meta.tabs||[]).filter(x=>x!==n),hide});done();load()}catch(e){alert("지우지 못했어요: "+(e.message||e))}}
+  /* 탭 추가: 지웠던 기본 탭 이름이면 다시 보이게 */
+  async function addTab(n){const hide=(meta.hide||[]).filter(x=>x!==n);
+    if(n===HOME||(CATS[page]||[]).includes(n)){if(!hidden(n))throw new Error("이미 있는 탭이에요");return saveMeta({hide})}
+    return saveMeta({tabs:[...(meta.tabs||[]),n],hide})}
   const tabBtn=(n,cur,pick,done)=>{const b=el("button",{className:"tab"+(n===cur?" on":""),type:"button",textContent:n});b.onclick=()=>pick(n);
     if(admin&&!FIXEDT.includes(n)){const x=el("span",{className:"tx",role:"button",tabIndex:0,textContent:"×",title:"'"+n+"' 탭 삭제",ariaLabel:"'"+n+"' 탭 삭제"});
       const f=e=>{e.stopPropagation();e.preventDefault();delTab(n,done)};x.onclick=f;x.onkeydown=e=>{if(e.key==="Enter"||e.key===" ")f(e)};b.append(x);b.classList.add("hx")}
@@ -77,14 +89,14 @@
     const names=allTabs(),sectioned=names.length>0;let its=list;
     g.replaceChildren();g.className="grid";bar.replaceChildren();
     if(sectioned){
-      if(list.some(i=>!i.section))names.push("More");
+      if(list.some(noSec)&&!hidden("More"))names.push("More");
       if(!names.includes(active))active=names.find(n=>slug(n)===hash())||names.find(n=>list.some(i=>(i.section||"More")===n))||names[0];
       tabs(bar,names,active,n=>{active=n;go(n);render()});
       its=list.filter(i=>(i.section||"More")===active).sort((a,b)=>a.created_at<b.created_at?-1:1)}
     if(admin){
       const nt=el("button",{type:"button",className:"tab tadd",textContent:"＋ 탭 추가"});
-      nt.onclick=async()=>{const n=(prompt("새 탭 이름 (예: Cover, Illustration)")||"").trim().slice(0,30);if(!n)return;if(allTabs().includes(n)||n==="More")return alert("이미 있는 탭이에요");
-        try{await saveMeta({tabs:[...(meta.tabs||[]),n]});active=n;go(n);render()}catch(e){alert("탭을 만들지 못했어요: "+e.message)}};
+      nt.onclick=async()=>{const n=(prompt("새 탭 이름 (예: Cover, Illustration)")||"").trim().slice(0,30);if(!n)return;if(allTabs().includes(n)||(n==="More"&&!hidden("More")))return alert("이미 있는 탭이에요");
+        try{await addTab(n);active=n;go(n);render()}catch(e){alert("탭을 만들지 못했어요: "+e.message)}};
       bar.append(nt);
       const b=el("button",{className:"plus",textContent:"+",ariaLabel:"추가"});b.onclick=()=>{form.hidden=!form.hidden;if(!form.hidden)form.fill()};g.append(b)}
     if(!form.hidden)form.fill();
@@ -96,13 +108,13 @@
       if(top!=="Tracks")document.dispatchEvent(new Event("rif:pause"))}
     else sec.hidden=!sectioned&&!admin&&!list.length}
   /* Tracks 옆 한 줄: Tracks(고정) + 포트폴리오 탭들 + (주인) 탭 추가·삭제 */
-  function renderT(){const names=allTabs();if(list.some(i=>!i.section)||!names.length)names.unshift("Portfolio");
-    if(top!=="Tracks"&&!names.includes(top))top=names.find(n=>slug(n)===hash())||names[0];
+  function renderT(){const names=allTabs();if((list.some(noSec)||!names.length)&&!hidden("Portfolio"))names.unshift("Portfolio");
+    if(top!=="Tracks"&&!names.includes(top))top=names.find(n=>slug(n)===hash())||names[0]||"Tracks";
     const all=["Tracks",...names];topBar.replaceChildren(...all.map(n=>tabBtn(n,top,x=>{top=x;go(x);render()},()=>{if(top===n){top="Portfolio";go("Portfolio")}})));
     bar.replaceChildren();g.replaceChildren();g.className="grid";
     if(admin){const nt=el("button",{type:"button",className:"tab tadd",textContent:"＋ 탭 추가"});
-      nt.onclick=async()=>{const n=(prompt("새 탭 이름 (예: Cover, Live)")||"").trim().slice(0,30);if(!n)return;if(["Tracks","Portfolio","More"].includes(n)||allTabs().includes(n))return alert("이미 있는 탭이에요");
-        try{await saveMeta({tabs:[...(meta.tabs||[]),n]});top=n;go(n);render()}catch(e){alert("탭을 만들지 못했어요: "+e.message)}};topBar.append(nt);
+      nt.onclick=async()=>{const n=(prompt("새 탭 이름 (예: Cover, Live)")||"").trim().slice(0,30);if(!n)return;if(n==="Tracks"||n==="More"||(n==="Portfolio"&&!hidden("Portfolio"))||allTabs().includes(n))return alert("이미 있는 탭이에요");
+        try{await addTab(n);top=n;go(n);render()}catch(e){alert("탭을 만들지 못했어요: "+e.message)}};topBar.append(nt);
 }
     tracks.hidden=top!=="Tracks";sec.hidden=top==="Tracks";main.classList.add("tabbed");
     if(top==="Tracks")return;document.dispatchEvent(new Event("rif:pause"));active=top==="Portfolio"?"":top;
