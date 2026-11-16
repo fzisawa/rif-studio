@@ -230,3 +230,42 @@ html.snoscroll{overflow:hidden}
 .nps{display:flex;flex-wrap:wrap;gap:2px}
 .nm .nps a{padding:7px 10px;white-space:nowrap}
 @media(max-width:700px){header nav{position:relative}.ng:has(>.nmg){position:static}.nm.nmg{left:0;right:auto;max-width:100%}.nrow{grid-template-columns:72px 1fr}}
+/* ===== News ===== */
+.ntop{display:flex;justify-content:flex-end;margin-bottom:14px}.ntop:empty{display:none}
+.nlist{list-style:none;margin:0;padding:0;border-top:1px solid #7774}
+.nlist li{border-bottom:1px solid #7773}
+.nlist a{display:grid;grid-template-columns:96px 1fr auto;gap:18px;align-items:center;padding:18px 6px;color:var(--fg);text-decoration:none}
+.nlist a:hover .nt{color:var(--ac)}
+.nlist time{color:var(--mut);font-size:13px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.nt{font-size:16px;line-height:1.5;overflow-wrap:anywhere}
+.nt em,.ndate em{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.08em;color:#fff;background:var(--ac);border-radius:99px;padding:2px 9px;margin-right:8px;vertical-align:2px}
+.nt em.dr{background:#7777}
+.nimg{width:16px;height:16px;opacity:.5;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Ccircle cx='9' cy='10' r='2'/%3E%3Cpath d='M21 16l-5-5-8 8'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Ccircle cx='9' cy='10' r='2'/%3E%3Cpath d='M21 16l-5-5-8 8'/%3E%3C/svg%3E") center/contain no-repeat}
+.nempty{padding:40px 6px;color:var(--mut)}
+.nmore{display:block;margin:24px auto 0}
+.npost{max-width:720px}.nback{color:var(--mut);font-size:14px;text-decoration:none}.nback:hover{color:var(--ac)}
+.ndate{margin:22px 0 6px;color:var(--mut);font-size:13px}
+.npost h2{font-size:clamp(22px,3vw,30px);line-height:1.35;margin:0 0 22px;letter-spacing:-.01em;text-transform:none;color:var(--fg)}
+.nhero{display:block;width:100%;max-height:520px;object-fit:contain;border-radius:14px;background:#7772;margin:0 0 24px}
+.nbody{font-size:16px;line-height:1.85;overflow-wrap:anywhere}.nbody a{color:var(--ac)}
+.nadm{display:flex;gap:8px;margin-top:34px;padding-top:18px;border-top:1px solid #7773}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid #7776}.btn.ghost:hover{border-color:var(--ac);color:var(--ac)}
+.btn.danger{background:transparent;color:#d64545;border:1px solid #d6454588}.btn.danger:hover{background:#d64545;color:#fff}
+#nedit.mod{position:fixed;inset:0;z-index:60;background:#000a;display:flex;align-items:center;justify-content:center;padding:16px}
+#nedit .mbox{width:min(720px,100%);max-height:92vh;overflow:auto;background:var(--bg);color:var(--fg);border:1px solid #7774;border-radius:18px;padding:26px 28px;box-shadow:0 24px 60px #0008}
+.nform{display:flex;flex-direction:column;gap:14px}.nform h2{margin:0;font-size:22px;text-transform:none;color:var(--fg)}
+.nform label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--mut)}
+.nform input:not([type=checkbox]):not([type=file]),.nform textarea{width:100%;padding:10px 14px;border:1px solid #7776;border-radius:12px;background:var(--bg);color:var(--fg);font:inherit;font-size:15px;line-height:1.6}
+.nform textarea{resize:vertical}.nform input:focus,.nform textarea:focus{outline:2px solid color-mix(in srgb,var(--ac) 45%,transparent);border-color:var(--ac)}
+.nrowf{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.nimgp img{max-height:90px;border-radius:10px;display:block}
+.nchk{display:flex;flex-wrap:wrap;gap:18px}.nchk label{flex-direction:row;align-items:center;gap:8px;color:var(--fg);font-size:14px}.nchk input{accent-color:var(--ac);width:17px;height:17px}
+.ntr{border:1px solid #7774;border-radius:12px;padding:12px 16px}.ntr summary{cursor:pointer;font-weight:600}.ntr[open] summary{margin-bottom:12px}.ntr label{margin-top:10px}
+.nform .wr{display:flex;gap:10px;justify-content:flex-end}.nform .note{margin:0;color:var(--mut);font-size:13px}
+@media(max-width:700px){.nlist a{grid-template-columns:1fr auto;gap:4px 12px;padding:16px 4px}.nlist time{grid-column:1/-1;order:-1}#nedit .mbox{padding:20px 16px}}
+.nmore[hidden],.nform [hidden],.npost[hidden],.nlist[hidden]{display:none!important}
+#nedit .mbox{display:block;text-align:left;max-width:none}
+#nedit .nform{display:flex;width:100%;max-width:none;justify-items:stretch;align-items:stretch;text-align:left}
+#nedit .nform>*{width:100%;max-width:none}#nedit .nform .nchk,#nedit .nform .wr,#nedit .nform .nrowf{width:auto}
+#nedit .nform label{align-items:stretch;text-align:left}
+#nedit input[type=file]{padding:0;border:0;background:none;font-size:13px;width:auto}
+#nedit .ntrrow{align-items:center}
