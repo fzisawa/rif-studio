@@ -159,3 +159,13 @@ html.ash:not(.ash-in) #login input,html.ash:not(.ash-in) .sgf input{font-size:16
 html.ash:not(.ash-in) #login .btn{padding:14px}
 }
 @media(max-width:760px) and (prefers-color-scheme:light){.ash-logo,html.ash-sa:not(.ash-in) #mn .hero::before{background-image:url(../img/logo-mark-light.png)!important}}
+/* 보낸 메일(업무) 카드 */
+@media(max-width:760px){
+html.ash-in #msb tr.r td.dt{order:1;flex:1;font-size:12px}
+html.ash-in #msb tr.r td.ch,html.ash-in #msb tr.r td.kd{order:1}
+html.ash-in #msb tr.r td.sj{order:2;flex:1 1 100%;color:var(--fg);font-size:15px;font-weight:600;white-space:normal;line-height:1.4}
+html.ash-in #msb tr.r td.to{order:3;flex:1 1 100%;overflow:hidden;text-overflow:ellipsis}
+html.ash-in #msb tr.r td.as{order:4}html.ash-in #msb tr.r td.as::before{content:"보낸 사원 "}
+html.ash-in #msb tr.r td.rd{order:4;margin-left:auto}
+html.ash-in .mbar select{flex:1 1 40%;min-width:0}
+}
