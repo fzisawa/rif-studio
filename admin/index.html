@@ -1,7 +1,7 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Admin · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=68"><link rel="icon" href="../img/favicon.png" type="image/png">
-<link rel="stylesheet" href="../app.css?v=1"><link rel="stylesheet" href="admin.css?v=3"></head><body>
+<link rel="stylesheet" href="../app.css?v=1"><link rel="stylesheet" href="admin.css?v=4"></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><a class="nl" href="/about/">About</a><a class="nl" href="/news/">News</a><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.members">Members</button><div class="nm nmg"><p class="nh" data-g="vocal" data-i18n="nav.vocal">Vocal</p><a href="../rif/">RIF</a><p class="nh" data-g="sound" data-i18n="nav.sound">Sound</p><a href="../charmbung/">Charmbung</a><a href="../se1c/">SE1C</a><p class="nh" data-g="art" data-i18n="nav.art">Art</p><a href="../woljae/">Woljae</a><a href="../gugugong/">gugugong</a><p class="nh" data-g="content" data-i18n="nav.content">Content</p></div></div><a class="nl" href="../contact/">Contact</a><a class="nl" href="../join/">Join Us</a><a class="nl" href="/store/">Store</a><a class="nl" href="../board/">Board</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
 <main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>Admin</h1>
 <form id="login"><input id="em" type="email" value="takanashi@rif-studio.com" hidden autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password"><button class="btn">로그인</button><p class="note err" id="lmsg"></p></form>
@@ -43,14 +43,18 @@
 <div id="pmod" class="mod" role="dialog" aria-modal="true" aria-labelledby="pmt" hidden><div class="mbox wd"><button type="button" class="mx" id="pmx" aria-label="닫기">×</button><h2 id="pmt">상품</h2>
 <form id="pform" class="fr">
 <div class="hg"><label>구분<select id="pk"><option value="goods">Goods (굿즈 · 배송)</option><option value="plan">Plan (작업 플랜 · 배송 없음)</option></select></label><label>판매 상태<select id="pst"><option value="draft">숨김 (준비 중)</option><option value="sale">판매 중</option><option value="soldout">품절</option></select></label></div>
-<label>상품 이름<input id="pn" maxlength="80" required></label>
-<div class="hg"><label>일본어 이름 (선택)<input id="pnj" maxlength="80"></label><label>영어 이름 (선택)<input id="pne" maxlength="80"></label></div>
+<label>상품 이름<input id="pn" maxlength="80" required placeholder="예) RIF 아크릴 스탠드"></label>
 <div class="hg"><label>정가 (원)<input id="pp" type="number" min="0" step="100" required></label><label>할인가 (원, 선택)<input id="psp" type="number" min="0" step="100"></label><label>재고 (비우면 무제한)<input id="pstk" type="number" min="0"></label><label>한 번에 최대 수량<input id="pmq" type="number" min="1" max="999" value="10"></label></div>
-<label>한 줄 소개 (선택)<input id="psu" maxlength="300"></label>
+<label>한 줄 소개 (선택 · 상품 이름 아래 작게 보여요)<input id="psu" maxlength="300" placeholder="예) 책상 위에 두기 좋은 15cm 투명 아크릴 스탠드"></label>
+<div class="popt"><span class="note">옵션 (선택 · 왼쪽에 옵션 이름, 오른쪽에 고를 값을 쉼표로)</span><div id="popw"></div><button type="button" class="btn small ghost" id="popadd">＋ 옵션 추가</button><textarea id="pop" hidden></textarea></div>
+<div class="pdw"><div class="pdh"><span class="note">상세 설명 (선택 · 줄바꿈 그대로 보여요)</span><span class="sp"></span><button type="button" class="btn small ghost" id="pdtpl">기본 틀 넣기</button><button type="button" class="btn small ghost" id="pdbul">• 점 찍기</button></div>
+<textarea id="pd" rows="10" maxlength="8000" placeholder="예)&#10;■ 구성&#10;• 아크릴 스탠드 1개 · 받침 1개&#10;&#10;■ 크기 · 소재&#10;• 약 15 × 8cm · 아크릴 3mm&#10;&#10;■ 안내&#10;• 주문 후 제작이라 약 2주 걸려요"></textarea></div>
+<details class="ptr" id="ptr"><summary>일본어 · 영어 (저장할 때 비어 있으면 자동 번역 · 고칠 수 있어요)</summary>
+<div class="wr ptrb"><span class="note" id="ptrm">한국어를 다 쓴 뒤 눌러도 되고, 그냥 저장해도 자동으로 채워져요.</span><span class="sp"></span><button type="button" class="btn small" id="ptrgo">지금 번역하기</button></div>
+<div class="hg"><label>일본어 이름<input id="pnj" maxlength="80"></label><label>영어 이름<input id="pne" maxlength="80"></label></div>
 <div class="hg"><label>한 줄 소개 · 일본어<input id="psuj" maxlength="300"></label><label>한 줄 소개 · 영어<input id="psue" maxlength="300"></label></div>
-<label>옵션 (한 줄에 하나: 옵션명: 값, 값 · 예) 사이즈: S, M, L)<textarea id="pop" rows="2" maxlength="600"></textarea></label>
-<label>상세 설명<textarea id="pd" rows="6" maxlength="8000"></textarea></label>
-<div><span class="note">사진 (첫 사진이 대표 사진 · 끌어서 순서 바꾸기는 안 되고, ← → 로 옮겨요)</span><div class="pimgs" id="pim"></div><input type="file" id="pfile" accept="image/*" multiple></div>
+<label>상세 설명 · 일본어<textarea id="pdj" rows="5" maxlength="8000"></textarea></label><label>상세 설명 · 영어<textarea id="pde" rows="5" maxlength="8000"></textarea></label></details>
+<div><span class="note">사진 (첫 사진이 대표 사진 · ← → 로 순서를 바꿔요)</span><div class="pimgs" id="pim"></div><input type="file" id="pfile" accept="image/*" multiple></div>
 <div class="hg"><label>구매 방식<select id="pbm"><option value="order">이 사이트에서 주문 받기</option><option value="link">외부 스토어로 연결 (네이버 스마트스토어 등)</option><option value="inquiry">문의하기 (Contact 로 연결)</option></select></label><label id="pbuw">외부 스토어 주소 (https://)<input id="pbu" type="url" maxlength="400" placeholder="https://smartstore.naver.com/..."></label><label>순서 (작을수록 앞)<input id="pso" type="number" value="0"></label></div>
 <div class="wr"><button type="button" class="btn danger" id="pdel">상품 삭제</button><span class="sp"></span><button type="button" class="btn ghost" id="pcancel">취소</button><button class="btn" id="psave">저장</button></div><p class="note" id="pmsg"></p>
 </form></div></div>
@@ -74,4 +78,4 @@
 <div id="hpm" class="mod" role="dialog" aria-modal="true" aria-labelledby="hpt" hidden><div class="mbox"><button type="button" class="mx" id="hpx" aria-label="닫기">×</button><h2 id="hpt">대표 확인</h2><p class="note">인사정보는 대표만 볼 수 있어요. 대표 비밀번호를 입력해 주세요.</p><input id="hpi" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="20" aria-label="대표 비밀번호"><p class="note err" id="hpe"></p><div class="wr"><button class="btn ghost" id="hpc" type="button">취소</button><button class="btn" id="hpo" type="button">확인</button></div></div></div>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=6"></script><script src="app.js?v=4"></script><script src="hr.js?v=19"></script><script src="chan.js?v=2"></script><script src="store.js?v=1"></script><script src="../nav.js?v=4" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=6"></script><script src="app.js?v=4"></script><script src="hr.js?v=20"></script><script src="chan.js?v=2"></script><script src="store.js?v=2"></script><script src="../nav.js?v=4" defer></script></body></html>

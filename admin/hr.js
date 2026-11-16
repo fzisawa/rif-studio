@@ -140,7 +140,7 @@ $("hdv").addEventListener("change",()=>fillTeams());
 $("htm").addEventListener("mousedown",()=>fillTeams());$("htm").addEventListener("focus",()=>fillTeams());
 $("htm").onchange=()=>{const t=$("htm").value;if(t&&TD[t])$("hdv").value=TD[t]};
 loadOrgU().then(()=>fillTeams());fillTeams();
-const closeEdit=()=>{edit=null;$("hmod").hidden=true};$("hcancel").onclick=closeEdit;$("hmx").onclick=closeEdit;$("hmod").onclick=e=>{if(e.target===$("hmod"))closeEdit()};
+const closeEdit=()=>{edit=null;$("hmod").hidden=true};$("hcancel").onclick=closeEdit;$("hmx").onclick=closeEdit;
 const pm=$("hpm");
 $("hrlock").onclick=()=>{if(PIN){lock();return}$("hpi").value="";$("hpe").textContent="";pm.hidden=false;$("hpi").focus()};
 $("hpc").onclick=()=>{pm.hidden=true};$("hpx").onclick=()=>{pm.hidden=true};pm.onclick=e=>{if(e.target===pm)pm.hidden=true};

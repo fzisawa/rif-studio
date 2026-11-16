@@ -22,6 +22,7 @@ const lng=()=>{try{const v=localStorage.getItem("rif-lang");if(v==="ja"||v==="en
 let L=lng(),t=T[L];
 const won=n=>"₩"+Number(n||0).toLocaleString("ko-KR");
 const nm=p=>(L==="ja"&&p.name_ja)||(L==="en"&&p.name_en)||p.name;
+const dt=p=>(L==="ja"&&p.detail_ja)||(L==="en"&&p.detail_en)||p.detail||"";
 const sm=p=>(L==="ja"&&p.summary_ja)||(L==="en"&&p.summary_en)||p.summary||"";
 const unit=p=>p.sale_price!=null&&p.sale_price<p.price?p.sale_price:p.price;
 const lines=s=>String(s||"").split("\n").flatMap((x,i)=>i?[el("br"),document.createTextNode(x)]:[document.createTextNode(x)]);
@@ -89,7 +90,7 @@ function drawDetail(p){
   const ship=p.kind==="goods"?el("p",{className:"sship",textContent:t.ship+" "+(S.ship_fee?won(S.ship_fee):t.free)+(S.free_over?" · "+(L==="en"?won(S.free_over)+t.freeOver:Number(S.free_over).toLocaleString("ko-KR")+t.freeOver):"")}):el("p",{className:"sship",textContent:t.planNote});
   const buyBox=el("div",{className:"sbuy"},[el("p",{className:"tag",textContent:t[p.kind]}),el("h2",{textContent:nm(p)}),...(sm(p)?[el("p",{className:"ssum",textContent:sm(p)})]:[]),priceEl(p),ship,
     ...(so||p.buy_mode!=="order"?[]:[...sels,el("div",{className:"sqty"},[el("span",{textContent:t.qty}),el("div",{className:"sstep"},[minus,qv,plus])]),el("div",{className:"srow"},[el("span",{textContent:t.total}),sum])]),acts]);
-  const more=el("div",{className:"smore"},[...(p.detail?[el("h3",{textContent:t.detail}),el("p",{},lines(p.detail))]:[]),...(S.policy?[el("details",{},[el("summary",{textContent:t.policy}),el("p",{},lines(S.policy))])]:[])]);
+  const more=el("div",{className:"smore"},[...(dt(p)?[el("h3",{textContent:t.detail}),el("p",{},lines(dt(p)))]:[]),...(S.policy?[el("details",{},[el("summary",{textContent:t.policy}),el("p",{},lines(S.policy))])]:[])]);
   panel.append(xBtn(),el("div",{className:"sdet"},[el("div",{className:"sgal"},[big,thumbs]),buyBox]),more);show(0)}
 
 /* 장바구니 */

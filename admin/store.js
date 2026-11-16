@@ -41,16 +41,45 @@ function drawP(){const tb=$("sptb");tb.replaceChildren();
 const optTxt=o=>(o||[]).map(x=>x.name+": "+x.values.join(", ")).join("\n");
 const parseOpt=s=>s.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{const i=l.indexOf(":");if(i<1)throw new Error("옵션은 '옵션명: 값, 값' 모양으로 적어 주세요 → "+l);
   const values=[...new Set(l.slice(i+1).split(",").map(v=>v.trim()).filter(Boolean))];if(!values.length)throw new Error("옵션 값이 비어 있어요 → "+l);return {name:l.slice(0,i).trim(),values}});
+/* 옵션: 줄마다 [옵션 이름][값들] 로 적어요 (속으로는 '옵션명: 값, 값' 글자로 바꿔 저장) */
+function optRow(name,vals){const n=el("input",{maxLength:30,value:name||"",placeholder:"예) 사이즈"}),v=el("input",{maxLength:300,value:vals||"",placeholder:"예) S, M, L (쉼표로)"}),x=el("button",{type:"button",className:"px",textContent:"×",ariaLabel:"이 옵션 빼기"});
+  const r=el("div",{className:"porow"},[n,v,x]);x.onclick=()=>r.remove();return r}
+const drawOpts=o=>$("popw").replaceChildren(...(o||[]).map(x=>optRow(x.name,x.values.join(", "))));
+$("popadd").onclick=()=>{const r=optRow();$("popw").append(r);r.querySelector("input").focus()};
+const syncOpts=()=>{$("pop").value=[...$("popw").children].map(r=>{const [n,v]=r.querySelectorAll("input");return n.value.trim()||v.value.trim()?n.value.trim()+": "+v.value.trim():""}).filter(Boolean).join("\n")};
+/* 상세 설명 도우미 */
+const ins=(ta,txt)=>{const a=ta.selectionStart,b=ta.selectionEnd;ta.setRangeText(txt,a,b,"end");ta.focus()};
+$("pdtpl").onclick=()=>{const ta=$("pd"),tpl="■ 구성\n• \n\n■ 크기 · 소재\n• \n\n■ 안내\n• ";if(ta.value.trim()&&!confirm("지금 적힌 설명 끝에 기본 틀을 붙일까요?"))return;
+  ta.value=ta.value.trim()?ta.value.replace(/\s+$/,"")+"\n\n"+tpl:tpl;ta.focus();const i=ta.value.indexOf("• ",ta.value.length-tpl.length)+2;ta.setSelectionRange(i,i)};
+$("pdbul").onclick=()=>{const ta=$("pd"),a=ta.selectionStart,b=ta.selectionEnd,st=ta.value.lastIndexOf("\n",a-1)+1;
+  if(a===b){ins(ta,(a===st?"":"\n")+"• ");return}
+  const en=b,seg=ta.value.slice(st,en).split("\n").map(l=>l.startsWith("• ")||!l.trim()?l:"• "+l).join("\n");ta.setRangeText(seg,st,en,"select");ta.focus()};
+/* 일본어 · 영어 자동 번역 (News 와 같은 번역기) */
+const koNow=()=>[$("pn").value,$("psu").value,$("pd").value].join("\n");let trFrom="";
+async function trP(){const nm=$("pn").value.trim();if(!nm)throw new Error("상품 이름을 먼저 적어 주세요");$("ptrgo").disabled=true;$("ptrm").textContent="번역하는 중…";
+  try{const call=async body=>{const {data,error}=await db.functions.invoke("news-translate",{body});let m=data&&data.error;if(error&&!m){try{m=(await error.context.json()).error}catch(_){m="번역하지 못했어요"}}if(m)throw new Error(m);return data};
+    const a=await call({title:nm,body:$("psu").value.trim()}),d=$("pd").value.trim()?await call({title:"",body:$("pd").value.trim()}):null;
+    $("pnj").value=a.ja.title;$("pne").value=a.en.title;const hs=!!$("psu").value.trim();$("psuj").value=hs?a.ja.body||"":"";$("psue").value=hs?a.en.body||"":"";$("pdj").value=d?d.ja.body:"";$("pde").value=d?d.en.body:"";
+    trFrom=koNow();$("ptr").open=true;$("ptrm").textContent="번역했어요. 확인하고 고칠 수 있어요."}
+  finally{$("ptrgo").disabled=false}}
+$("ptrgo").onclick=()=>trP().catch(e=>{$("ptrm").textContent=e.message||String(e)});
+/* 쓰다가 닫힐 때 내용 지키기 */
+const FIDS=["pk","pst","pn","pnj","pne","pp","psp","pstk","pmq","psu","psuj","psue","pd","pdj","pde","pbm","pbu","pso"];
+const snap=()=>{syncOpts();return JSON.stringify([...FIDS.map(i=>$(i).value),$("pop").value,imgs])};let snap0="";
+const dirty=()=>!$("pmod").hidden&&snap()!==snap0;
+window.addEventListener("beforeunload",e=>{if(dirty()){e.preventDefault();e.returnValue=""}});
 function drawImgs(){$("pim").replaceChildren(...imgs.map((u,i)=>{const mv=(d)=>{const j=i+d;if(j<0||j>=imgs.length)return;[imgs[i],imgs[j]]=[imgs[j],imgs[i]];drawImgs()};
   const l=el("button",{type:"button",textContent:"←",disabled:i===0}),r=el("button",{type:"button",textContent:"→",disabled:i===imgs.length-1}),x=el("button",{type:"button",textContent:"×"});
   l.onclick=()=>mv(-1);r.onclick=()=>mv(1);x.onclick=()=>{imgs.splice(i,1);drawImgs()};
   return el("div",{className:"pimg"},[el("img",{src:u,alt:""}),el("div",{},[l,r,x])])}))}
 function openP(p){edit=p||null;$("pmt").textContent=p?"상품 수정":"새 상품";const g=(i,v)=>$(i).value=v==null?"":v;
   g("pk",p?p.kind:"goods");g("pst",p?p.status:"draft");g("pn",p&&p.name);g("pnj",p&&p.name_ja);g("pne",p&&p.name_en);g("pp",p?p.price:"");g("psp",p&&p.sale_price);g("pstk",p&&p.stock);g("pmq",p?p.max_qty:10);
-  g("psu",p&&p.summary);g("psuj",p&&p.summary_ja);g("psue",p&&p.summary_en);g("pop",p?optTxt(p.options):"");g("pd",p&&p.detail);g("pbm",p?p.buy_mode:"order");g("pbu",p&&p.buy_url);g("pso",p?p.sort:0);
-  imgs=p?[...(p.images||[])]:[];drawImgs();$("pdel").hidden=!p;$("pmsg").textContent="";bmw();$("pmod").hidden=false;$("pn").focus()}
+  g("psu",p&&p.summary);g("psuj",p&&p.summary_ja);g("psue",p&&p.summary_en);drawOpts(p?p.options:[]);g("pd",p&&p.detail);g("pdj",p&&p.detail_ja);g("pde",p&&p.detail_en);g("pbm",p?p.buy_mode:"order");g("pbu",p&&p.buy_url);g("pso",p?p.sort:0);
+  imgs=p?[...(p.images||[])]:[];drawImgs();$("pdel").hidden=!p;$("pmsg").textContent="";bmw();$("pmod").hidden=false;$("ptr").open=!!(p&&(p.name_ja||p.name_en));trFrom=p&&(p.name_ja||p.name_en)?koNow():"";$("ptrm").textContent="한국어를 다 쓴 뒤 눌러도 되고, 그냥 저장해도 자동으로 채워져요.";snap0=snap();$("pn").focus()}
 const bmw=()=>{$("pbuw").hidden=$("pbm").value!=="link"};$("pbm").onchange=bmw;
-const closeP=()=>{$("pmod").hidden=true;edit=null};$("pmx").onclick=closeP;$("pcancel").onclick=closeP;$("pmod").onclick=e=>{if(e.target===$("pmod"))closeP()};
+/* 바깥(어두운 곳)을 눌러도 닫히지 않아요. × · 취소 · Esc 로만 닫고, 쓰던 내용이 있으면 한 번 물어봐요 */
+const shutP=()=>{$("pmod").hidden=true;edit=null};
+const closeP=()=>{if(dirty()&&!confirm("쓰던 내용이 저장되지 않았어요. 닫을까요?"))return;shutP()};$("pmx").onclick=closeP;$("pcancel").onclick=closeP;
 $("spnew").onclick=()=>openP(null);
 /* 사진: 긴 변 1600px JPEG 로 줄여서 올려요 (저장 공간 절약) */
 const shrink=f=>new Promise((res,rej)=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
@@ -62,16 +91,20 @@ $("pfile").onchange=async e=>{const fs=[...e.target.files];e.target.value="";if(
     catch(er){alert("사진을 올리지 못했어요: "+(er.message||er))}}
   $("pmsg").textContent=""};
 $("pform").onsubmit=async e=>{e.preventDefault();const v=i=>$(i).value.trim(),num=i=>v(i)===""?null:Math.round(Number(v(i)));let options;
-  try{options=parseOpt($("pop").value)}catch(er){$("pmsg").textContent=er.message;return}
+  syncOpts();try{options=parseOpt($("pop").value)}catch(er){$("pmsg").textContent=er.message;return}
+  const noTr=!["pnj","pne","psuj","psue","pdj","pde"].some(i=>$(i).value.trim());
+  if(noTr||(trFrom&&trFrom!==koNow()&&confirm("한국어 내용이 바뀌었어요. 일본어 · 영어 번역도 새로 할까요?\n(취소를 누르면 지금 번역 그대로 저장해요)"))){$("psave").disabled=true;$("pmsg").textContent="일본어 · 영어로 번역하는 중…";
+    try{await trP()}catch(er){if(!confirm((er.message||er)+"\n\n번역 없이 한국어로만 저장할까요? (일본어 · 영어 화면에는 한국어가 보여요)")){$("psave").disabled=false;$("pmsg").textContent="";return}}
+    $("psave").disabled=false;$("pmsg").textContent=""}
   const row={kind:v("pk"),status:v("pst"),name:v("pn"),name_ja:v("pnj")||null,name_en:v("pne")||null,price:num("pp")||0,sale_price:num("psp"),stock:num("pstk"),max_qty:num("pmq")||10,
-    summary:v("psu")||null,summary_ja:v("psuj")||null,summary_en:v("psue")||null,options,detail:$("pd").value.trim()||null,images:imgs,buy_mode:v("pbm"),buy_url:v("pbu")||null,sort:num("pso")||0,updated_at:new Date().toISOString()};
+    summary:v("psu")||null,summary_ja:v("psuj")||null,summary_en:v("psue")||null,options,detail:$("pd").value.trim()||null,detail_ja:$("pdj").value.trim()||null,detail_en:$("pde").value.trim()||null,images:imgs,buy_mode:v("pbm"),buy_url:v("pbu")||null,sort:num("pso")||0,updated_at:new Date().toISOString()};
   if(row.sale_price!=null&&row.sale_price>=row.price){$("pmsg").textContent="할인가는 정가보다 낮아야 해요 (할인이 없으면 비워 두세요).";return}
   if(row.buy_mode==="link"&&!/^https:\/\//.test(row.buy_url||"")){$("pmsg").textContent="외부 스토어 주소를 https:// 로 시작하게 적어 주세요.";return}
   if(row.status==="sale"&&!imgs.length&&!confirm("사진 없이 판매를 시작할까요?"))return;
   $("psave").disabled=true;const {error}=edit?await db.from("store_products").update(row).eq("id",edit.id):await db.from("store_products").insert(row);$("psave").disabled=false;
-  if(error){$("pmsg").textContent="저장하지 못했어요: "+error.message;return}closeP();load()};
+  if(error){$("pmsg").textContent="저장하지 못했어요: "+error.message;return}shutP();load()};
 $("pdel").onclick=async()=>{if(!edit)return;if(!confirm("'"+edit.name+"' 상품을 삭제할까요? 되돌릴 수 없어요.\n(이미 들어온 주문 기록은 그대로 남아요. 잠깐 내리려면 '숨김'을 쓰세요)"))return;
-  const {error}=await db.from("store_products").delete().eq("id",edit.id);if(error)return alert("삭제하지 못했어요: "+error.message);closeP();load()};
+  const {error}=await db.from("store_products").delete().eq("id",edit.id);if(error)return alert("삭제하지 못했어요: "+error.message);shutP();load()};
 /* 설정 */
 const BZ=["name","ceo","reg","mail_order","addr","contact"];
 function fillS(){$("sopen").checked=!!set.open;$("sship").value=set.ship_fee??3000;$("sfree").value=set.free_over??"";$("spay").value=set.pay_guide||"";$("spol").value=set.policy||"";BZ.forEach(k=>$("sb_"+k).value=(set.biz||{})[k]||"")}

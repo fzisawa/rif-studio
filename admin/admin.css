@@ -83,3 +83,20 @@ main.wide .chadd select,main.wide .chadd input{padding:6px 12px;font-size:13px}
 .pimg div{display:flex;gap:4px}.pimg button{flex:1;padding:2px 0;border:1px solid var(--ln2);border-radius:8px;background:none;color:var(--fg);cursor:pointer;font:inherit;font-size:12px}.pimg button:hover:not(:disabled){border-color:var(--ac);color:var(--ac)}.pimg button:disabled{opacity:.3}
 .pimg:first-child img{outline:2px solid var(--ac);outline-offset:2px}
 #pform .wr .sp{flex:1}
+/* 상품 편집: 옵션 줄 · 상세 설명 도구 · 번역 접기 */
+.popt{display:grid;gap:8px}
+.porow{display:grid;grid-template-columns:minmax(90px,1fr) 2fr auto;gap:8px;align-items:center}
+.porow input{width:100%}
+.porow .px{border:1px solid var(--ln2);background:none;color:var(--fg);border-radius:8px;width:34px;height:34px;cursor:pointer;font:inherit}
+.porow .px:hover{border-color:var(--ac);color:var(--ac)}
+#popadd{justify-self:start}
+.pdw{display:grid;gap:6px}
+.pdh{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pdh .sp{flex:1}
+#pd{min-height:220px;line-height:1.7}
+.ptr{border:1px solid var(--ln2);border-radius:12px;padding:10px 14px}
+.ptr>summary{cursor:pointer;color:var(--mut);font-size:14px}
+.ptr[open]>summary{margin-bottom:10px}
+.ptr>*+*{margin-top:10px}
+.ptrb{align-items:center}
+@media(max-width:600px){.porow{grid-template-columns:1fr 1fr auto}}
