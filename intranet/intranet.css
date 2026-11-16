@@ -179,3 +179,7 @@ main.wide select.stsel.doing{border-color:var(--ac);color:var(--ac)}main.wide se
 .mqah{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 12px;margin-bottom:10px;border:1px solid var(--ln);border-radius:12px}
 .mqah select{padding:7px 10px;border-radius:10px}.mqah .mnote{flex:1 1 260px}
 #mqnew form{display:grid;gap:10px}#mqnew input,#mqnew textarea{width:100%;box-sizing:border-box}
+.instb .irow{display:grid;grid-template-columns:80px 1fr;gap:6px 14px;align-items:start;padding:10px 0;border-bottom:1px solid var(--ln)}
+.instb .irow>b{padding-top:6px}.instb .irow p{margin:6px 0 0}.instb .irow .btn{display:inline-block}
+.instb>.note{margin:10px 0 0}
+@media(max-width:520px){.instb .irow{grid-template-columns:1fr}.instb .irow>b{padding-top:0}}
