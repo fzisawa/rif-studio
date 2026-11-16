@@ -70,7 +70,13 @@ en:{
 };
 const LS="rif-lang",L=["ko","ja","en"];
 let lang="ko";
-try{const s=localStorage.getItem(LS);if(L.includes(s))lang=s;else{const n=(navigator.language||"ko").slice(0,2);lang=L.includes(n)?n:"en"}}catch(_){}
+/* 언어 고르기: ① 방문자가 직접 고른 언어 ② 접속 위치(나라)로 정한 언어 — 일본 → 日本語, 한국 → 한국어, 그 밖의 나라 → English
+   처음 오는 방문자는 우선 브라우저 언어로 보여 주고, 나라를 확인하면 한 번만 바꿔요. 결과는 이 브라우저에 기억해요. */
+const AUTO="rif-lang-auto",CC={JP:"ja",KR:"ko"},byCC=c=>CC[String(c||"").toUpperCase()]||"en";
+let picked=false,needGeo=false;
+try{const s=localStorage.getItem(LS),auto=localStorage.getItem(AUTO);
+  if(L.includes(s)){lang=s;picked=!auto;needGeo=auto==="guess"}
+  else{const n=(navigator.language||"ko").slice(0,2);lang=L.includes(n)?n:"en";localStorage.setItem(LS,lang);localStorage.setItem(AUTO,"guess");needGeo=true}}catch(_){}
 const nodes=[...document.querySelectorAll("[data-i18n]:not(meta)")];
 nodes.forEach(n=>{n._o=n.innerHTML});
 const attrs=[...document.querySelectorAll("[data-i18n-attr]")];
@@ -86,9 +92,14 @@ function apply(){
   document.dispatchEvent(new CustomEvent("rif:lang",{detail:lang}))}
 const box=document.createElement("div");box.className="lang";box.setAttribute("role","group");box.setAttribute("aria-label","Language");
 [["ko","KO"],["ja","日本語"],["en","EN"]].forEach(([l,t])=>{const b=document.createElement("button");b.type="button";b.dataset.l=l;b.textContent=t;b.lang=l;
-  b.onclick=()=>{lang=l;try{localStorage.setItem(LS,l)}catch(_){}apply()};box.append(b)});
+  b.onclick=()=>{lang=l;picked=true;try{localStorage.setItem(LS,l);localStorage.removeItem(AUTO)}catch(_){}apply()};box.append(b)});
 const h=document.querySelector("header"),mk=h&&h.querySelector(".mark");
 if(h)h.insertBefore(box,mk||null);
 window.T=(k,fallback)=>{const v=tr(k);return(lang==="ko"||v==null)?fallback:v};
 apply();
+/* 나라 확인 (처음 한 번). 실패하면 브라우저 언어 그대로 둬요 */
+if(needGeo){const ask=(u,pick)=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),2500);return fetch(u,{signal:c.signal,cache:"no-store"}).then(r=>{if(!r.ok)throw 0;return r.text()}).then(pick).finally(()=>clearTimeout(t))};
+  ask("https://api.country.is/",x=>JSON.parse(x).country).catch(()=>ask("https://ipapi.co/country/",x=>x.trim().slice(0,2)))
+   .then(cc=>{if(!/^[A-Za-z]{2}$/.test(cc||""))return;const g=byCC(cc);try{if(localStorage.getItem(AUTO)!=="guess")return;localStorage.setItem(LS,g);localStorage.setItem(AUTO,"geo")}catch(_){return}
+     if(!picked&&g!==lang){lang=g;apply()}}).catch(()=>{})}
 })();
