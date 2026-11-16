@@ -27,7 +27,7 @@ const yt=it=>{const b=el("button",{className:"yt",type:"button",ariaLabel:"영�
 const zoom=i=>{i.style.cursor="zoom-in";i.onclick=()=>{const o=el("div",{className:"lb"},[el("img",{src:i.src,alt:i.alt})]);o.onclick=()=>o.remove();document.addEventListener("keydown",function k(e){if(e.key==="Escape"){o.remove();document.removeEventListener("keydown",k)}});document.body.append(o)};return i};
 const media=it=>it.kind==="youtube"?yt(it):it.kind==="audio"?el("audio",{controls:true,preload:"none",src:it.url}):zoom(el("img",{loading:"lazy",alt:it.caption||"",src:it.url}));
 const OLDCATS=["Bust","Waist-up","Full figure","Miscellaneous"];
-const CATS={charmbung:["Premium","Cover","Stem","Vocal"]};
+const CATS={charmbung:["Premium","Cover","Stem","Vocal"],store:["Plan","Goods"]};
 function addForm(getPage,done,extra=[],getSec,getSecs){
   const yt=el("input",{placeholder:"유튜브 링크 붙여넣기"}),file=el("input",{type:"file",accept:"image/*,.mp3,.wav,audio/mpeg,audio/wav"}),cap=el("input",{placeholder:"설명 또는 곡 제목 (선택)"}),sec=el("select",{ariaLabel:"분류"}),nsec=el("input",{placeholder:"새 탭 이름 (예: Sketch)",maxLength:30,hidden:true}),prev=el("div"),msg=el("p",{className:"note"}),btn=el("button",{className:"btn",textContent:"추가"});
   const fill=()=>{const base=CATS[getPage()]||[],ex=(getSecs?getSecs():[]).filter(n=>!base.includes(n)),cur=getSec?getSec():sec.value;

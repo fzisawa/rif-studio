@@ -1,4 +1,4 @@
-const $=i=>document.getElementById(i),L={rif:"RIF",charmbung:"Charmbung",se1c:"SE1C",woljae:"Woljae",gugugong:"gugugong"},CH={};
+const $=i=>document.getElementById(i),L={rif:"RIF",charmbung:"Charmbung",se1c:"SE1C",woljae:"Woljae",gugugong:"gugugong",store:"Official Store"},CH={};
 /* 탭: 인사정보 / 포트폴리오 관리 (주소 끝에 #portfolio 를 붙이면 포트폴리오 관리가 바로 열려요) */
 const TABS={t3:"p3",t1:"p1"};
 function showTab(t){Object.keys(TABS).forEach(b=>{$(b).setAttribute("aria-pressed",String(b===t));$(TABS[b]).hidden=b!==t});try{history.replaceState(null,"",t==="t1"?"#portfolio":"#hr")}catch(_){}}
