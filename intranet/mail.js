@@ -21,7 +21,7 @@ const btn=(t,c,fn,title)=>{const b=el("button",{type:"button",className:"btn sma
 const normSub=s=>{let t=String(s||"").trim();for(let i=0;i<8;i++){const n=t.replace(/^\s*((re|fw|fwd|답장|회신|답신|전달)\s*(\[\d+\])?\s*[:：]\s*)+/i,"").replace(/^\s*\[RIF STUDIO\]\s*/i,"");if(n===t)break;t=n}return t.trim().toLowerCase()};
 const errTxt=e=>{const m=String((e&&e.message)||e||"");
   if(/address exists/.test(m))return"이미 있는 주소예요.";if(/staff address/.test(m))return"사원 메일 주소와 겹쳐요.";if(/bad address/.test(m))return"주소는 영문 소문자·숫자·점(.)·하이픈(-)·밑줄(_)만 쓸 수 있어요.";
-  if(/reserved/.test(m))return"쓸 수 없는 주소예요.";if(/protected/.test(m))return"고객 문의(support@) 메일함은 지울 수 없어요.";if(/mgmt only/.test(m))return"경영지원팀·대표만 할 수 있어요.";return m};
+  if(/reserved/.test(m))return"쓸 수 없는 주소예요.";if(/protected/.test(m))return"고객 문의(support@) 메일함은 지울 수 없어요.";if(/mgmt only/.test(m))return"경영지원팀·대표만 할 수 있어요.";if(/ceo only/.test(m))return"대표만 할 수 있어요.";return m};
 
 /* ───────── 데이터 ───────── */
 async function load(){
@@ -32,7 +32,7 @@ async function load(){
     D.from("mail_outbox").select("id,sender,sender_name,author_name,author_email,to_email,cc_email,subject,body,created_at,opened_at,open_count,deleted_at,attachments,box_id,inbox_id").order("created_at",{ascending:false}).limit(300),
     D.from("mail_stars").select("msg_id"),
     D.from("mail_drafts").select("id,from_as,to_text,cc_text,bcc_text,subject,body_html,inbox_id,updated_at").order("updated_at",{ascending:false}),
-    D.from("mail_boxes").select("id,addr,name,from_name,descr").order("id"),
+    D.from("mail_boxes").select("id,addr,name,from_name,descr,private").order("id"),
     D.from("mail_box_members").select("box_id,email"),
     D.from("mail_templates").select("id,owner_email,shared,title,subject,body").order("title")]);
   inbox=(a.data||[]).map(m=>(m._t=new Set(tok(m.to_addrs)),m));
@@ -70,7 +70,7 @@ function drawFolders(){
   item("in","받은 편지함",c.in);item("star","별표 편지함","");item("out","보낸 편지함","");item("draft","임시보관함",c.draft);item("trash","휴지통",c.trash);
   f.append(el("div",{className:"ofh",textContent:"공용 메일함"}));
   if(!boxes.length)f.append(el("div",{className:"ofn",textContent:"아직 없어요"}));
-  boxes.forEach(b=>item("box:"+b.id,b.name,c["box:"+b.id]));
+  boxes.forEach(b=>item("box:"+b.id,(b.private?"🔒 ":"")+b.name,c["box:"+b.id]));
   if(isMgmt()){item("orph","미분류 메일",c.orph);item("manage","⚙ 공용 메일함 관리","")}
   if(X.ceo)item("all","전체 메일 (대표)","");
   f.append(el("div",{className:"ofh",textContent:"도구"}));
@@ -417,13 +417,13 @@ function drawManage(om){
   p.append(el("h2",{className:"eh",textContent:"공용 메일함 관리"}),el("p",{className:"note",textContent:"주소 하나(예: biz@rif-studio.com)로 온 메일을 정한 사원들이 함께 보고, 그 주소 이름으로 답장하게 만들어요. 따로 설정할 건 없어요 — 만들면 바로 받아요."}));
   const bar=el("div",{className:"jbar"},[btn("＋ 새 공용 메일함","p",()=>boxDlg(null))]);bar.querySelector("button").className="btn";p.append(bar);
   const tb=el("tbody");
-  boxes.forEach(b=>{const mem=(bmem[b.id]||[]).map(nm).join(", ")||"(멤버 없음 · 대표·경영지원팀만 봐요)";
+  boxes.forEach(b=>{const mem=((bmem[b.id]||[]).map(nm).join(", ")||(b.private?"(멤버 없음 · 대표만 봐요)":"(멤버 없음 · 대표·경영지원팀만 봐요)"))+(b.private?" · 비공개":"");
     const prot=b.addr==="support@rif-studio.com";
-    tb.append(el("tr",{},[el("td",{},[el("b",{textContent:b.name})]),el("td",{textContent:b.addr}),el("td",{className:"wd",textContent:mem,title:mem}),el("td",{className:"wd",textContent:b.descr||"",title:b.descr||""}),el("td",{className:"ac"},[btn("수정","",()=>boxDlg(b)),document.createTextNode(" "),...(prot?[]:[btn("삭제","danger",async()=>{if(!confirm("'"+b.name+"' 메일함을 지울까요?\n이 주소로 온 기존 메일은 그대로 남지만 '미분류 메일'로 옮겨져요."))return;const {error}=await db.rpc("mailbox_delete",{p_id:b.id});if(error)return alert(errTxt(error));await load();render()})])])]))});
+    tb.append(el("tr",{},[el("td",{},[el("b",{textContent:(b.private?"🔒 ":"")+b.name})]),el("td",{textContent:b.addr}),el("td",{className:"wd",textContent:mem,title:mem}),el("td",{className:"wd",textContent:b.descr||"",title:b.descr||""}),el("td",{className:"ac"},[btn("수정","",()=>boxDlg(b)),document.createTextNode(" "),...(prot?[]:[btn("삭제","danger",async()=>{if(!confirm("'"+b.name+"' 메일함을 지울까요?\n이 주소로 온 기존 메일은 그대로 남지만 '미분류 메일'로 옮겨져요."))return;const {error}=await db.rpc("mailbox_delete",{p_id:b.id});if(error)return alert(errTxt(error));await load();render()})])])]))});
   if(!boxes.length)tb.append(el("tr",{},[el("td",{colSpan:5,textContent:"아직 공용 메일함이 없어요."})]));
   p.append(el("div",{className:"tbw",style:"margin-top:14px"},[el("table",{className:"jt"},[el("thead",{},[el("tr",{},["이름","주소","멤버","설명",""].map(t=>el("th",{textContent:t})))]),tb])]));
   p.append(el("h3",{className:"sech",textContent:"이런 메일함을 많이 써요 (눌러서 만들기)"}),el("div",{className:"chips2"},PRESETS.filter(x=>!boxes.some(b=>b.addr===x[0]+"@rif-studio.com")).map(([a,n,d])=>{const c=el("button",{type:"button",className:"chip",textContent:n+" · "+a+"@"});c.onclick=()=>boxDlg(null,{local:a,name:n,descr:d});return c})));
-  p.append(el("p",{className:"note",style:"margin-top:16px",textContent:"멤버가 아닌 경영지원팀·대표도 모든 공용 메일함을 볼 수 있어요. 사원 개인 주소가 아닌 주소로 온 메일 중 만들어 둔 메일함이 없는 것은 '미분류 메일'에 모여요."}))}
+  p.append(el("p",{className:"note",style:"margin-top:16px",textContent:"멤버가 아닌 경영지원팀·대표도 공용 메일함을 볼 수 있어요(🔒 비공개 메일함은 멤버와 대표만). 사원 개인 주소가 아닌 주소로 온 메일 중 만들어 둔 메일함이 없는 것은 '미분류 메일'에 모여요."}))}
 function boxDlg(b,pre){
   const old=document.getElementById("bxdlg");if(old)old.remove();pre=pre||{};
   const sel=new Set(b?(bmem[b.id]||[]):[]);
@@ -431,6 +431,7 @@ function boxDlg(b,pre){
     nmI=el("input",{value:b?b.name:(pre.name||""),maxLength:60,placeholder:"예) 협업·제안"}),
     fnI=el("input",{value:b?b.from_name:"RIF STUDIO",maxLength:60,placeholder:"RIF STUDIO"}),
     ds=el("input",{value:b?b.descr:(pre.descr||""),maxLength:300,placeholder:"어떤 메일을 받는 곳인지 한 줄"});
+  const pv=el("input",{type:"checkbox",checked:!!(b&&b.private)}),pvRow=el("label",{className:"ck3"},[pv,document.createTextNode(" 🔒 비공개 — 멤버와 대표만 봐요 (경영지원팀에게도 안 보여요)")]);pvRow.hidden=!X.ceo;
   const qI=el("input",{type:"search",placeholder:"사원 검색"}),lst=el("div",{className:"rml"}),cnt=el("span",{className:"note"});
   const dirx=X.dir.length?X.dir:X.staff.map(s=>({email:s.email,name:s.name}));
   const draw=()=>{lst.replaceChildren();const k=lc(qI.value.trim());
@@ -442,15 +443,16 @@ function boxDlg(b,pre){
   const msgx=el("span",{className:"note"}),ok=el("button",{type:"button",className:"btn",textContent:b?"저장":"만들기"}),cx=btn("취소","",()=>wrap.remove());
   const row=(l,i,h)=>el("label",{className:"rmn"},[document.createTextNode(l),i,...(h?[el("span",{className:"note",textContent:h})]:[])]);
   const addrRow=el("label",{className:"rmn"},[document.createTextNode("메일 주소"),el("div",{className:"idrow"},[loc,el("span",{textContent:"@rif-studio.com"})]),el("span",{className:"note",textContent:b?"주소는 바꿀 수 없어요.":"영문 소문자·숫자·점(.)·하이픈(-)만 쓸 수 있어요."})]);
-  const wrap=el("div",{className:"mod",id:"bxdlg"},[el("div",{className:"mbox wd"},[el("h2",{textContent:b?"공용 메일함 수정":"새 공용 메일함"}),addrRow,row("이름 (사내에서 보이는 이름)",nmI),row("보내는 이름 (받는 사람에게 보이는 이름 · 영문 추천)",fnI),row("설명",ds),
+  const wrap=el("div",{className:"mod",id:"bxdlg"},[el("div",{className:"mbox wd"},[el("h2",{textContent:b?"공용 메일함 수정":"새 공용 메일함"}),addrRow,row("이름 (사내에서 보이는 이름)",nmI),row("보내는 이름 (받는 사람에게 보이는 이름 · 영문 추천)",fnI),row("설명",ds),pvRow,
     el("div",{className:"rmn"},[document.createTextNode("멤버 — 이 메일함의 메일을 보고 답장할 수 있는 사원")]),
     el("div",{className:"jbar",style:"margin:0 0 8px"},[quick("경영지원팀 전원",()=>dirx.filter(r=>r.team==="경영지원팀").forEach(r=>sel.add(lc(r.email)))),quick("전체 선택",()=>dirx.forEach(r=>sel.add(lc(r.email)))),quick("모두 해제",()=>sel.clear())]),qI,lst,
     el("div",{className:"wr",style:"justify-content:space-between;align-items:center"},[cnt,msgx,el("span",{className:"jbar",style:"margin:0"},[cx,ok])])])]);
   wrap.addEventListener("click",e=>{if(e.target===wrap)wrap.remove()});
   ok.onclick=async()=>{const n=nmI.value.trim();if(!b&&!loc.value.trim()){msgx.className="note err";msgx.textContent="메일 주소를 써 주세요.";return}if(!n){msgx.className="note err";msgx.textContent="이름을 써 주세요.";return}
     ok.disabled=true;msgx.className="note";msgx.textContent="저장 중…";
-    const {error}=await db.rpc("mailbox_save",{p_id:b?b.id:null,p_local:loc.value.trim(),p_name:n,p_from_name:fnI.value.trim(),p_descr:ds.value.trim(),p_members:[...sel]});ok.disabled=false;
-    if(error){msgx.className="note err";msgx.textContent=errTxt(error);return}wrap.remove();await load();render();X.toast("저장했어요 ✓")};
+    const {data:bid,error}=await db.rpc("mailbox_save",{p_id:b?b.id:null,p_local:loc.value.trim(),p_name:n,p_from_name:fnI.value.trim(),p_descr:ds.value.trim(),p_members:[...sel]});ok.disabled=false;
+    if(error){msgx.className="note err";msgx.textContent=errTxt(error);return}
+    if(X.ceo&&pv.checked!==!!(b&&b.private)){const {error:e2}=await db.rpc("mailbox_set_private",{p_id:bid||(b&&b.id),p_private:pv.checked});if(e2){msgx.className="note err";msgx.textContent="비공개 설정을 저장하지 못했어요";return}}wrap.remove();await load();render();X.toast("저장했어요 ✓")};
   document.body.append(wrap);(b?nmI:loc).focus()}
 
 /* ───────── 상용구 ───────── */
