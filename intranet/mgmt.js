@@ -501,7 +501,7 @@ function openUnlock(){
     P=pin.value;rows=data||[];draw()};
   ok.onclick=go;pin.onkeydown=e=>{if(e.key==="Enter")go()}}
 /* Join Us 모집 열기 · 닫기 (대표만). 닫으면 홈페이지 지원서 대신 '모집 마감' 안내가 나오고 서버에서도 접수를 막아요 */
-const isCeo=()=>{try{return !!ceo}catch(_){return false}};
+const isCeo=()=>!!(window.RIFAPP&&window.RIFAPP.ceo);
 async function joinToggle(){const b=$("mjop");if(!b)return;
   const paint=on=>{b.textContent=on?"🟢 모집 중 · 누르면 마감":"⛔ 모집 마감 · 누르면 다시 열기";b.classList.toggle("on",!!on);b.dataset.on=on?"1":""};
   const {data}=await db.rpc("join_is_open");paint(data!==false);

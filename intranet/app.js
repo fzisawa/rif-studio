@@ -362,4 +362,6 @@ const qn=new URLSearchParams(location.search).get("n");if(qn&&/^\S{1,20}$/.test(
 /* 메일 화면(mail.js)에 넘겨 주는 값 — 항상 최신 값을 읽도록 getter 로 */
 const X={get me(){return me},get myAddrs(){return myAddrs},get sendAs(){return sendAs},get myName(){return myName},get mySig(){return mySig},get ceo(){return ceo},get exec(){return exec},get staff(){return staff},get dir(){return dir},nameOf,dispName,toast,afterTask:()=>loadTasks()};
 bindPhone($("sph"));render();
+/* 다른 파일(음성 채팅 · 업무 탭)에서 쓰는 로그인 정보 — 읽기 전용 */
+window.RIFAPP={get me(){return me},get myName(){return myName},get ceo(){return ceo},dispName:e=>dispName(e),toast:t=>toast(t)};
 })();

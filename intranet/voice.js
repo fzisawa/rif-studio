@@ -3,6 +3,7 @@
    - 채널: voice:hall(회의실 · 모든 직원) · voice:room:<id>(채팅방 멤버) · voice:dm:<a>|<b>(1:1 통화) · voice:ring(통화 알림)
    - 누가 어느 채널에 들어갈 수 있는지는 DB(voice_topic_ok)가 정해요. */
 window.RIFVOICE=(()=>{
+const A=()=>window.RIFAPP||{};
 /* 음질: 기본 128kbps(말소리 처리 켬) · 🎵 고음질 256kbps 스테레오(원음 그대로 · 이어폰 권장) */
 const RATE={std:128000,hq:256000};
 const MIC=hq=>hq?{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:2,sampleRate:48000}:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1,sampleRate:48000};
@@ -14,12 +15,12 @@ function munge(d){const m=(d.sdp||"").match(/a=rtpmap:(\d+) opus\/48000/i);if(!m
   return {type:d.type,sdp}}
 async function applyRate(p){if(!cur)return;const r=cur.hq?RATE.hq:RATE.std;for(const sd of p.pc.getSenders()){if(!sd.track||sd.track.kind!=="audio")continue;try{const pr=sd.getParameters();if(!pr.encodings||!pr.encodings.length)pr.encodings=[{}];pr.encodings[0].maxBitrate=r;pr.encodings[0].priority="high";await sd.setParameters(pr)}catch(_){}}}
 const ICE=[{urls:["stun:stun.cloudflare.com:3478","stun:stun.l.google.com:19302"]}];
-const KEY=()=>me+"#"+SID,SID=Math.random().toString(36).slice(2,10);
+const KEY=()=>A().me+"#"+SID,SID=Math.random().toString(36).slice(2,10);
 let cur=null,hall=null,ringCh=null,started=false,hallState=[],ringing=null,actx=null,meter=null;
-const nm=e=>{try{return dispName(e)}catch(_){return e}};
-const dmTopic=o=>"voice:dm:"+[me,String(o).toLowerCase()].sort().join("|");
+const nm=e=>{try{return A().dispName(e)}catch(_){return e}};
+const dmTopic=o=>"voice:dm:"+[A().me,String(o).toLowerCase()].sort().join("|");
 const $v=i=>document.getElementById(i);
-const t=s=>{try{toast(s)}catch(_){}};
+const t=s=>{try{A().toast(s)}catch(_){}};
 
 /* ── 채널 ── */
 function openCh(topic){
@@ -57,7 +58,7 @@ async function leave(quiet){
   try{actx&&actx.close()}catch(_){}actx=null;clearInterval(meter);meter=null;meters.clear();
   drawBar();drawHall();if(!quiet)t("음성 채널에서 나왔어요")}
 function stopLocal(){if(cur)cur.stream.getTracks().forEach(x=>x.stop())}
-const track=()=>cur&&cur.ch.track({in:true,email:me,name:myName||nm(me),muted:cur.muted,hq:cur.hq});
+const track=()=>cur&&cur.ch.track({in:true,email:A().me,name:A().myName||nm(A().me),muted:cur.muted,hq:cur.hq});
 
 /* ── 연결 (먼저 들어온 쪽이 아니라 이름 순서로 한쪽만 먼저 걸어서 엇갈리지 않게) ── */
 function sync(){
@@ -107,7 +108,7 @@ function drawBar(){
   if(lastHead&&lastHead.isConnected)decorate(lastHead,lastCtx);
   const b=$v("vbar");if(!b)return;if(!cur){b.hidden=true;b.replaceChildren();document.body.classList.remove("vin");return}
   document.body.classList.add("vin");b.hidden=false;
-  const list=(cur.list&&cur.list.length?cur.list:[{key:KEY(),email:me,name:myName||nm(me),muted:cur.muted}]);
+  const list=(cur.list&&cur.list.length?cur.list:[{key:KEY(),email:A().me,name:A().myName||nm(A().me),muted:cur.muted}]);
   const conn=[...cur.peers.values()].filter(p=>p.state==="connected").length,others=list.filter(p=>p.key!==KEY()).length;
   const st=others?(conn<others?"연결하는 중…":"연결됨"):(cur.topic.startsWith("voice:dm:")?"상대를 기다리는 중…":"혼자 있어요");
   const ps=el("div",{className:"vps"},list.map(p=>el("span",{className:"vp"+(p.muted?" mu":"")+(p.hq?" hq":""),title:(p.name||nm(p.email))+(p.muted?" · 마이크 꺼짐":"")+(p.hq?" · 고음질 256kbps":"")},[el("i",{textContent:(p.name||nm(p.email)||"?").slice(0,1)}),el("span",{textContent:(p.key===KEY()?"나":(p.name||nm(p.email)))})])));
@@ -125,7 +126,7 @@ function drawBar(){
 /* ── 화면: 채팅 왼쪽 위 회의실 카드 ── */
 function drawHall(){
   const h=$v("vhall");if(!h)return;const inHall=cur&&cur.topic==="voice:hall";
-  const names=hallState.map(p=>p.email===me?"나":(p.name||nm(p.email)));
+  const names=hallState.map(p=>p.email===A().me?"나":(p.name||nm(p.email)));
   const b=el("button",{type:"button",className:"btn small"+(inHall?" ghost":""),textContent:inHall?"나가기":"참여"});b.onclick=()=>inHall?leave():join("voice:hall","회의실");
   h.replaceChildren(el("div",{className:"vht"},[el("b",{textContent:"🎙 회의실"}),el("span",{className:"note",textContent:names.length?names.join(", "):"아무도 없어요 · 들어가면 바로 말할 수 있어요"})]),b)}
 
@@ -134,22 +135,22 @@ let lastHead=null,lastCtx=null;
 function decorate(head,ctx){
   if(!head)return;lastHead=head;lastCtx=ctx;head.querySelectorAll(".vgo").forEach(x=>x.remove());let b;
   if(ctx.room){const tp="voice:room:"+ctx.room.id,on=cur&&cur.topic===tp;b=el("button",{type:"button",className:"ob2 vgo",textContent:on?"🎙 음성 나가기":"🎙 음성 참여"});b.onclick=()=>on?leave():join(tp,"👥 "+ctx.room.name)}
-  else if(ctx.to&&ctx.to!==me){const tp=dmTopic(ctx.to),on=cur&&cur.topic===tp;b=el("button",{type:"button",className:"ob2 vgo",textContent:on?"📞 통화 끊기":"📞 음성 통화"});b.onclick=()=>on?leave():call(ctx.to)}
+  else if(ctx.to&&ctx.to!==A().me){const tp=dmTopic(ctx.to),on=cur&&cur.topic===tp;b=el("button",{type:"button",className:"ob2 vgo",textContent:on?"📞 통화 끊기":"📞 음성 통화"});b.onclick=()=>on?leave():call(ctx.to)}
   else{const on=cur&&cur.topic==="voice:hall";b=el("button",{type:"button",className:"ob2 vgo",textContent:on?"🎙 회의실 나가기":"🎙 회의실 참여"});b.onclick=()=>on?leave():join("voice:hall","회의실")}
   head.append(b)}
 
 /* ── 1:1 통화 · 통화 알림 ── */
 let callT=null;
 async function call(to){const tp=dmTopic(to);if(!(await join(tp,nm(to)+" 님과 통화")))return;
-  try{ringCh.send({type:"broadcast",event:"ring",payload:{to:String(to).toLowerCase(),from:me,name:myName||nm(me),topic:tp}})}catch(_){}
+  try{ringCh.send({type:"broadcast",event:"ring",payload:{to:String(to).toLowerCase(),from:A().me,name:A().myName||nm(A().me),topic:tp}})}catch(_){}
   t("📞 "+nm(to)+" 님에게 거는 중…");clearTimeout(callT);
   callT=setTimeout(()=>{if(cur&&cur.topic===tp&&!(cur.list||[]).some(p=>p.key!==KEY())){leave(true);t(nm(to)+" 님이 받지 않았어요")}},45000)}
 function onRing(p){
-  if(!p||p.to!==me)return;if(cur&&cur.topic===p.topic)return;hideRing();
+  if(!p||p.to!==A().me)return;if(cur&&cur.topic===p.topic)return;hideRing();
   const box=el("div",{className:"vring",role:"alertdialog"},[el("b",{textContent:"📞 "+(p.name||nm(p.from))+" 님의 음성 통화"}),el("div",{className:"vbs"},[])]);
   const ok=el("button",{type:"button",className:"btn small p",textContent:"받기"}),no=el("button",{type:"button",className:"btn small ghost",textContent:"거절"});
   ok.onclick=()=>{hideRing();join(p.topic,(p.name||nm(p.from))+" 님과 통화")};
-  no.onclick=()=>{hideRing();try{ringCh.send({type:"broadcast",event:"decline",payload:{to:p.from,from:me,topic:p.topic}})}catch(_){}};
+  no.onclick=()=>{hideRing();try{ringCh.send({type:"broadcast",event:"decline",payload:{to:p.from,from:A().me,topic:p.topic}})}catch(_){}};
   box.lastChild.append(ok,no);document.body.append(box);ringing={box,p,beep:setInterval(beep,1400),stop:setTimeout(hideRing,40000)};beep();
   try{if(document.hidden&&window.Notification&&Notification.permission==="granted")new Notification("RIF STUDIO",{body:(p.name||nm(p.from))+" 님이 음성 통화를 걸었어요"})}catch(_){}}
 function hideRing(){if(!ringing)return;clearInterval(ringing.beep);clearTimeout(ringing.stop);ringing.box.remove();ringing=null}
@@ -163,7 +164,7 @@ async function start(){
   hall=openCh("voice:hall");subscribe(hall).then(ok=>{if(!ok){const h=$v("vhall");if(h)h.hidden=true}});drawHall();
   ringCh=db.channel("voice:ring",{config:{private:true,broadcast:{self:false}}})
     .on("broadcast",{event:"ring"},({payload})=>onRing(payload))
-    .on("broadcast",{event:"decline"},({payload:p})=>{if(p&&p.to===me&&cur&&cur.topic===p.topic){clearTimeout(callT);leave(true);t(nm(p.from)+" 님이 통화를 거절했어요")}});
+    .on("broadcast",{event:"decline"},({payload:p})=>{if(p&&p.to===A().me&&cur&&cur.topic===p.topic){clearTimeout(callT);leave(true);t(nm(p.from)+" 님이 통화를 거절했어요")}});
   subscribe(ringCh);
   window.addEventListener("beforeunload",()=>{if(cur)leave(true)})}
 async function stop(){await leave(true);hideRing();[hall,ringCh].forEach(c=>{try{c&&db.removeChannel(c)}catch(_){}});hall=ringCh=null;started=false;hallState=[]}
