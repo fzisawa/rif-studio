@@ -234,3 +234,6 @@ main.wide select.stsel.doing{border-color:var(--ac);color:var(--ac)}main.wide se
 body.vin main.wide{padding-bottom:110px}
 @media(max-width:700px){.vbar{left:8px;right:8px;transform:none;max-width:none;gap:8px;padding:10px}.vhd b{max-width:none}.vbs{width:100%}.vbs .vb{flex:1}}
 html.ash-in .vbar{bottom:calc(76px + env(safe-area-inset-bottom))}
+.vb.on{background:var(--soft2);border-color:var(--ac);color:var(--ac)}
+.vp.hq>span::after{content:" 🎵";font-size:11px}
+.vp.mu.hq>span::after{content:" 🔇🎵"}
