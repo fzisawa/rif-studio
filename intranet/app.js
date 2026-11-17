@@ -251,8 +251,14 @@ $("pfdel").onclick=async()=>{const mine=dir.find(r=>r.email.toLowerCase()===me)|
 let rooms=[],roomMem={};
 let chatMsgs=[],chatSub=null,chatOpen=false,chatTimer=null,chatStarted=false,chatTo="";
 const seenKey=()=>"rif_chat_seen2_"+me;
-const getSeenMap=()=>{try{return JSON.parse(localStorage.getItem(seenKey())||"{}")||{}}catch(_){return {}}};
-const setSeenFor=(k,n)=>{try{const m=getSeenMap();m[k]=n;localStorage.setItem(seenKey(),JSON.stringify(m))}catch(_){}};
+/* 읽은 위치는 서버(chat_seen)에도 저장해서 브라우저 · 데스크톱 앱 · 휴대폰이 같은 숫자를 보여요 (기기별 저장값과 큰 값으로 합쳐요) */
+let srvSeen={};
+const getSeenMap=()=>{let m={};try{m=JSON.parse(localStorage.getItem(seenKey())||"{}")||{}}catch(_){}
+  Object.entries(srvSeen).forEach(([k,v])=>{if((Number(v)||0)>(Number(m[k])||0))m[k]=v});return m};
+const setSeenFor=(k,n)=>{n=Number(n)||0;const cur=Number(getSeenMap()[k])||0;if(n<=cur)return;
+  try{const m=getSeenMap();m[k]=n;localStorage.setItem(seenKey(),JSON.stringify(m))}catch(_){}
+  srvSeen[k]=n;db.rpc("chat_seen_set",{p_conv:k,p_id:n}).then(()=>{},()=>{})};
+async function loadSeen(){const {data,error}=await db.from("chat_seen").select("conv,last_id");if(error||!data)return;const m={};data.forEach(r=>m[r.conv]=Number(r.last_id)||0);srvSeen=m}
 const dispName=e=>{const r=dir.find(x=>x.email.toLowerCase()===String(e).toLowerCase());return r?(r.nickname||r.name):e};
 const dayStr=s=>new Date(s).toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric",weekday:"short"});
 const convKey=m=>{if(m.room_id)return "room:"+m.room_id;if(!m.to_email)return "";return m.author_email.toLowerCase()===me?m.to_email.toLowerCase():m.author_email.toLowerCase()};
@@ -322,7 +328,7 @@ function roomDlg(rm){
     const {data,error}=await db.rpc("chat_room_save",{p_id:rm?rm.id:null,p_name:n,p_members:[...sel]});ok.disabled=false;
     if(error){msgx.textContent="저장하지 못했어요 (권한을 확인해 주세요)";return}wrap.remove();await loadRooms();if(!rm)chatTo="room:"+data;drawPeople();await loadChat(true)};
   document.body.append(wrap);nm.focus()}
-async function loadChat(stick){await loadRooms();const {data}=await db.from("chat_messages").select("id,author_email,author_name,body,created_at,to_email,room_id").order("id",{ascending:false}).limit(500);
+async function loadChat(stick){await Promise.all([loadRooms(),loadSeen()]);const {data}=await db.from("chat_messages").select("id,author_email,author_name,body,created_at,to_email,room_id").order("id",{ascending:false}).limit(500);
   if(!data)return;chatMsgs=data.reverse();if(chatOpen)markSeen();drawPeople();drawChat(stick)}
 function startChat(){if(chatStarted)return;chatStarted=true;loadChat(true);try{window.RIFVOICE&&RIFVOICE.start()}catch(_){}
   try{chatSub=db.channel("chat-room").on("postgres_changes",{event:"*",schema:"public",table:"chat_messages"},()=>loadChat(false)).subscribe()}catch(_){}

@@ -4,6 +4,10 @@ window.RIFMAIL=(()=>{
 const $=id=>document.getElementById(id);
 let X=null,started=false,poll=null;
 let inbox=[],outbox=[],boxes=[],bmem={},stars=new Set(),drafts=[],tpls=[],irds=new Set(),bodies={},notes={};
+/* 방금 읽음 처리한 메일 — 서버 저장이 끝나기 전에 자동 새로고침이 돌아도 다시 안 읽음으로 돌아가지 않게 붙잡아 둬요 */
+const pend=new Set();
+const markRead=ids=>{ids=ids.filter(i=>i&&!irds.has(i));if(!ids.length)return Promise.resolve();ids.forEach(i=>{irds.add(i);pend.add(i)});title();
+  return db.from("inbox_reads").upsert(ids.map(i=>({msg_id:i,email:X.me})),{onConflict:"msg_id,email",ignoreDuplicates:true}).then(({error})=>{if(error)console.warn("read",error.message)},()=>{})};
 let fold="in",sub="open",mode="list",selId=null,selKind="in",picked=new Set(),filt={un:false,st:false,at:false},q="",compose=null,usage=null,newCount=-1;
 const lc=s=>String(s==null?"":s).toLowerCase();
 const tok=s=>lc(s).match(/[a-z0-9._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/g)||[];
@@ -38,7 +42,7 @@ async function load(){
     D.from("mail_box_members").select("box_id,email"),
     D.from("mail_templates").select("id,owner_email,shared,title,subject,body").order("title")]);
   inbox=(a.data||[]).map(m=>(m._t=new Set(tok(m.to_addrs)),m));
-  irds=new Set((b.data||[]).map(r=>r.msg_id));
+  irds=new Set((b.data||[]).map(r=>r.msg_id));pend.forEach(i=>{if(irds.has(i))pend.delete(i);else irds.add(i)});
   outbox=c.data||[];stars=new Set((s.data||[]).map(r=>r.msg_id));drafts=dr.data||[];
   boxes=bx.data||[];bmem={};(bm.data||[]).forEach(r=>(bmem[r.box_id]=bmem[r.box_id]||[]).push(lc(r.email)));
   tpls=tp.data||[];
@@ -123,6 +127,7 @@ function drawList(om){
   const sr=el("input",{type:"search",placeholder:"메일 검색 (보낸 사람·제목·내용)",value:q,ariaLabel:"메일 검색"});sr.oninput=()=>{q=sr.value;fillRows()};
   const chip=(k,t)=>{const c=el("button",{type:"button",className:"chip"+(filt[k]?" on":""),textContent:t});c.onclick=()=>{filt[k]=!filt[k];c.classList.toggle("on",filt[k]);fillRows()};return c};
   bar.append(all,btn("⟳","",()=>refresh(),"새로고침"),sr,chip("un","안 읽음"),chip("st","★ 별표"),chip("at","📎 첨부"));
+  {const U=baseList().filter(m=>!m._o&&!m._d&&!m.done&&!m.deleted_at&&!irds.has(m.id));if(U.length&&fold!=="trash"&&fold!=="draft")bar.append(btn("✓ 모두 읽음 ("+U.length+")","",async()=>{await markRead(U.map(m=>m.id));render()},"이 목록의 안 읽은 메일을 모두 읽음으로"))}
   om.append(bar);
   const subs=fold.startsWith("box:")?[["open","받은 메일"],["done","완료"],["out","보낸 메일"]]:fold==="all"?[["open","받은 메일"],["out","보낸 메일"]]:null;
   if(subs){const sb=el("div",{className:"osub"});
@@ -172,8 +177,8 @@ function bulk(){
     b.append(btn("🗑 삭제","danger",run(async()=>{await db.from("mail_drafts").delete().in("id",drs.map(x=>x.id))})));
   }else{
     if(ins.length){
-      b.append(btn("읽음","",run(async()=>{await db.from("inbox_reads").upsert(ins.map(x=>({msg_id:x.id,email:X.me})),{onConflict:"msg_id,email",ignoreDuplicates:true})})),
-        btn("안 읽음","",run(async()=>{await db.from("inbox_reads").delete().in("msg_id",ins.map(x=>x.id)).eq("email",X.me)})),
+      b.append(btn("읽음","",run(async()=>{await markRead(ins.map(x=>x.id))})),
+        btn("안 읽음","",run(async()=>{ins.forEach(x=>pend.delete(x.id));await db.from("inbox_reads").delete().in("msg_id",ins.map(x=>x.id)).eq("email",X.me)})),
         ...(fold.startsWith("box:")?[btn(sub==="done"?"↩ 받은 편지함으로":"✓ 완료","",run(async()=>{await db.from("inbox_messages").update({done:sub!=="done"}).in("id",ins.map(x=>x.id))}))]:[]),
         btn("★ 별표","",run(async()=>{const add=ins.filter(x=>!stars.has(x.id));if(add.length)await db.from("mail_stars").insert(add.map(x=>({msg_id:x.id,email:X.me})))})));}
     b.append(btn("🗑 삭제","danger",run(async()=>{await Promise.all([ins.length?db.from("inbox_messages").update({deleted_at:now(),deleted_by:X.me}).in("id",ins.map(x=>x.id)):null,...outs.map(x=>db.rpc("outbox_set_deleted",{p_id:x.id,p_del:true}))])})));
@@ -203,7 +208,7 @@ async function open(m){
   picked.clear();
   if(m._d){const d=drafts.find(x=>x.id===m.id);if(d)openCompose({draft:d});return}
   selId=m.id;selKind=m._o?"out":"in";mode="read";
-  if(!m._o&&!irds.has(m.id)){irds.add(m.id);title();db.from("inbox_reads").upsert({msg_id:m.id,email:X.me},{onConflict:"msg_id,email",ignoreDuplicates:true})}
+  if(!m._o)markRead([m.id]);
   render()}
 const back=()=>{const b=el("button",{className:"bk",type:"button",title:"목록으로"},[el("span",{textContent:"‹ 목록"})]);b.onclick=()=>{mode="list";selId=null;render()};return b};
 function drawRead(om){
@@ -254,7 +259,7 @@ function readIn(p,m){
     as.onchange=async()=>{if(await upd({assignee_email:as.value})){drawFolders()}};acts.append(as);
     acts.append(btn("📌 업무로","",async()=>{const who=m.assignee_email||X.me;const {error}=await db.from("intra_tasks").insert({title:("[메일] "+(m.subject||"(제목 없음)")).slice(0,200),detail:"보낸 사람: "+(m.from_name?m.from_name+" ":"")+"<"+m.from_addr+">\n받은 날짜: "+ftl(m.received_at)+"\n\n"+(m.preview||""),assignee_email:who,assignee_name:nm(who),due:null,created_by:X.me,created_by_name:X.myName});
       if(error)return alert("업무로 만들지 못했어요");X.toast("업무 탭에 추가했어요 ✓");X.afterTask()},"이 메일로 업무 만들기"),
-      btn("안 읽음으로","",()=>{irds.delete(m.id);db.from("inbox_reads").delete().eq("msg_id",m.id).eq("email",X.me).then(()=>{mode="list";selId=null;title();render()})}),
+      btn("안 읽음으로","",()=>{irds.delete(m.id);pend.delete(m.id);db.from("inbox_reads").delete().eq("msg_id",m.id).eq("email",X.me).then(()=>{mode="list";selId=null;title();render()})}),
       btn("🗑 삭제","danger",async()=>{if(await upd({deleted_at:new Date().toISOString(),deleted_by:X.me},"삭제하지 못했어요")){mode="list";selId=null;await load();render()}}))}
   if(isMgmt()){const rb=el("span",{className:"note",textContent:"읽은 사람: 불러오는 중…"});acts.append(rb);
     db.from("inbox_reads").select("email").eq("msg_id",m.id).then(({data})=>{rb.textContent="읽은 사람: "+((data||[]).map(r=>nm(r.email)).join(", ")||"아직 없어요")})}
@@ -277,7 +282,7 @@ function related(p,m){
   const rel=[...inbox.filter(x=>x.id!==m.id&&!x.deleted_at&&normSub(x.subject)===k).map(x=>({t:x.received_at,k:"in",x})),...outbox.filter(x=>!x.deleted_at&&normSub(x.subject)===k&&(lc(x.author_email)===X.me||X.ceo||(x.box_id&&boxes.some(b=>b.id===x.box_id)))).map(x=>({t:x.created_at,k:"out",x}))].sort((a,b)=>new Date(b.t)-new Date(a.t)).slice(0,12);
   if(!rel.length)return;
   p.append(el("section",{className:"nts"},[el("h3",{textContent:"같은 제목의 메일 "+rel.length+"건"}),...rel.map(r=>{const d=el("div",{className:"rel"},[el("span",{className:"cp "+(r.k==="out"?"ok":""),textContent:r.k==="out"?"보냄":"받음"}),el("span",{className:"rwho",textContent:r.k==="out"?"→ "+r.x.to_email:(r.x.from_name||r.x.from_addr)}),el("span",{className:"rpv",textContent:r.k==="out"?(r.x.body||"").replace(/\s+/g," ").slice(0,90):(r.x.preview||"")}),el("span",{className:"dd",textContent:fmt(r.t)})]);
-    d.onclick=()=>{selId=r.x.id;selKind=r.k;mode="read";if(r.k==="in"&&!irds.has(r.x.id)){irds.add(r.x.id);title();db.from("inbox_reads").upsert({msg_id:r.x.id,email:X.me},{onConflict:"msg_id,email",ignoreDuplicates:true})}render()};return d})]))}
+    d.onclick=()=>{selId=r.x.id;selKind=r.k;mode="read";if(r.k==="in")markRead([r.x.id]);render()};return d})]))}
 function readOut(p,r){
   const acts=el("div",{className:"acts"}),canDel=X.ceo||lc(r.author_email)===X.me,obody=el("div",{className:"obody otxt",textContent:r.body});
   p.append(el("h2",{className:"eh",textContent:r.subject}),
