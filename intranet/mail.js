@@ -218,7 +218,8 @@ function quoteOf(raw){let t=String(raw||"").replace(/\r\n/g,"\n").trim();
   const i=t.search(/\n[^\n]*(wrote:|작성:)\s*(\n|$)|\n>|\n-{3,} ?(Original|원본|Forwarded)/i);if(i>0)t=t.slice(0,i);
   t=t.split("\n").filter(l=>!/^\s*\[image:.*\]/i.test(l)&&!/^\s*(RIF STUDIO|PANGYO\s*[•·\/].*|rif-studio\.com|https?:\/\/rif-studio\.com\/?)\s*$/i.test(l)&&!/^\s*--\s*$/.test(l)).join("\n");
   t=t.replace(/<https?:\/\/[^>\s]+>/g,"").replace(/\n{3,}/g,"\n\n").trim();return t.length>1500?t.slice(0,1500).trim()+" …":t}
-function fromFor(m){const bs=boxesOf(m);if(bs.length&&!mineMsg(m))return"box:"+bs[0].id;return mineMsg(m)?"me":(bs.length?"box:"+bs[0].id:"me")}
+/* 답장 보내는 주소: 내 개인 주소로 온 메일이면 내 주소, 공용 메일함(biz@ 등)으로 온 메일이면 그 공용 주소 */
+function fromFor(m){const bs=boxesOf(m),own=X.myAddrs.some(a=>m._t.has(a));if(bs.length&&!own)return"box:"+bs[0].id;return"me"}
 function readIn(p,m){
   const acts=el("div",{className:"acts"});
   const bs=boxesOf(m);
