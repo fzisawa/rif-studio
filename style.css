@@ -269,3 +269,7 @@ html.snoscroll{overflow:hidden}
 #nedit .nform label{align-items:stretch;text-align:left}
 #nedit input[type=file]{padding:0;border:0;background:none;font-size:13px;width:auto}
 #nedit .ntrrow{align-items:center}
+/* Members 메뉴: 화면 밖으로 잘리지 않게 메뉴 오른쪽 끝에 맞추고, 사람이 많으면 줄을 바꿔요 */
+header nav:has(.nmg){position:relative}
+.ng:has(>.nmg){position:static}
+.nm.nmg{left:auto;right:0;width:max-content;max-width:min(520px,calc(100vw - 32px))}
