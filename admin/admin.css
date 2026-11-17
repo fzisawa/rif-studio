@@ -124,3 +124,26 @@ main.wide .chadd select,main.wide .chadd input{padding:6px 12px;font-size:13px}
 .pcard .px:hover{border-color:var(--ac);color:var(--ac)}
 .pcard>.btn{justify-self:start}
 @media(max-width:600px){.pvhd,.pvrow{grid-template-columns:1fr 112px 34px}}
+/* 부서 · 팀 관리: 부서 탭 + 팀 칩 */
+.otabs{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0;padding-bottom:12px;border-bottom:1px solid var(--ln)}
+.otab{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ln2);background:none;color:var(--fg);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.otab b{font-size:12px;min-width:1.6em;padding:0 6px;border-radius:999px;background:var(--hv);color:var(--mut)}
+.otab[aria-selected="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.otab[aria-selected="true"] b{background:color-mix(in srgb,var(--bg) 25%,transparent);color:var(--bg)}
+.otab.add{border-style:dashed;color:var(--mut);font-weight:500}
+.otab.add:hover{color:var(--ac);border-color:var(--ac)}
+.opanel{display:grid;gap:14px;padding:16px 0 4px}
+.ohd{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}.ohd>.btn{margin-bottom:6px}
+.ohd label{display:grid;gap:6px;font-size:13px;color:var(--mut);flex:1 1 240px;max-width:360px}
+.otl{display:grid;gap:8px}
+.ochips{display:flex;flex-wrap:wrap;gap:8px;min-height:36px;align-items:center}
+.ochip{display:inline-flex;align-items:center;gap:2px;padding:3px 4px;border-radius:999px;background:var(--soft);font-size:14px;font-weight:600}
+.ochip>span{padding:0 4px}
+.ochip button{border:0;background:none;color:var(--mut);width:24px;height:24px;border-radius:50%;cursor:pointer;font:inherit;font-size:15px;line-height:1;padding:0}
+.ochip button:hover:not(:disabled){background:var(--bg);color:var(--ac)}
+.ochip button:disabled{opacity:.25;cursor:default}
+.oadd{display:flex;gap:8px;flex-wrap:wrap}
+.oadd .oti{flex:1 1 220px;max-width:360px}
+.osave{align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--ln)}
+.osave .note{margin:0}
+#orgmsg.warn{color:#b8741a}#orgmsg.ok{color:var(--ok)}

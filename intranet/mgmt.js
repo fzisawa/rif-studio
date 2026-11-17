@@ -111,7 +111,7 @@ function drawJ(){
     const MC=[["mail_thanks","감사"],["mail_interview","면접"]].map(([k,t])=>mkMail(k,t));
     /* 대표 채용 / 대표 거절 = 결정 체크 + 그 결정의 메일(✉)을 한 칸에 합침 */
     const CK=[["ceo_hire","mail_hire","채용"],["ceo_reject","mail_reject","거절"]].map(([k,mk,t],i)=>{
-      const c=el("input",{className:"cb b"+(i+2),type:"checkbox",checked:!!r[k],disabled:!boss||lk,title:lk?"결정된 지원서는 잠겨 있어요 (🔒 대표 잠금 해제)":"대표 "+t+" · 체크하면 이 지원서가 잠겨요"});c.onclick=e=>e.stopPropagation();
+      const c=el("input",{className:"cb b"+(i+2),type:"checkbox",checked:!!r[k],disabled:!boss||lk,title:lk?"결정된 지원서는 잠겨 있어요 (🔒 잠긴 지원서에서 풀 수 있어요)":"대표 "+t+" · 체크하면 이 지원서가 잠겨요"});c.onclick=e=>e.stopPropagation();
       c.onchange=async()=>{const v=c.checked;c.disabled=true;const ok=await rpcSet("jr_set_ceo_flag",{p_id:r.id,p_field:k,p_val:v},null,()=>{c.checked=!v});if(ok){r[k]=v;r.locked=!!(r.ceo_hire||r.ceo_reject);drawJ()}else c.disabled=false};
       const done=el("span",{className:"msent",textContent:"✉ 발송됨",title:"지원자에게 "+t+" 메일을 보냈어요",hidden:!r[mk]});
       const hire=mk==="mail_hire";
@@ -423,7 +423,7 @@ function build(){
     el("div",{className:"mbar"},[el("b",{id:"mjc"}),
       el("select",{id:"mju",title:"분야"},[["","전체 분야"],["vocal","Vocal · 보컬"],["sound","Sound · 작곡·믹싱"],["art","Art · 일러스트·디자인"],["content","Content · 작가·영상"],["etc","기타"]].map(([v,t])=>el("option",{value:v,textContent:t}))),
       el("select",{id:"mjs",title:"상태"},[["","전체 상태"],["nothanks","감사 메일 전"],["interview","면접 안내함"],...(boss?[["open","검토 중"],["hire","대표 채용"],["reject","대표 거절"]]:[])].map(([v,t])=>el("option",{value:v,textContent:t}))),
-      el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("button",{className:"mbtn",type:"button",id:"mjlk",textContent:"🔒 대표 잠금 해제",hidden:!boss}),el("span",{className:"mnote",textContent:"줄을 누르면 오른쪽에 지원서 전체가 열려요 · ✉ 버튼을 누르면 메일이 나가고 자동으로 체크돼요"})]),
+      el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("button",{className:"mbtn",type:"button",id:"mjlk",textContent:"🔒 잠긴 지원서",hidden:!boss}),el("span",{className:"mnote",textContent:"줄을 누르면 오른쪽에 지원서 전체가 열려요 · ✉ 버튼을 누르면 메일이 나가고 자동으로 체크돼요"})]),
     el("div",{className:"mtw"},[el("table",{className:"mt mtj"},[el("thead",{},[
       el("tr",{className:"gh"},[["기본 정보",6,""],["경영지원팀 체크",2,"gt"],["대표 전용 · 대표만 보고 수정",3,"gb"],["경영지원팀 메모",1,""]].filter(x=>boss||x[2]!=="gb").map(([t,n,c])=>c==="gb"?bossHead(t):el("th",{textContent:t,colSpan:n,className:c}))),
       el("tr",{},[["No.",""],["접수일시",""],["닉네임",""],["성명",""],["출신",""],["분야",""],["감사","mk"],["면접","mk"],["대표 채용 · 채용 메일","mk bs b2 bl",1],["대표 거절 · 거절 메일","mk bs b3",1],["대표 메모 🔒","bs bm br",1],["","bsx",1],["경영지원팀 메모",""]].filter(x=>boss||!x[2]).map(([t,c])=>el("th",{textContent:t,className:c})))]),el("tbody",{id:"mjb"})])])]);
@@ -454,29 +454,51 @@ function build(){
   loadQ(); /* 소메뉴의 새 메일 숫자를 먼저 채워 둬요 */
 }
 
-/* 대표 잠금 해제 — 대표 채용·거절로 잠긴 지원서를 대표 비밀번호로 풀어요 (대표에게만 보여요) */
+/* 잠긴 지원서 — 대표 채용·거절로 잠긴 지원서를 대표 비밀번호로 확인하고 풀어요 (대표에게만 보여요)
+   비밀번호는 이 창이 열려 있는 동안만 기억하고, 창을 닫으면 잊어요. */
 function openUnlock(){
-  const mod=el("div",{className:"mod"}),box=el("div",{className:"mbox wd"}),close=()=>{mod.remove();document.removeEventListener("keydown",esc)};
-  const esc=e=>{if(e.key==="Escape")close()};document.addEventListener("keydown",esc);
-  mod.onclick=e=>{if(e.target===mod)close()};
-  const x=el("button",{type:"button",className:"mx",textContent:"×","aria-label":"닫기"});x.onclick=close;
+  const mod=el("div",{className:"mod",role:"dialog",ariaModal:"true",ariaLabel:"잠긴 지원서"}),box=el("div",{className:"mbox wd lkbox"});
+  const close=()=>{mod.remove();document.removeEventListener("keydown",esc)},esc=e=>{if(e.key==="Escape")close()};document.addEventListener("keydown",esc);
+  const x=el("button",{type:"button",className:"mx",textContent:"×",ariaLabel:"닫기"});x.onclick=close;
   const body=el("div");box.append(x,body);mod.append(box);document.body.append(mod);
-  const pin=el("input",{type:"password",inputMode:"numeric",autocomplete:"off",maxLength:20,className:"pin",style:"width:100%;text-align:center;letter-spacing:.3em;padding:11px 14px"});
-  const err=el("p",{className:"note err",style:"min-height:1.4em"}),ok=el("button",{type:"button",className:"btn",textContent:"확인"});
-  body.append(el("h2",{textContent:"대표 확인"}),el("p",{className:"note",textContent:"잠긴 지원서를 풀려면 대표 비밀번호를 입력해 주세요."}),pin,err,el("div",{className:"jbar"},[ok]));
+  /* 1단계: 대표 비밀번호 */
+  const pin=el("input",{type:"password",inputMode:"numeric",autocomplete:"off",maxLength:20,className:"pin",ariaLabel:"대표 비밀번호"});
+  const er=el("p",{className:"note err lkerr"}),ok=el("button",{type:"button",className:"btn",textContent:"잠긴 지원서 보기"});
+  body.append(el("div",{className:"lkgate"},[el("div",{className:"lkico",textContent:"🔒",ariaHidden:"true"}),el("h2",{textContent:"잠긴 지원서"}),
+    el("p",{className:"note",textContent:"대표 채용 · 대표 거절을 누른 지원서는 경영지원팀에게 보이지 않게 잠겨요. 대표 비밀번호를 넣으면 목록을 보고 잠금을 풀 수 있어요."}),pin,er,ok]));
   pin.focus();
-  const list=async p=>{
-    const {data,error}=await db.rpc("jr_locked_list",{p_pin:p});
-    if(error){err.textContent=/bad pin/.test(error.message)?"비밀번호가 맞지 않아요":/admin only/.test(error.message)?"대표 계정으로 로그인해 주세요":"불러오지 못했어요";return false}
-    body.replaceChildren(el("h2",{textContent:"잠긴 지원서"}),el("p",{className:"note",textContent:"풀면 경영지원팀에 다시 보이고 수정할 수 있어요."}));
-    if(!(data||[]).length)body.append(el("p",{className:"note",textContent:"잠긴 지원서가 없어요."}));
-    (data||[]).forEach(r=>{const b=el("button",{type:"button",className:"btn small",textContent:"잠금 풀기"});
-      b.onclick=async()=>{const nm=r.nickname||r.name||r.email;if(!confirm(nm+" 지원서의 채용/거절 결정을 풀까요?"))return;
-        b.disabled=true;const {error}=await db.rpc("jr_unlock",{p_id:r.id,p_pin:p});if(error){b.disabled=false;alert("풀지 못했어요");return}
-        await list(p);loadJ()};
-      body.append(el("div",{style:"display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--ln)"},[el("span",{textContent:(r.nickname||r.name||"")+" · "+(r.email||"")+" · "+(r.decision==="hire"?"대표 채용":"대표 거절")}),b]))});
-    return true};
-  const go=async()=>{if(!pin.value)return;err.textContent="";ok.disabled=true;await list(pin.value);ok.disabled=false};
+  let P=null,rows=[],tab="all",q="";
+  const fmt=d=>{const t=new Date(d);return t.getFullYear()+"."+(t.getMonth()+1)+"."+t.getDate()};
+  const fieldTxt=r=>[...(String(r.fields||"").split(/[,\n]/).map(x=>x.trim()).filter(Boolean)),...(r.field_other?[r.field_other]:[])].join(" · ");
+  function draw(){
+    const nH=rows.filter(r=>r.decision==="hire").length,nR=rows.length-nH;
+    const tabs=el("div",{className:"lktabs",role:"tablist"},[["all","전체",rows.length],["hire","대표 채용",nH],["reject","대표 거절",nR]].map(([k,t,n])=>{
+      const b=el("button",{type:"button",role:"tab",className:"lkt"+(k==="all"?"":" "+k),ariaSelected:String(tab===k)},[document.createTextNode(t),el("b",{textContent:String(n)})]);b.onclick=()=>{tab=k;draw()};return b}));
+    const s=el("input",{type:"search",className:"lkq",placeholder:"이름 · 이메일 · 분야 검색",value:q,autocomplete:"off"});
+    s.oninput=()=>{q=s.value;const pos=s.selectionStart;drawList();s.focus();try{s.setSelectionRange(pos,pos)}catch(_){}};
+    const list=el("ul",{className:"lklist"});
+    function drawList(){const k=q.trim().toLowerCase(),v=rows.filter(r=>(tab==="all"||r.decision===tab)&&(!k||[r.name,r.nickname,r.email,fieldTxt(r)].join(" ").toLowerCase().includes(k)));
+      list.replaceChildren();
+      if(!rows.length){list.append(el("li",{className:"lkempty",textContent:"잠긴 지원서가 없어요. 대표 채용 · 대표 거절을 누르면 여기로 와요."}));return}
+      if(!v.length){list.append(el("li",{className:"lkempty",textContent:"조건에 맞는 지원서가 없어요."}));return}
+      v.forEach(r=>{const hire=r.decision==="hire",nm=r.nickname||r.name||r.email,sub=r.nickname&&r.name&&r.nickname!==r.name?r.name:"";
+        const mailed=hire?r.mail_hire:r.mail_reject;
+        const b=el("button",{type:"button",className:"btn small ghost",textContent:"잠금 풀기"});
+        b.onclick=async()=>{if(!confirm(nm+" 님 지원서의 "+(hire?"대표 채용":"대표 거절")+" 결정을 풀까요?\n풀면 경영지원팀에 다시 보이고 수정할 수 있어요."+(mailed?"\n(이미 보낸 "+(hire?"채용":"거절")+" 메일은 되돌려지지 않아요)":"")))return;
+          b.disabled=true;b.textContent="푸는 중…";const {error}=await db.rpc("jr_unlock",{p_id:r.id,p_pin:P});
+          if(error){b.disabled=false;b.textContent="잠금 풀기";alert("풀지 못했어요"+(/bad pin/.test(error.message)?": 비밀번호가 바뀌었어요. 창을 닫고 다시 열어 주세요":""));return}
+          rows=rows.filter(x=>x.id!==r.id);draw();loadJ()};
+        list.append(el("li",{className:"lkrow"},[el("span",{className:"lkbad "+(hire?"hire":"reject"),textContent:hire?"채용":"거절"}),
+          el("div",{className:"lkmain"},[el("div",{className:"lknm"},[el("b",{textContent:nm}),...(sub?[el("span",{textContent:sub})]:[])]),
+            el("div",{className:"lkmeta"},[el("span",{textContent:r.email||""}),...(fieldTxt(r)?[el("span",{textContent:fieldTxt(r)})]:[]),el("span",{textContent:"지원 "+fmt(r.created_at)}),
+              ...(mailed?[el("span",{className:"lkmail",textContent:"✓ "+(hire?"채용":"거절")+" 메일 보냄"})]:[])])]),b]))})}
+    drawList();
+    body.replaceChildren(el("div",{className:"lkhead"},[el("h2",{textContent:"잠긴 지원서"}),el("p",{className:"note",textContent:"잠금을 풀면 경영지원팀에 다시 보이고, 지원서 목록에서 결정을 바꿀 수 있어요. 창을 닫으면 다시 잠겨요."})]),
+      el("div",{className:"lkbar"},[tabs,s]),list)}
+  const go=async()=>{if(!pin.value)return;er.textContent="";ok.disabled=true;
+    const {data,error}=await db.rpc("jr_locked_list",{p_pin:pin.value});ok.disabled=false;
+    if(error){er.textContent=/bad pin/.test(error.message)?"비밀번호가 맞지 않아요":/admin only/.test(error.message)?"대표 계정으로 로그인해 주세요":"불러오지 못했어요";pin.select();return}
+    P=pin.value;rows=data||[];draw()};
   ok.onclick=go;pin.onkeydown=e=>{if(e.key==="Enter")go()}}
 async function start(){
   if(started)return;

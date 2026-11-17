@@ -8,7 +8,7 @@ const dleft=s=>{const m=DRE.exec(String(s||""));if(!m)return null;const n=new Da
 const dday=d=>d<0?"만료 "+(-d)+"일 지남":d===0?"오늘 만료":"D-"+d;
 const expired=r=>!r.used_at&&Date.now()-new Date(r.issued_at).getTime()>DAYS*86400000;
 const live=r=>r.status!=="left",soon=r=>live(r)&&!!ymd(r.contract_end)&&dleft(r.contract_end)<=SOON;
-const lock=()=>{PIN=null;rows=[];view=[];owners={};edit=null;filt="all";OPEN.clear();clearTimeout(tm);$("hr-body").hidden=true;$("hmod").hidden=true;$("hrq").value="";$("hrcnt").textContent="";$("hsum").replaceChildren();$("hrtb").replaceChildren();$("jlkl").replaceChildren();$("hrlock").textContent="🔒 대표 잠금 해제"};
+const lock=()=>{PIN=null;rows=[];view=[];owners={};edit=null;filt="all";OPEN.clear();clearTimeout(tm);$("hr-body").hidden=true;$("hmod").hidden=true;$("hrq").value="";$("hrcnt").textContent="";$("hsum").replaceChildren();$("hrtb").replaceChildren();$("hrlock").textContent="🔒 대표 잠금 해제"};
 const err=e=>{const m=String((e&&e.message)||e||"");return /bad pin/.test(m)?"비밀번호가 맞지 않아요":/only unused/.test(m)?"이미 가입한 사번은 삭제할 수 없어요 (퇴사 처리를 쓰세요)":/8 digits|emp_no invalid/.test(m)?"사번은 공백 없이 1~20자여야 해요":/already used/.test(m)?"이미 있는 사번이에요":/bad division|bad team/.test(m)?"부서/팀 값이 올바르지 않아요":/bad email/.test(m)?"이메일 형식이 올바르지 않아요":/bad kind/.test(m)?"계약 형태 값이 올바르지 않아요":/bad contract dates/.test(m)?"계약 만료일이 입사일보다 빨라요":/ceo account/.test(m)?"대표님 계정은 퇴사 처리할 수 없어요":/admin only/.test(m)?"대표 계정으로 로그인해 주세요":m};
 const fnErr=async(data,error)=>{if(error){try{return (await error.context.json()).error}catch(_){return error.message}}return data&&data.ok?"":(data&&data.error)||"알 수 없는 오류"};
 async function load(){
@@ -121,15 +121,35 @@ function fillDivs(){const sel=$("hdv"),cur=sel.value;sel.replaceChildren(el("opt
 async function loadOrgU(){const {data,error}=await db.from("org_units").select("division,team,sort").order("sort");if(error||!data||!data.length)return null;
   const o=[];data.forEach(r=>{let d=o.find(x=>x.division===r.division);if(!d){d={division:r.division,teams:[]};o.push(d)}if(r.team)d.teams.push(r.team)});
   DV=o.map(d=>d.division);TD={};o.forEach(d=>d.teams.forEach(t=>TD[t]=d.division));fillDivs();return o}
-function orgRow(d){const nm=el("input",{className:"odn",maxLength:40,placeholder:"부서 이름 (예: 프로덕션부)",value:d.division||""}),tm=el("textarea",{className:"otm",rows:Math.max(3,(d.teams||[]).length+1),placeholder:"팀 이름 (한 줄에 하나)",value:(d.teams||[]).join("\n")});
-  const x=el("button",{type:"button",className:"btn small ghost",textContent:"부서 삭제"});const row=el("div",{className:"orow"},[nm,tm,x]);
-  x.onclick=()=>{if(confirm((nm.value||"이 부서")+" 을(를) 목록에서 지울까요? (저장을 눌러야 반영돼요)"))row.remove()};return row}
-async function drawOrgU(){const o=await loadOrgU()||DV.map(d=>({division:d,teams:Object.keys(TD).filter(t=>TD[t]===d)}));$("orgl").replaceChildren(...o.map(orgRow))}
-$("orgadd").onclick=()=>{const r=orgRow({});$("orgl").append(r);r.querySelector("input").focus()};
-$("orgsave").onclick=async()=>{const units=[...document.querySelectorAll("#orgl .orow")].map(r=>({division:r.querySelector(".odn").value.trim(),teams:r.querySelector(".otm").value.split("\n").map(x=>x.trim()).filter(Boolean)})).filter(u=>u.division);
+/* 부서는 탭으로, 팀은 칩으로. 바꾼 뒤 '부서 · 팀 저장'을 눌러야 반영돼요 */
+let OU=[],OS=0,O0="";
+const odirty=()=>JSON.stringify(OU)!==O0;
+const omsg=()=>{$("orgmsg").textContent=odirty()?"저장하지 않은 변경이 있어요.":"";$("orgmsg").className="note"+(odirty()?" warn":"")};
+function drawOrg(){OS=Math.min(OS,Math.max(0,OU.length-1));
+  $("otabs").replaceChildren(...OU.map((d,i)=>{const b=el("button",{type:"button",role:"tab",className:"otab",ariaSelected:String(i===OS)},[document.createTextNode(d.division||"이름 없는 부서"),el("b",{textContent:String(d.teams.length)})]);b.onclick=()=>{OS=i;drawOrg()};return b}),
+    (()=>{const b=el("button",{type:"button",className:"otab add",textContent:"＋ 부서 추가"});b.onclick=()=>{OU.push({division:"",teams:[]});OS=OU.length-1;drawOrg();omsg();$("orgl").querySelector(".odn").focus()};return b})());
+  const d=OU[OS];if(!d){$("orgl").replaceChildren(el("p",{className:"note",textContent:"부서가 없어요. '＋ 부서 추가'를 눌러 만들어 주세요."}));return}
+  const nm=el("input",{className:"odn",maxLength:40,placeholder:"부서 이름 · 예) 프로덕션부",value:d.division});
+  nm.oninput=()=>{d.division=nm.value;const t=$("otabs").children[OS];if(t)t.firstChild.textContent=nm.value||"이름 없는 부서";omsg()};
+  const del=el("button",{type:"button",className:"btn small ghost",textContent:"부서 삭제"});
+  del.onclick=()=>{if(!confirm((d.division||"이 부서")+" 을(를) 지울까요? (저장을 눌러야 반영돼요)"))return;OU.splice(OS,1);OS=Math.max(0,OS-1);drawOrg();omsg()};
+  const chips=el("div",{className:"ochips"},d.teams.map((t,i)=>{const x=el("button",{type:"button",className:"ox",ariaLabel:t+" 빼기",textContent:"×"}),
+      l=el("button",{type:"button",className:"om",ariaLabel:"앞으로",textContent:"‹",disabled:i===0});
+    x.onclick=()=>{d.teams.splice(i,1);drawOrg();omsg()};l.onclick=()=>{d.teams.splice(i-1,0,d.teams.splice(i,1)[0]);drawOrg();omsg()};
+    return el("span",{className:"ochip"},[l,el("span",{textContent:t}),x])}));
+  if(!d.teams.length)chips.append(el("span",{className:"note",textContent:"아직 팀이 없어요."}));
+  const ti=el("input",{className:"oti",maxLength:40,placeholder:"새 팀 이름 · 예) 보컬팀"}),ta=el("button",{type:"button",className:"btn small",textContent:"＋ 팀 추가"});
+  const add=()=>{const v=ti.value.trim();if(!v)return ti.focus();if(d.teams.includes(v)){alert("'"+v+"' 팀이 이미 있어요");return}d.teams.push(v);drawOrg();omsg();$("orgl").querySelector(".oti").focus()};
+  ta.onclick=add;ti.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();add()}};
+  $("orgl").replaceChildren(el("div",{className:"ohd"},[el("label",{},[el("span",{textContent:"부서 이름"}),nm]),del]),
+    el("div",{className:"otl"},[el("span",{className:"note",textContent:"팀 ("+d.teams.length+")"}),chips]),el("div",{className:"oadd"},[ti,ta]))}
+async function drawOrgU(){const o=await loadOrgU()||DV.map(d=>({division:d,teams:Object.keys(TD).filter(t=>TD[t]===d)}));OU=o.map(d=>({division:d.division,teams:[...d.teams]}));O0=JSON.stringify(OU);drawOrg();omsg()}
+$("orgsave").onclick=async()=>{const units=OU.map(u=>({division:u.division.trim(),teams:u.teams})).filter(u=>u.division);
+  if(OU.some(u=>!u.division.trim()&&u.teams.length))return alert("이름이 비어 있는 부서가 있어요. 이름을 적거나 부서를 지워 주세요");
   if(!units.length)return alert("부서를 하나 이상 적어 주세요");const names=units.map(u=>u.division);if(new Set(names).size!==names.length)return alert("같은 이름의 부서가 두 개 있어요");
   const b=$("orgsave");b.disabled=true;const {error}=await db.rpc("org_save",{p_pin:PIN,p_units:units});b.disabled=false;
-  if(error){$("orgmsg").textContent="저장하지 못했어요: "+err(error);return}$("orgmsg").textContent="저장했어요. 인트라넷은 새로고침하면 반영돼요.";drawOrgU();fillTeams()};
+  if(error){$("orgmsg").textContent="저장하지 못했어요: "+err(error);$("orgmsg").className="note err";return}const keep=OU[OS]&&OU[OS].division;await drawOrgU();const i=OU.findIndex(u=>u.division===keep);if(i>=0){OS=i;drawOrg()}
+  $("orgmsg").textContent="저장했어요. 인트라넷은 새로고침하면 반영돼요.";$("orgmsg").className="note ok";fillTeams()};
 /* 부서를 고르면 그 부서의 팀만 팀 목록에 나와요 */
 /* 목록에서 지운 부서·팀에 배정돼 있던 직원은 그 값을 그대로 지킬 수 있게 선택지에 남겨 둬요 */
 function fillTeams(keep){const d=$("hdv").value,cur=keep===undefined?$("htm").value:keep,sel=$("htm"),old=edit&&edit.team&&!(edit.team in TD)&&(edit.division||"")===d?edit.team:"";
@@ -149,15 +169,7 @@ $("hpo").onclick=async()=>{const p=$("hpi").value;if(!p)return;
   const {data,error}=await db.rpc("check_ceo_pin",{p_pin:p});
   if(error&&/permission denied|JWT|401/i.test(error.message||"")){$("hpe").textContent="로그인이 풀렸어요. 로그아웃 후 다시 로그인해 주세요";try{await db.auth.signOut()}catch(_){}setTimeout(()=>location.reload(),1500);return}
   if(error||!data){$("hpe").textContent="비밀번호가 맞지 않아요";return}
-  PIN=p;$("hpi").value="";pm.hidden=true;$("hr-body").hidden=false;$("hrlock").textContent="🔓 잠금 (열림)";clearTimeout(tm);tm=setTimeout(lock,10*60*1000);load();loadLocked();drawOrgU()};
-async function loadLocked(){const box=$("jlkl");box.replaceChildren();
-  const {data,error}=await db.rpc("jr_locked_list",{p_pin:PIN});
-  if(error){box.append(el("p",{className:"note err",textContent:"불러오지 못했어요"}));return}
-  if(!(data||[]).length){box.append(el("p",{className:"note",textContent:"잠긴 지원서가 없어요."}));return}
-  data.forEach(r=>{const b=el("button",{type:"button",className:"btn small",textContent:"잠금 풀기"});
-    b.onclick=async()=>{const nm=(r.nickname||r.name||r.email);if(!confirm(nm+" 지원서의 채용/거절 결정을 풀까요?\n풀면 경영지원팀에 다시 보이고 수정할 수 있어요."))return;
-      b.disabled=true;const {error}=await db.rpc("jr_unlock",{p_id:r.id,p_pin:PIN});if(error){b.disabled=false;alert("풀지 못했어요: "+err(error));return}loadLocked()};
-    box.append(el("div",{className:"lrow"},[el("span",{textContent:(r.nickname||r.name||"")+" · "+(r.email||"")+" · "+(r.decision==="hire"?"대표 채용":"대표 거절")+" · "+new Date(r.created_at).toLocaleDateString("ko-KR")}),b]))})}
+  PIN=p;$("hpi").value="";pm.hidden=true;$("hr-body").hidden=false;$("hrlock").textContent="🔓 잠금 (열림)";clearTimeout(tm);tm=setTimeout(lock,10*60*1000);load();drawOrgU()};
 $("hpi").onkeydown=e=>{if(e.key==="Enter")$("hpo").click()};
 $("out").addEventListener("click",lock);
 /* 로그아웃되면(다른 탭에서 로그아웃 포함) 바로 잠가요 */

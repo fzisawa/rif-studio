@@ -1,7 +1,7 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Admin · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=68"><link rel="icon" href="../img/favicon.png" type="image/png">
-<link rel="stylesheet" href="../app.css?v=1"><link rel="stylesheet" href="admin.css?v=5"></head><body>
+<link rel="stylesheet" href="../app.css?v=1"><link rel="stylesheet" href="admin.css?v=6"></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><a class="nl" href="/about/">About</a><a class="nl" href="/news/">News</a><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.members">Members</button><div class="nm nmg"><p class="nh" data-g="vocal" data-i18n="nav.vocal">Vocal</p><a href="../rif/">RIF</a><p class="nh" data-g="sound" data-i18n="nav.sound">Sound</p><a href="../charmbung/">Charmbung</a><a href="../se1c/">SE1C</a><p class="nh" data-g="art" data-i18n="nav.art">Art</p><a href="../woljae/">Woljae</a><a href="../gugugong/">gugugong</a><p class="nh" data-g="content" data-i18n="nav.content">Content</p></div></div><a class="nl" href="../contact/">Contact</a><a class="nl" href="../join/">Join Us</a><a class="nl" href="/store/">Store</a><a class="nl" href="../board/">Board</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
 <main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>Admin</h1>
 <form id="login"><input id="em" type="email" value="takanashi@rif-studio.com" hidden autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password"><button class="btn">로그인</button><p class="note err" id="lmsg"></p></form>
@@ -21,8 +21,10 @@
 <label class="ck2"><input type="checkbox" id="cshow"><span>비밀번호 보이기</span></label>
 <div class="jbar"><button class="btn" id="cgo">계정 만들기</button><span class="note" id="cmsg"></span></div></form>
 
-<div class="pnl pad" style="margin-top:26px"><h2>잠긴 지원서</h2><p class="note">대표 채용·대표 거절을 누른 지원서는 인트라넷에서 아무도 보거나 고칠 수 없어요(경영지원팀에는 안 보여요). 여기서 대표 비밀번호로 잠금을 풀 수 있어요.</p><div id="jlkl"></div></div>
-<div class="pnl pad" style="margin-top:26px"><h2>부서 · 팀 관리</h2><p class="note">여기서 바꾼 부서·팀이 인트라넷 사원 정보와 위 정보 수정 창의 목록에 그대로 나와요. 팀은 한 줄에 하나씩 적어 주세요. 부서·팀 이름을 지워도 이미 배정된 직원의 정보는 지워지지 않아요.</p><div id="orgl"></div><div class="wr" style="margin-top:12px"><button class="btn ghost" id="orgadd" type="button">＋ 부서 추가</button><button class="btn" id="orgsave" type="button">부서 · 팀 저장</button></div><p class="note" id="orgmsg"></p></div>
+</div>
+<div class="pnl pad" style="margin-top:26px"><h2>부서 · 팀 관리</h2><p class="note">여기서 바꾼 부서 · 팀이 인트라넷 사원 정보와 위 정보 수정 창의 목록에 그대로 나와요. 이름을 지워도 이미 배정된 직원의 정보는 지워지지 않아요.</p>
+<div class="otabs" id="otabs" role="tablist" aria-label="부서"></div><div class="opanel" id="orgl"></div>
+<div class="wr osave"><p class="note" id="orgmsg"></p><span class="sp"></span><button class="btn" id="orgsave" type="button">부서 · 팀 저장</button></div></div>
 </div></div>
 
 <div id="p4" hidden><div class="tbar"><h2>스토어</h2><span class="sp"></span><a class="btn ghost" href="/store/" target="_blank" rel="noopener">스토어 열기</a><button class="btn" id="spnew" type="button">＋ 상품 추가</button></div>
@@ -79,4 +81,4 @@
 <div id="hpm" class="mod" role="dialog" aria-modal="true" aria-labelledby="hpt" hidden><div class="mbox"><button type="button" class="mx" id="hpx" aria-label="닫기">×</button><h2 id="hpt">대표 확인</h2><p class="note">인사정보는 대표만 볼 수 있어요. 대표 비밀번호를 입력해 주세요.</p><input id="hpi" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="20" aria-label="대표 비밀번호"><p class="note err" id="hpe"></p><div class="wr"><button class="btn ghost" id="hpc" type="button">취소</button><button class="btn" id="hpo" type="button">확인</button></div></div></div>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=6"></script><script src="app.js?v=4"></script><script src="hr.js?v=20"></script><script src="chan.js?v=2"></script><script src="store.js?v=3"></script><script src="../nav.js?v=4" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=6"></script><script src="app.js?v=4"></script><script src="hr.js?v=21"></script><script src="chan.js?v=2"></script><script src="store.js?v=3"></script><script src="../nav.js?v=4" defer></script></body></html>
