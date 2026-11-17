@@ -4,6 +4,9 @@ const U={"사운드":["vocal","composition","directing","mixing","mastering"],"�
   N={vocal:"보컬",composition:"작곡·편곡",directing:"디렉팅",mixing:"믹싱",mastering:"마스터링",illustration:"일러스트",design:"디자인·굿즈",writer:"작가",streamer:"스트리머",video:"영상",management:"매니지먼트",sales:"영업·운영",etc:"기타"},
   fmt=v=>{const f=(v||"").split(",").filter(Boolean);if(!f.length)return"-";const o=Object.entries(U).map(([u,k])=>{const h=f.filter(x=>k.includes(x));return h.length?u+"("+h.map(x=>N[x]).join(", ")+")":""}).filter(Boolean);const r=f.filter(x=>!N[x]);return o.concat(r).join(" · ")};
 const el=(t,p={},k=[])=>{const e=Object.assign(document.createElement(t),p);k.forEach(c=>e.append(c));return e};
+/* 모집 마감이면 지원서 대신 안내를 보여요 (서버에서도 접수를 막아요) */
+const closeJoin=()=>{$("f").hidden=true;$("closed").hidden=false};
+db.rpc("join_is_open").then(({data,error})=>{if(!error&&data===false)closeJoin()});
 $("f").onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),d=Object.fromEntries(fd),m=$("m"),fl=fd.getAll("field");
   if(d.website)return;
   if(!fl.length){m.textContent=T("join.nof","분야를 하나 이상 선택해 주세요.");return}
@@ -11,6 +14,7 @@ $("f").onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),d=O
   const fo=fl.includes("etc")?(d.field_other||"").trim()||null:null;$("go").disabled=true;m.textContent="";$("wait").hidden=false;
   const {error}=await db.from("join_requests").insert({nickname:d.nickname.trim(),name:(d.name||"").trim()||null,email:d.email.trim(),youtube:d.youtube.trim()||null,twitter:d.twitter.trim()||null,intro:d.intro.trim(),fields:fl.join(","),field_other:fo,region:d.region,motive:d.motive.trim(),career:(d.career||"").trim()||null});
   $("wait").hidden=true;
+  if(error&&/row-level security|policy/i.test(error.message||"")){$("wait").hidden=true;closeJoin();scrollTo({top:0,behavior:"smooth"});return}
   if(error){$("go").disabled=false;showErr(T("join.fail","전송에 실패했어요. 잠시 후 다시 시도하거나 rif@rif-studio.com으로 보내주세요."));return}
   e.target.reset();m.textContent="";$("go").disabled=false;$("fo").hidden=true;showDone();
   (async()=>{try{const body={subject:"[Join Us] "+d.nickname,nickname:d.nickname,name:d.name||"-",email:d.email,youtube:d.youtube||"-",twitter:d.twitter||"-",fields:fl.join(", ")+(fo?" ("+fo+")":""),region:d.region,motive:d.motive,career:d.career||"-",message:d.intro};
