@@ -7,7 +7,9 @@ let inbox=[],outbox=[],boxes=[],bmem={},stars=new Set(),drafts=[],tpls=[],irds=n
 let fold="in",sub="open",mode="list",selId=null,selKind="in",picked=new Set(),filt={un:false,st:false,at:false},q="",compose=null,usage=null,newCount=-1;
 const lc=s=>String(s==null?"":s).toLowerCase();
 const tok=s=>lc(s).match(/[a-z0-9._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)+/g)||[];
-const mineMsg=m=>X.myAddrs.some(a=>m._t.has(a));
+/* 내 메일 = 내 주소 · 별칭으로 온 메일 + 내가 멤버인 🔒 비공개 공용 메일함(biz@ 등)으로 온 메일 → 받은 편지함에도 바로 보여요 */
+const myPriv=()=>boxes.filter(b=>b.private&&(bmem[b.id]||[]).includes(X.me)).map(b=>b.addr);
+const mineMsg=m=>X.myAddrs.some(a=>m._t.has(a))||myPriv().some(a=>m._t.has(a));
 const boxesOf=m=>boxes.filter(b=>m._t.has(b.addr));
 /* 완료는 공용 메일함(고객 문의 등)의 '완료' 탭에서만 다뤄요. 공용 메일함 메일이 아니면 완료 표시와 상관없이 받은 편지함에 보여요 */
 const inOpen=m=>!m.done||!boxesOf(m).length;
