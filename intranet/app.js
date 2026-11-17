@@ -284,6 +284,7 @@ function drawChat(stick){const box=$("cl"),near=box.scrollHeight-box.scrollTop-b
   $("ch2").replaceChildren(el("span",{textContent:rm?"👥 "+rm.name+" · "+[rm.owner_email,...(roomMem[rm.id]||[])].map(dispName).join(", "):chatTo?(to?(to.nickname||to.name):chatTo)+" 님과의 1:1 대화"+(to&&to.duties?" · 업무: "+to.duties:""):"RIF STUDIO · 전체 채팅 · 모든 사원이 볼 수 있어요"}));
   if(rm&&(rm.owner_email.toLowerCase()===me||ceo)){const mb=el("button",{type:"button",className:"ob2",textContent:"멤버 관리"});mb.onclick=()=>roomDlg(rm);const db2=el("button",{type:"button",className:"ob2",textContent:"방 삭제"});
     db2.onclick=async()=>{if(!confirm("'"+rm.name+"' 채팅방을 삭제할까요?\n대화 내용도 모두 사라지고 되돌릴 수 없어요."))return;const {error}=await db.rpc("chat_room_delete",{p_id:rm.id});if(error)return alert("삭제하지 못했어요");chatTo="";await loadRooms();await loadChat(true)};$("ch2").append(mb,db2)}
+  try{window.RIFVOICE&&RIFVOICE.decorate($("ch2"),{room:rm,to:chatTo&&!rm?chatTo:""})}catch(_){}
   $("ci").placeholder=rm?"채팅방 멤버 모두에게 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)":chatTo?"이 사원에게만 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)":"전체에게 보내요 (Enter 보내기 · Shift+Enter 줄바꿈)";
   const list=convMsgs(chatTo);
   if(!list.length)box.append(el("div",{className:"cday",textContent:chatTo?"아직 대화가 없어요. 먼저 말을 걸어 보세요.":"아직 메시지가 없어요."}));
@@ -323,7 +324,7 @@ function roomDlg(rm){
   document.body.append(wrap);nm.focus()}
 async function loadChat(stick){await loadRooms();const {data}=await db.from("chat_messages").select("id,author_email,author_name,body,created_at,to_email,room_id").order("id",{ascending:false}).limit(500);
   if(!data)return;chatMsgs=data.reverse();if(chatOpen)markSeen();drawPeople();drawChat(stick)}
-function startChat(){if(chatStarted)return;chatStarted=true;loadChat(true);
+function startChat(){if(chatStarted)return;chatStarted=true;loadChat(true);try{window.RIFVOICE&&RIFVOICE.start()}catch(_){}
   try{chatSub=db.channel("chat-room").on("postgres_changes",{event:"*",schema:"public",table:"chat_messages"},()=>loadChat(false)).subscribe()}catch(_){}
   chatTimer=setInterval(()=>loadChat(false),8000)}
 function openChat(){chatOpen=true;markSeen();drawPeople();drawChat(true);chatBadge();const b=$("cl");setTimeout(()=>{b.scrollTop=b.scrollHeight},30);$("ci").focus()}
@@ -346,7 +347,7 @@ document.querySelectorAll("#sub button").forEach(b=>b.onclick=()=>{document.quer
 /* 로그인·가입 */
 $("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:toEmail($("em").value),password:$("pw").value});
   $("lmsg").textContent=error?"로그인 실패 — 이메일과 비밀번호를 확인해 주세요":"";$("pw").value="";render()};
-$("out").onclick=async e=>{e.preventDefault();await db.auth.signOut();render()};
+$("out").onclick=async e=>{e.preventDefault();try{window.RIFVOICE&&await RIFVOICE.stop()}catch(_){}await db.auth.signOut();render()};
 $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
   if($("spw").value!==$("spw2").value){m.textContent="비밀번호 확인이 달라요";return}
   const b=$("sgo");b.disabled=true;m.className="note";m.textContent="가입 중…";
