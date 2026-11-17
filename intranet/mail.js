@@ -42,6 +42,7 @@ async function load(){
   tpls=tp.data||[];
   if(fold.startsWith("box:")&&!boxes.some(x=>"box:"+x.id===fold)){fold="in";if(mode==="list")sub="open"}
   title()}
+/* 완료 처리한 메일은 이미 다룬 메일이라 안 읽음 숫자에 넣지 않아요 (배지 · 폴더 숫자 · 굵은 글씨 모두 같은 기준) */
 const unreadIn=m=>!m.deleted_at&&!m.done&&!irds.has(m.id);
 /* 배지 숫자 = 내 폴더(받은 편지함 · 내 공용 메일함 · 경영지원팀이면 미분류)에 보이는 안 읽은 메일 수
    (다른 직원 개인 주소로 온 메일은 대표의 '전체 메일'에서만 보이니 숫자에 넣지 않아요) */
@@ -54,7 +55,7 @@ async function loadUsage(){const {data}=await db.rpc("mail_usage");usage=data||n
 /* ───────── 왼쪽 폴더 ───────── */
 function counts(){
   const c={};const live=inbox.filter(m=>!m.deleted_at);
-  c.in=live.filter(m=>inOpen(m)&&!irds.has(m.id)&&mineMsg(m)).length;
+  c.in=live.filter(m=>!m.done&&!irds.has(m.id)&&mineMsg(m)).length;
   c.mine=live.filter(m=>!m.done&&lc(m.assignee_email)===X.me&&!irds.has(m.id)).length;
   c.draft=drafts.length;c.trash=inbox.filter(m=>m.deleted_at).length+outbox.filter(r=>r.deleted_at).length;
   boxes.forEach(b=>{c["box:"+b.id]=live.filter(m=>!m.done&&!irds.has(m.id)&&m._t.has(b.addr)).length});
@@ -108,7 +109,7 @@ function baseList(){
   return L}
 function viewList(){
   let L=baseList();const k=lc(q);
-  if(filt.un)L=L.filter(m=>!m._o&&!m._d&&!irds.has(m.id));
+  if(filt.un)L=L.filter(m=>!m._o&&!m._d&&!m.done&&!irds.has(m.id));
   if(filt.st)L=L.filter(m=>!m._o&&!m._d&&stars.has(m.id));
   if(filt.at)L=L.filter(m=>(m.attachments||[]).length);
   if(k)L=L.filter(m=>m._o?[m.to_email,m.cc_email,m.subject,m.sender_name,m.body].join(" ").toLowerCase().includes(k):m._d?[m.to_text,m.subject].join(" ").toLowerCase().includes(k):[m.from_addr,m.from_name,m.subject,m.preview,m.to_addrs].join(" ").toLowerCase().includes(k));
@@ -134,7 +135,7 @@ function fillRows(){
   if(!L.length)box.append(el("p",{className:"oempty",textContent:fold==="out"?"보낸 메일이 없어요.":fold==="trash"?"휴지통이 비어 있어요.":fold==="draft"?"임시보관함이 비어 있어요.":fold==="star"?"별표 표시한 메일이 없어요.":q||filt.un||filt.st||filt.at?"조건에 맞는 메일이 없어요.":"메일이 없어요."}));
   const all=document.querySelector(".obar input[type=checkbox]");if(all)all.checked=!!L.length&&L.every(m=>picked.has(keyOf(m)))}
 function row(m){
-  const k=keyOf(m),un=!m._o&&!m._d&&!irds.has(m.id),r=el("div",{className:"omi"+(un?" un":"")+(picked.has(k)?" pk":"")});
+  const k=keyOf(m),un=!m._o&&!m._d&&!m.done&&!irds.has(m.id),r=el("div",{className:"omi"+(un?" un":"")+(picked.has(k)?" pk":"")});
   const cb=el("input",{type:"checkbox",checked:picked.has(k),ariaLabel:"선택"});cb.onclick=e=>e.stopPropagation();cb.onchange=()=>{cb.checked?picked.add(k):picked.delete(k);r.classList.toggle("pk",cb.checked);bulk()};
   const st=el("button",{type:"button",className:"ostar"+(stars.has(m.id)?" on":""),textContent:stars.has(m.id)?"★":"☆",title:"별표",ariaLabel:"별표"});
   if(m._o||m._d)st.style.visibility="hidden";
