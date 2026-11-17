@@ -6,7 +6,9 @@ const U={"사운드":["vocal","composition","directing","mixing","mastering"],"�
 const el=(t,p={},k=[])=>{const e=Object.assign(document.createElement(t),p);k.forEach(c=>e.append(c));return e};
 /* 모집 마감이면 지원서 대신 안내를 보여요 (서버에서도 접수를 막아요) */
 const closeJoin=()=>{$("f").hidden=true;$("closed").hidden=false};
-db.rpc("join_is_open").then(({data,error})=>{if(!error&&data===false)closeJoin()});
+/* 기본은 마감 안내만 보이고, 서버가 모집 중(true)이라고 답할 때만 지원서를 펼쳐요 */
+const openJoin=()=>{$("closed").hidden=true;$("f").hidden=false};
+db.rpc("join_is_open").then(({data,error})=>{if(!error&&data===true)openJoin();else closeJoin()},closeJoin);
 $("f").onsubmit=async e=>{e.preventDefault();const fd=new FormData(e.target),d=Object.fromEntries(fd),m=$("m"),fl=fd.getAll("field");
   if(d.website)return;
   if(!fl.length){m.textContent=T("join.nof","분야를 하나 이상 선택해 주세요.");return}
