@@ -224,12 +224,12 @@ html.snoscroll{overflow:hidden}
 @media(prefers-reduced-motion:reduce){.sth img{transition:none}}
 /* Members 메뉴: 한 줄에 분야 + 사람들 */
 .nm.nmg{min-width:0;width:max-content;max-width:min(560px,92vw);padding:10px 8px;gap:0}
-.nrow{display:grid;grid-template-columns:78px 1fr;align-items:center;gap:6px;padding:4px 6px;border-radius:10px}
-.nrow+.nrow{border-top:1px solid #7772}.nrow.emp{display:none}
+.nm .nrow{display:grid;grid-template-columns:78px 1fr;align-items:center;gap:6px;padding:4px 6px;border-radius:10px}
+.nm .nrow+.nrow{border-top:1px solid #7772}.nm .nrow.emp{display:none}
 .nm .nh{margin:0;font-size:11px;letter-spacing:.14em;color:var(--mut);font-weight:700;text-transform:uppercase;display:flex;align-items:center;gap:6px}
 .nps{display:flex;flex-wrap:wrap;gap:2px}
 .nm .nps a{padding:7px 10px;white-space:nowrap}
-@media(max-width:700px){header nav{position:relative}.ng:has(>.nmg){position:static}.nm.nmg{left:0;right:auto;max-width:100%}.nrow{grid-template-columns:72px 1fr}}
+@media(max-width:700px){header nav{position:relative}.ng:has(>.nmg){position:static}.nm.nmg{left:0;right:auto;max-width:100%}.nm .nrow{grid-template-columns:72px 1fr}}
 /* ===== News ===== */
 .ntop{display:flex;justify-content:flex-end;margin-bottom:14px}.ntop:empty{display:none}
 .nlist{list-style:none;margin:0;padding:0;border-top:1px solid #7774}
