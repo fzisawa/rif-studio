@@ -69,6 +69,8 @@ jobs:
             out
             dist/*.exe
             dist/*.dmg
+            dist/*.blockmap
+            dist/latest.yml
           if-no-files-found: ignore
 
   release:
@@ -90,7 +92,8 @@ jobs:
           cp -r art/*/out/* out/ 2>/dev/null
           VER=$(node -p "require('./package.json').version")
           TAG="desktop-v$VER"
-          FILES=$(find art -type f \( -name '*.exe' -o -name '*.dmg' \))
+          echo "{\"version\":\"$VER\"}" > latest-mac.json
+          FILES="$(find art -type f \( -name '*.exe' -o -name '*.dmg' -o -name 'RIF-Intranet-Setup.exe.blockmap' -o -name 'latest.yml' \)) latest-mac.json"
           echo "$FILES" >> out/files.txt
           if [ -n "$FILES" ]; then
             if gh release view "$TAG" >/dev/null 2>&1; then

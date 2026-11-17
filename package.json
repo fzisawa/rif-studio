@@ -1,7 +1,7 @@
 {
   "name": "rif-intranet",
   "productName": "RIF Intranet",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "RIF STUDIO 인트라넷 데스크톱 앱",
   "author": "RIF STUDIO",
   "license": "UNLICENSED",
@@ -61,6 +61,15 @@
       "title": "RIF Intranet",
       "artifactName": "RIF-Intranet-${arch}.${ext}"
     },
-    "afterPack": "./adhoc-sign.js"
+    "afterPack": "./adhoc-sign.js",
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://github.com/fzisawa/rif-studio/releases/latest/download/"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "6.3.9"
   }
 }
