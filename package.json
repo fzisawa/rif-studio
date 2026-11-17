@@ -1,0 +1,56 @@
+{
+  "name": "rif-intranet",
+  "productName": "RIF Intranet",
+  "version": "1.0.0",
+  "description": "RIF STUDIO 인트라넷 데스크톱 앱",
+  "author": "RIF STUDIO",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis --x64 --publish never",
+    "dist:mac": "electron-builder --mac dmg --arm64 --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "com.rifstudio.intranet",
+    "productName": "RIF Intranet",
+    "copyright": "© RIF STUDIO",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "offline.html", "badge.png", "build/icon.png", "package.json"],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png",
+      "artifactName": "RIF-Intranet-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "shortcutName": "RIF Intranet",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.png",
+      "category": "public.app-category.business",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "artifactName": "RIF-Intranet-${arch}.${ext}",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "음성 채팅에서 내 목소리를 동료에게 전하기 위해 마이크를 사용해요.",
+        "NSCameraUsageDescription": "카메라는 사용하지 않아요."
+      }
+    },
+    "dmg": {
+      "title": "RIF Intranet",
+      "artifactName": "RIF-Intranet-${arch}.${ext}"
+    }
+  }
+}

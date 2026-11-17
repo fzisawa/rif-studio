@@ -1,0 +1,109 @@
+name: desktop
+# RIF Intranet 데스크톱 앱 빌드 — 사이트(main)와 분리된 desktop-app 가지에서만 돌아요.
+# 설치 파일은 GitHub Release(desktop-v<버전>)에 올리고, 빌드 기록 · 확인용 스크린샷은 desktop-app-out 가지에 올라가요.
+# 비밀값은 쓰지 않아요 (서명 인증서 없이 만든 설치 파일).
+on:
+  push:
+    branches: [desktop-app]
+permissions:
+  contents: write
+concurrency:
+  group: desktop-app
+  cancel-in-progress: true
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: win
+          - os: macos-14
+            name: mac
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: install
+        shell: bash
+        run: npm install --no-audit --no-fund
+      - name: build
+        shell: bash
+        run: |
+          mkdir -p out
+          npm run dist:${{ matrix.name }} > out/build-${{ matrix.name }}.log 2>&1; echo "exit=$?" >> out/build-${{ matrix.name }}.log
+          tail -60 out/build-${{ matrix.name }}.log
+          ls -la dist >> out/build-${{ matrix.name }}.log 2>&1
+      - name: check mac
+        if: matrix.name == 'mac'
+        shell: bash
+        run: |
+          APP="dist/mac-arm64/RIF Intranet.app"
+          { codesign -dv --verbose=2 "$APP" 2>&1; codesign --verify --deep --strict "$APP" 2>&1; echo "verify exit=$?";
+            /usr/libexec/PlistBuddy -c "Print :NSMicrophoneUsageDescription" "$APP/Contents/Info.plist"; } > out/mac-check.txt 2>&1
+          "$APP/Contents/MacOS/RIF Intranet" > out/mac-run.log 2>&1 &
+          sleep 25; screencapture -x out/mac-shot.png || true
+          pkill -f "RIF Intranet" || true
+          shasum -a 256 dist/*.dmg > out/sha256-mac.txt
+      - name: check win
+        if: matrix.name == 'win'
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath "dist/win-unpacked/RIF Intranet.exe" -PassThru
+          Start-Sleep -Seconds 25
+          Add-Type -AssemblyName System.Windows.Forms,System.Drawing
+          $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $bmp = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+          $g = [System.Drawing.Graphics]::FromImage($bmp); $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+          $bmp.Save("out/win-shot.png"); "running=$(-not $p.HasExited)" | Out-File out/win-run.txt
+          Stop-Process -Name "RIF Intranet" -Force -ErrorAction SilentlyContinue
+          Get-FileHash dist/*.exe | Format-List | Out-File out/sha256-win.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.name }}
+          path: |
+            out
+            dist/*.exe
+            dist/*.dmg
+          if-no-files-found: ignore
+
+  release:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: art
+      - name: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          mkdir -p out
+          find art -type f | sort > out/files.txt
+          cp -r art/*/out/* out/ 2>/dev/null
+          VER=$(node -p "require('./package.json').version")
+          TAG="desktop-v$VER"
+          FILES=$(find art -type f \( -name '*.exe' -o -name '*.dmg' \))
+          echo "$FILES" >> out/files.txt
+          if [ -n "$FILES" ]; then
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              gh release upload "$TAG" $FILES --clobber > out/release.txt 2>&1
+            else
+              gh release create "$TAG" $FILES --target "$GITHUB_SHA" --title "RIF Intranet 데스크톱 $VER" --notes "RIF STUDIO 인트라넷 데스크톱 앱 (Windows · Mac)" --latest > out/release.txt 2>&1
+            fi
+            echo "release exit=$?" >> out/release.txt
+          fi
+          git config user.name "rif-app-build"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan desktop-app-out
+          git rm -rf --cached . >/dev/null
+          git add -f out
+          git commit -q -m "desktop build output for ${GITHUB_SHA::7}"
+          git push -f origin desktop-app-out
