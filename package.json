@@ -10,7 +10,7 @@
   "scripts": {
     "start": "electron .",
     "dist:win": "electron-builder --win nsis --x64 --publish never",
-    "dist:mac": "electron-builder --mac dmg --arm64 --x64 --publish never"
+    "dist:mac": "electron-builder --mac dmg --arm64 --publish never && electron-builder --mac dmg --x64 --publish never"
   },
   "devDependencies": {
     "electron": "33.2.1",
@@ -20,8 +20,17 @@
     "appId": "com.rifstudio.intranet",
     "productName": "RIF Intranet",
     "copyright": "© RIF STUDIO",
-    "directories": { "output": "dist", "buildResources": "build" },
-    "files": ["main.js", "offline.html", "badge.png", "build/icon.png", "package.json"],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "offline.html",
+      "badge.png",
+      "build/icon.png",
+      "package.json"
+    ],
     "win": {
       "target": "nsis",
       "icon": "build/icon.png",
@@ -39,7 +48,7 @@
       "target": "dmg",
       "icon": "build/icon.png",
       "category": "public.app-category.business",
-      "identity": "-",
+      "identity": null,
       "hardenedRuntime": false,
       "gatekeeperAssess": false,
       "artifactName": "RIF-Intranet-${arch}.${ext}",
@@ -51,6 +60,7 @@
     "dmg": {
       "title": "RIF Intranet",
       "artifactName": "RIF-Intranet-${arch}.${ext}"
-    }
+    },
+    "afterPack": "./adhoc-sign.js"
   }
 }
