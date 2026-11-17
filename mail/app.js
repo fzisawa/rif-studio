@@ -16,7 +16,7 @@ async function prefill(em){
   $("mk1").value=staff.name||"";$("mk7").value=em;
   /* 직함은 인사정보(본부 · 부 · 직책 · 직위)와 본부 · 부 영어 이름으로 자동으로 정해져요. 바뀌면 저장된 서명의 직함 줄도 자동으로 바뀌어요 */
   try{const {data:tt}=await db.rpc("my_title_en");$("mk4").value=tt||""}catch(_){}
-  try{const {data}=await db.rpc("staff_directory");const me=(data||[]).find(r=>(r.email||"").toLowerCase()===em.toLowerCase());if(me){if(me.name)$("mk1").value=me.name;$("mk6").value=(typeof fmtPhone==="function"?fmtPhone(me.phone):me.phone)||""}}catch(_){}}
+  try{const {data}=await db.rpc("staff_directory");const me=(data||[]).find(r=>(r.email||"").toLowerCase()===em.toLowerCase());if(me){if(me.name)$("mk1").value=me.name;if(me.name_en)$("mk2").value=me.name_en;$("mk6").value=(typeof fmtPhone==="function"?fmtPhone(me.phone):me.phone)||""}}catch(_){}}
 const eh=t=>esc(t||"").replace(/"/g,"&quot;");
 $("mkgo").onclick=async()=>{const v=i=>$(i).value.trim(),m=$("sigmsg");
   if(!v("mk1")){m.className="note err";m.textContent="이름(한글)을 적어 주세요";return}
@@ -89,7 +89,7 @@ $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
   if($("spw").value!==$("spw2").value){m.textContent="비밀번호 확인이 달라요";return}
   const b=$("sgo");b.disabled=true;m.className="note";m.textContent="가입 중…";
   let ok=false,msg="";
-  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value.trim(),name:$("sna").value,nickname:$("snk").value,phone:$("sph").value,loginId:$("sid").value,inviteEmail:$("sem").value,password:$("spw").value}});
+  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value.trim(),name:$("sna").value,nameEn:$("sne").value,nickname:$("snk").value,phone:$("sph").value,loginId:$("sid").value,inviteEmail:$("sem").value,password:$("spw").value}});
     if(error){try{msg=(await error.context.json()).error}catch(_){msg=error.message}}else if(data&&data.ok)ok=true;else msg=(data&&data.error)||"알 수 없는 오류"}catch(x){msg=String(x.message||x)}
   b.disabled=false;
   if(!ok){m.className="note err";m.textContent=msg;return}

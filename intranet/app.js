@@ -183,7 +183,7 @@ async function loadDir(){const {data}=await db.rpc("staff_directory");dir=data||
   const paths=[...new Set(dir.map(r=>r.avatar).filter(Boolean))];urls={};
   if(paths.length){const {data:u}=await db.storage.from("avatars").createSignedUrls(paths,3600);(u||[]).forEach(x=>{if(x.signedUrl)urls[x.path]=x.signedUrl})}
   const mine=dir.find(r=>r.email.toLowerCase()===me)||{};
-  avatar($("pfav"),mine.avatar,mine.name);$("pfnk").value=mine.nickname||"";$("pfdc").value=mine.discord||"";$("pftw").value=mine.twitter||"";$("pfdu").value=mine.duties||"";
+  avatar($("pfav"),mine.avatar,mine.name);$("pfnk").value=mine.nickname||"";$("pfen").value=mine.name_en||"";$("pfdc").value=mine.discord||"";$("pftw").value=mine.twitter||"";$("pfdu").value=mine.duties||"";
   drawTree();drawDir();loadOrg()}
 let DIVS={"경영본부":["경영지원부"],"프로덕션본부":["보컬부","사운드제작부","일러스트부","영상제작부"]};
 const TEAM_DIV={};const mapDiv=()=>{for(const k in TEAM_DIV)delete TEAM_DIV[k];Object.entries(DIVS).forEach(([d,ts])=>ts.forEach(t=>TEAM_DIV[t]=d))};mapDiv();
@@ -230,7 +230,7 @@ function showPerson(r){const has=r.avatar&&urls[r.avatar],av=el("div",{className
   $("pm").hidden=false}
 $("pmx").onclick=()=>{$("pm").hidden=true};$("pm").onclick=e=>{if(e.target===$("pm"))$("pm").hidden=true};document.addEventListener("keydown",e=>{if(e.key==="Escape")$("pm").hidden=true});
 $("eq").oninput=drawDir;
-$("pf").onsubmit=async e=>{e.preventDefault();const {error}=await db.rpc("set_my_profile",{p_nick:$("pfnk").value,p_discord:$("pfdc").value,p_twitter:$("pftw").value,p_duties:$("pfdu").value});
+$("pf").onsubmit=async e=>{e.preventDefault();const {error}=await db.rpc("set_my_profile",{p_name_en:$("pfen").value.trim(),p_nick:$("pfnk").value,p_discord:$("pfdc").value,p_twitter:$("pftw").value,p_duties:$("pfdu").value});
   msg("pfmsg",error?"저장하지 못했어요":"저장했어요 ✓",!!error);if(!error)loadDir()};
 $("pfpick").onclick=()=>$("pfile").click();
 function shrink(f){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const S=512,k=Math.min(1,S/Math.min(im.width,im.height)),w=Math.round(im.width*k),h=Math.round(im.height*k);
@@ -358,7 +358,7 @@ $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
   if($("spw").value!==$("spw2").value){m.textContent="비밀번호 확인이 달라요";return}
   const b=$("sgo");b.disabled=true;m.className="note";m.textContent="가입 중…";
   let ok=false,msg2="";
-  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value.trim(),name:$("sna").value,nickname:$("snk").value,phone:$("sph").value,loginId:$("sid").value,discord:$("sdc").value,twitter:$("stw").value,password:$("spw").value}});
+  try{const {data,error}=await db.functions.invoke("staff-signup",{body:{empNo:$("sn").value.trim(),name:$("sna").value,nameEn:$("sne").value,nickname:$("snk").value,phone:$("sph").value,loginId:$("sid").value,discord:$("sdc").value,twitter:$("stw").value,password:$("spw").value}});
     if(error){try{msg2=(await error.context.json()).error}catch(_){msg2=error.message}}else if(data&&data.ok)ok=true;else msg2=(data&&data.error)||"알 수 없는 오류"}catch(x){msg2=String(x.message||x)}
   b.disabled=false;
   if(!ok){m.className="note err";m.textContent=msg2;return}
