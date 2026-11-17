@@ -185,9 +185,9 @@ async function loadDir(){const {data}=await db.rpc("staff_directory");dir=data||
   const mine=dir.find(r=>r.email.toLowerCase()===me)||{};
   avatar($("pfav"),mine.avatar,mine.name);$("pfnk").value=mine.nickname||"";$("pfdc").value=mine.discord||"";$("pftw").value=mine.twitter||"";$("pfdu").value=mine.duties||"";
   drawTree();drawDir();loadOrg()}
-let DIVS={"경영부":["경영지원팀"],"프로덕션부":["보컬팀","사운드제작팀","일러스트팀","영상제작팀"]};
+let DIVS={"경영본부":["경영지원부"],"프로덕션본부":["보컬부","사운드제작부","일러스트부","영상제작부"]};
 const TEAM_DIV={};const mapDiv=()=>{for(const k in TEAM_DIV)delete TEAM_DIV[k];Object.entries(DIVS).forEach(([d,ts])=>ts.forEach(t=>TEAM_DIV[t]=d))};mapDiv();
-/* 부서·팀 목록은 관리자 페이지에서 바꿀 수 있어요 (org_units) */
+/* 본부 · 부 목록은 관리자 페이지에서 바꿀 수 있어요 (org_units) */
 let orgLoaded=false;
 async function loadOrg(){if(orgLoaded)return;orgLoaded=true;
   const {data,error}=await db.from("org_units").select("division,team,sort").order("sort");if(error||!data||!data.length)return;
@@ -212,10 +212,10 @@ function drawDir(){
   const l=q?dir.filter(m):osel?dir.filter(r=>inLeaf(r,osel)):[];
   const title=osel==="boss"?"RIF STUDIO · 대표이사":osel==="etc"?"RIF STUDIO · 기타":osel.startsWith("team:")?"RIF STUDIO · "+(TEAM_DIV[osel.slice(5)]||"")+" · "+osel.slice(5):"RIF STUDIO";
   $("oti").textContent=q?"검색 결과":title;
-  if(!q&&!osel){$("ecnt").textContent="";g.append(el("p",{className:"note",style:"padding:30px 4px",textContent:"왼쪽에서 RIF STUDIO → 부서 → 팀을 눌러 사원을 확인하세요."}));return}
+  if(!q&&!osel){$("ecnt").textContent="";g.append(el("p",{className:"note",style:"padding:30px 4px",textContent:"왼쪽에서 RIF STUDIO → 본부 → 부를 눌러 사원을 확인하세요."}));return}
   $("ecnt").textContent="총 "+l.length+"명 · 이름을 누르면 연락처가 나와요";
   if(!l.length){g.append(el("p",{className:"note",style:"padding:20px 4px",textContent:"해당하는 사원이 없어요."}));return}
-  const PO=["대표이사","이사","팀장","팀원"],RK=["수석","차석","책임","사원"],ix=(a,v)=>{const i=a.indexOf(v);return i<0?99:i};
+  const PO=["대표이사","이사","부장","부원","팀장","팀원"],RK=["수석","차석","책임","사원"],ix=(a,v)=>{const i=a.indexOf(v);return i<0?99:i};
   l.sort((a,b)=>ix(PO,a.pos)-ix(PO,b.pos)||ix(RK,a.rnk)-ix(RK,b.rnk)||String(a.emp).localeCompare(String(b.emp)));
   const tb=el("tbody");
   l.forEach(r=>{const has=r.avatar&&urls[r.avatar],av=el("span",{className:"avs l"});if(has)avatar(av,r.avatar,"");else av.textContent=ini(r.nickname||r.name);
@@ -224,7 +224,7 @@ function drawDir(){
     tr.onclick=()=>showPerson(r);tb.append(tr)});
   g.append(el("div",{className:"tbw"},[el("table",{className:"jt",id:"etbl"},[el("thead",{},[el("tr",{},["","이름","직책","직위","사번","Discord","X","업무 내용"].map(t=>el("th",{textContent:t})))]),tb])]))}
 function showPerson(r){const has=r.avatar&&urls[r.avatar],av=el("div",{className:"av"});if(has)avatar(av,r.avatar,"");else av.textContent=ini(r.nickname||r.name);
-  const rows=[["사번",r.emp||"-"],["부서",[r.division,r.team].filter(Boolean).join(" · ")||"-"],["직책·직위",[r.pos,r.rnk].filter(Boolean).join(" · ")||"-"],["전화",fmtPhone(r.phone)||"-"],["이메일",r.email],["Discord",r.discord||"-"],["X",r.twitter||"-"],["업무 내용",r.duties||"-"]];
+  const rows=[["사번",r.emp||"-"],["소속",[r.division,r.team].filter(Boolean).join(" · ")||"-"],["직책·직위",[r.pos,r.rnk].filter(Boolean).join(" · ")||"-"],["전화",fmtPhone(r.phone)||"-"],["이메일",r.email],["Discord",r.discord||"-"],["X",r.twitter||"-"],["업무 내용",r.duties||"-"]];
   $("pmb").replaceChildren(el("div",{className:"pfx"},[av,el("div",{},[el("b",{textContent:r.nickname||r.name}),el("span",{textContent:r.nickname&&r.name?r.name:""})])]),el("dl",{className:"prl"},rows.flatMap(([k,v])=>[el("dt",{textContent:k}),el("dd",{textContent:v})])));
   if(r.email.toLowerCase()!==me){const cb=el("button",{type:"button",className:"btn",textContent:"💬 채팅하기",style:"margin-top:16px;width:100%"});cb.onclick=()=>{chatTo=r.email.toLowerCase();$("cq").value="";$("pm").hidden=true;document.querySelector('#tabs button[data-t="c"]').click()};$("pmb").append(cb)}
   $("pm").hidden=false}
@@ -271,7 +271,7 @@ function drawPeople(){const box=$("cp");box.replaceChildren();
     people=keys.map(k=>dir.find(r=>r.email.toLowerCase()===k)).filter(Boolean).sort((x,y)=>lastId(y.email.toLowerCase())-lastId(x.email.toLowerCase())).map(mkEmp)}
   const items=[{k:"",name:"RIF STUDIO",sub:"전체 채팅 · 모든 사원",logo:1}].concat(roomItems.filter(it=>!q||it.name.toLowerCase().includes(q))).concat([{hdr:hd}]).concat(people);
   {const fb=el("button",{type:"button",className:"cpi cnew find",textContent:"🔎 사원 정보에서 찾기"});fb.onclick=()=>document.querySelector('#tabs button[data-t="e"]').click();box.prepend(fb)}
-  if(canLead()){const nb=el("button",{type:"button",className:"cpi cnew",textContent:"＋ 새 팀 채팅방 만들기"});nb.onclick=()=>roomDlg(null);box.prepend(nb)}
+  if(canLead()){const nb=el("button",{type:"button",className:"cpi cnew",textContent:"＋ 새 채팅방 만들기"});nb.onclick=()=>roomDlg(null);box.prepend(nb)}
   items.forEach(it=>{if(it.hdr){box.append(el("div",{className:"csh",textContent:it.hdr}));if(!people.length)box.append(el("div",{className:"note",style:"padding:10px 14px;font-size:12px",textContent:q?"찾는 사원이 없어요.":"사원은 위 검색이나 '사원 정보'에서 찾아 대화를 시작하세요."}));return}
     const av=el("span",{className:"avs l"});
     if(it.r&&it.r.avatar&&urls[it.r.avatar])avatar(av,it.r.avatar,"");else {if(it.logo){av.style.backgroundImage='url("../img/logo-square.png")';av.style.backgroundSize="cover";av.style.backgroundColor="#fff"}else av.textContent=it.r?ini(it.name):it.room?"👥":"#"}
@@ -298,14 +298,14 @@ function drawChat(stick){const box=$("cl"),near=box.scrollHeight-box.scrollTop-b
     box.append(row)});
   if(stick||near)box.scrollTop=box.scrollHeight;chatBadge()}
 const curRoom=()=>chatTo.startsWith("room:")?rooms.find(r=>"room:"+r.id===chatTo)||null:null;
-const canLead=()=>ceo||(dir.find(x=>x.email.toLowerCase()===me)||{}).pos==="팀장"||(dir.find(x=>x.email.toLowerCase()===me)||{}).pos==="대표이사";
+const canLead=()=>ceo||(dir.find(x=>x.email.toLowerCase()===me)||{}).pos==="부장"||(dir.find(x=>x.email.toLowerCase()===me)||{}).pos==="팀장"||(dir.find(x=>x.email.toLowerCase()===me)||{}).pos==="대표이사";
 async function loadRooms(){const [a,b]=await Promise.all([db.from("chat_rooms").select("id,name,owner_email").order("id"),db.from("chat_room_members").select("room_id,email")]);
   if(a.error)return;rooms=a.data||[];roomMem={};(b.data||[]).forEach(x=>(roomMem[x.room_id]=roomMem[x.room_id]||[]).push(x.email));
   if(chatTo.startsWith("room:")&&!curRoom())chatTo=""}
 function roomDlg(rm){
   const old=document.getElementById("rmdlg");if(old)old.remove();
   const sel=new Set(rm?(roomMem[rm.id]||[]).map(e=>e.toLowerCase()):[]);
-  const nm=el("input",{value:rm?rm.name:"",maxLength:60,placeholder:"예: 사운드제작팀 채팅방"});
+  const nm=el("input",{value:rm?rm.name:"",maxLength:60,placeholder:"예: 사운드제작부 채팅방"});
   const q=el("input",{type:"search",placeholder:"사원 검색"});const lst=el("div",{className:"rml"});const cnt=el("span",{className:"note"});
   const myT=(dir.find(x=>x.email.toLowerCase()===me)||{}).team||"";
   const draw=()=>{lst.replaceChildren();const k=q.value.trim().toLowerCase();
@@ -313,10 +313,10 @@ function roomDlg(rm){
       const cb=el("input",{type:"checkbox",checked:sel.has(r.email.toLowerCase())});cb.onchange=()=>{cb.checked?sel.add(r.email.toLowerCase()):sel.delete(r.email.toLowerCase());cnt.textContent="초대 "+sel.size+"명"};
       lst.append(el("label",{className:"rmi"},[cb,el("span",{textContent:(r.nickname||r.name)+(r.team?" · "+r.team:"")+(r.rnk?" · "+r.rnk:"")})]))});cnt.textContent="초대 "+sel.size+"명"};
   q.oninput=draw;draw();
-  const tm=myT?el("button",{type:"button",className:"ob2",textContent:"내 팀("+myT+") 전원 선택"}):null;
+  const tm=myT?el("button",{type:"button",className:"ob2",textContent:"내 부("+myT+") 전원 선택"}):null;
   if(tm)tm.onclick=()=>{dir.filter(r=>r.team===myT&&r.email.toLowerCase()!==me).forEach(r=>sel.add(r.email.toLowerCase()));draw()};
   const msgx=el("span",{className:"note"});const ok=el("button",{type:"button",className:"btn",textContent:rm?"저장":"만들기"}),cx=el("button",{type:"button",className:"btn ghost",textContent:"취소"});
-  const wrap=el("div",{className:"mod",id:"rmdlg"},[el("div",{className:"mbox wd"},[el("h2",{textContent:rm?"채팅방 멤버 관리":"새 팀 채팅방",style:"margin-top:0"}),el("label",{className:"rmn"},[document.createTextNode("방 이름"),nm]),q,...(tm?[tm]:[]),lst,el("div",{className:"wr",style:"justify-content:space-between;align-items:center;gap:10px"},[cnt,msgx,el("span",{},[cx,document.createTextNode(" "),ok])])])]);
+  const wrap=el("div",{className:"mod",id:"rmdlg"},[el("div",{className:"mbox wd"},[el("h2",{textContent:rm?"채팅방 멤버 관리":"새 채팅방",style:"margin-top:0"}),el("label",{className:"rmn"},[document.createTextNode("방 이름"),nm]),q,...(tm?[tm]:[]),lst,el("div",{className:"wr",style:"justify-content:space-between;align-items:center;gap:10px"},[cnt,msgx,el("span",{},[cx,document.createTextNode(" "),ok])])])]);
   cx.onclick=()=>wrap.remove();wrap.addEventListener("click",e=>{if(e.target===wrap)wrap.remove()});
   ok.onclick=async()=>{const n=nm.value.trim();if(!n){msgx.textContent="방 이름을 써 주세요.";return}ok.disabled=true;msgx.textContent="저장 중…";
     const {data,error}=await db.rpc("chat_room_save",{p_id:rm?rm.id:null,p_name:n,p_members:[...sel]});ok.disabled=false;

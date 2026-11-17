@@ -14,16 +14,18 @@ async function render(){
   setSig();prefill(s.user.email)}
 async function prefill(em){
   $("mk1").value=staff.name||"";$("mk7").value=em;
+  /* 직함은 인사정보(본부 · 부 · 직책 · 직위)와 본부 · 부 영어 이름으로 자동으로 정해져요. 바뀌면 저장된 서명의 직함 줄도 자동으로 바뀌어요 */
+  try{const {data:tt}=await db.rpc("my_title_en");$("mk4").value=tt||""}catch(_){}
   try{const {data}=await db.rpc("staff_directory");const me=(data||[]).find(r=>(r.email||"").toLowerCase()===em.toLowerCase());if(me){if(me.name)$("mk1").value=me.name;$("mk6").value=(typeof fmtPhone==="function"?fmtPhone(me.phone):me.phone)||""}}catch(_){}}
 const eh=t=>esc(t||"").replace(/"/g,"&quot;");
 $("mkgo").onclick=async()=>{const v=i=>$(i).value.trim(),m=$("sigmsg");
   if(!v("mk1")){m.className="note err";m.textContent="이름(한글)을 적어 주세요";return}
-  const L=(k,x,c)=>x?'<tr><td style="padding:0 10px 0 0;color:#5b8f6e;font-weight:bold;font-size:11px">'+k+'</td><td>'+c+'</td></tr>':"";
+  $("mk4").readOnly=true;const L=(k,x,c)=>x?'<tr><td style="padding:0 10px 0 0;color:#5b8f6e;font-weight:bold;font-size:11px">'+k+'</td><td>'+c+'</td></tr>':"";
   const tel=n=>'<a href="tel:'+eh(n)+'" style="color:#333333;text-decoration:none">'+eh(n)+'</a>';
   $("mk5").value="031-707-2702";$("mk7").value=(await db.auth.getSession()).data.session.user.email;
   const html='<div style="font-family:Arial,Helvetica,sans-serif"><div style="border-left:2px solid #9a7ee6;padding-left:12px"><div style="font-size:15px;font-weight:bold;color:#222222;line-height:20px">'+eh(v("mk1"))+(v("mk2")?' <span style="font-weight:normal;color:#666666">'+eh(v("mk2"))+'</span>':"")+'</div>'
    +(v("mk3")?'<div style="font-size:12px;color:#888888;line-height:18px">'+eh(v("mk3"))+'</div>':"")
-   +(v("mk4")?'<div style="font-size:12px;font-weight:bold;color:#6b4fbb;line-height:18px">'+eh(v("mk4"))+'</div>':"")
+   +'<div style="font-size:12px;font-weight:bold;color:#6b4fbb;line-height:18px">'+eh(v("mk4"))+'</div>'
    +'</div><div style="padding-left:14px;padding-top:10px"><div style="font-size:13px;font-weight:bold;color:#222222;letter-spacing:1px;line-height:18px">RIF STUDIO <span style="font-weight:normal;color:#666666;letter-spacing:0;font-size:12px">リフ スタジオ</span></div><table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:6px;font-size:12px;line-height:18px;color:#333333">'
    +L("OFFICE",v("mk5"),tel(v("mk5")))+L("MOBILE",v("mk6"),tel(v("mk6")))+L("MAIL",v("mk7"),'<a href="mailto:'+eh(v("mk7"))+'" style="color:#6b4fbb;text-decoration:none">'+eh(v("mk7"))+'</a>')+'</table></div></div>';
   ed.innerHTML=html;m.className="note";m.textContent="만들었어요. 아래에서 확인하고 '서명 저장'을 눌러 주세요."};

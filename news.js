@@ -1,4 +1,4 @@
-/* RIF STUDIO News — 목록 · 글 보기 · (경영지원팀 · 대표) 쓰기/고치기/지우기
+/* RIF STUDIO News — 목록 · 글 보기 · (경영지원부 · 대표) 쓰기/고치기/지우기
    한국어로 쓰면 저장할 때 일본어 · 영어 번역이 자동으로 채워져요(고쳐서 저장할 수도 있어요). */
 (async()=>{
 const root=document.getElementById("news");if(!root)return;

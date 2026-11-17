@@ -9,7 +9,7 @@ const dday=d=>d<0?"만료 "+(-d)+"일 지남":d===0?"오늘 만료":"D-"+d;
 const expired=r=>!r.used_at&&Date.now()-new Date(r.issued_at).getTime()>DAYS*86400000;
 const live=r=>r.status!=="left",soon=r=>live(r)&&!!ymd(r.contract_end)&&dleft(r.contract_end)<=SOON;
 const lock=()=>{PIN=null;rows=[];view=[];owners={};edit=null;filt="all";OPEN.clear();clearTimeout(tm);$("hr-body").hidden=true;$("hmod").hidden=true;$("hrq").value="";$("hrcnt").textContent="";$("hsum").replaceChildren();$("hrtb").replaceChildren();$("hrlock").textContent="🔒 대표 잠금 해제"};
-const err=e=>{const m=String((e&&e.message)||e||"");return /bad pin/.test(m)?"비밀번호가 맞지 않아요":/only unused/.test(m)?"이미 가입한 사번은 삭제할 수 없어요 (퇴사 처리를 쓰세요)":/8 digits|emp_no invalid/.test(m)?"사번은 공백 없이 1~20자여야 해요":/already used/.test(m)?"이미 있는 사번이에요":/bad division|bad team/.test(m)?"부서/팀 값이 올바르지 않아요":/bad email/.test(m)?"이메일 형식이 올바르지 않아요":/bad kind/.test(m)?"계약 형태 값이 올바르지 않아요":/bad contract dates/.test(m)?"계약 만료일이 입사일보다 빨라요":/ceo account/.test(m)?"대표님 계정은 퇴사 처리할 수 없어요":/admin only/.test(m)?"대표 계정으로 로그인해 주세요":m};
+const err=e=>{const m=String((e&&e.message)||e||"");return /bad pin/.test(m)?"비밀번호가 맞지 않아요":/only unused/.test(m)?"이미 가입한 사번은 삭제할 수 없어요 (퇴사 처리를 쓰세요)":/8 digits|emp_no invalid/.test(m)?"사번은 공백 없이 1~20자여야 해요":/already used/.test(m)?"이미 있는 사번이에요":/bad division|bad team/.test(m)?"본부/부 값이 올바르지 않아요":/bad email/.test(m)?"이메일 형식이 올바르지 않아요":/bad kind/.test(m)?"계약 형태 값이 올바르지 않아요":/bad contract dates/.test(m)?"계약 만료일이 입사일보다 빨라요":/ceo account/.test(m)?"대표님 계정은 퇴사 처리할 수 없어요":/admin only/.test(m)?"대표 계정으로 로그인해 주세요":m};
 const fnErr=async(data,error)=>{if(error){try{return (await error.context.json()).error}catch(_){return error.message}}return data&&data.ok?"":(data&&data.error)||"알 수 없는 오류"};
 async function load(){
   const [a,o]=await Promise.all([db.rpc("hr_list",{p_pin:PIN}),db.from("page_owners").select("page,email")]);
@@ -21,7 +21,7 @@ const td=(t,c)=>el("td",{className:c||"",textContent:t||"",title:t||""});
 /* 이 사람이 쓸 수 있는 권한 (직책·팀·채널 담당에서 정해져요) */
 const chOf=r=>{const em=(r.user_email||"").toLowerCase();return em?Object.keys(owners).filter(p=>owners[p].includes(em)):[]};
 const rights=r=>{const em=(r.user_email||"").toLowerCase();if(!em||!r.used_at)return"";if(!live(r))return"없음 (퇴사)";
-  if(em===CEO||r.position==="대표이사")return"대표 (전체)";const a=[];if(r.team==="경영지원팀")a.push("업무 탭 (지원서 · 문의 메일)");
+  if(em===CEO||r.position==="대표이사")return"대표 (전체)";const a=[];if((r.team==="경영지원부"||r.team==="경영지원팀"))a.push("업무 탭 (지원서 · 문의 메일)");
   const ch=chOf(r);if(ch.length)a.push("포트폴리오 수정: "+ch.join(", "));return a.join(" · ")||"기본 (게시판 · 메일 · 채팅)"};
 /* 현황 칩 = 골라 보기 */
 const FILTERS=[["all","전체",()=>true,1],["정규직","정규직",r=>live(r)&&r.kind==="정규직",1],["계약직","계약직",r=>live(r)&&r.kind==="계약직",1],["인턴","인턴",r=>live(r)&&r.kind==="인턴",1],["none","미지정",r=>live(r)&&!KINDS.includes(r.kind),1],["pend","가입 대기",r=>live(r)&&!r.used_at,0],["soon","계약 만료 임박",soon,0,1],["left","퇴사",r=>!live(r),0]];
@@ -78,7 +78,7 @@ function draw(){
     const tr=el("tr",{className:"r"+(r.status==="left"?" lft":"")},[td(r.emp_no,"en hm"),td((r.name||"")+(r.nickname?" ("+r.nickname+")":"")||"(이름 미입력)","pn"+(r.name||r.nickname?"":" sm")),kc,td(idTxt,pend?"sm hm":"hm"),td(fmtPhone(r.phone),"hm"),td([r.position,r.rank].filter(Boolean).join(" / "),"hm"),td([r.division,r.team].filter(Boolean).join(" · "),"hm"),
       el("td",{},[el("span",{className:"hs "+st[1],textContent:st[0]})]),td(r.used_at?day(r.joined):"발급 "+dt(r.issued_at),"dt hm sm"),el("td",{className:"ac hm"},[b1])]);
     const rt=rights(r);
-    const info=el("div",{className:"dg"},[kv("사번",r.emp_no,"mo"),kv("아이디",idTxt,"mo"),kv("전화",fmtPhone(r.phone),"mo"),kv("직책 · 직위",[r.position,r.rank].filter(Boolean).join(" / "),"mo"),kv("부서 · 팀",[r.division,r.team].filter(Boolean).join(" · "),"mo"),kv(r.used_at?"입사일":"사번 발급일",r.used_at?day(r.joined):dt(r.issued_at),"mo"),
+    const info=el("div",{className:"dg"},[kv("사번",r.emp_no,"mo"),kv("아이디",idTxt,"mo"),kv("전화",fmtPhone(r.phone),"mo"),kv("직책 · 직위",[r.position,r.rank].filter(Boolean).join(" / "),"mo"),kv("본부 · 부",[r.division,r.team].filter(Boolean).join(" · "),"mo"),kv(r.used_at?"입사일":"사번 발급일",r.used_at?day(r.joined):dt(r.issued_at),"mo"),
       ...(ymd(r.contract_end)?[kv("계약 만료일",day(r.contract_end)+(dl!==null?" ("+dday(dl)+")":""))]:[]),...(live(r)?[]:[kv("퇴사일",day(r.left_at))]),
       kv("Discord",r.discord),kv("X",r.twitter),kv("메모",r.memo),...(rt?[kv("권한",rt)]:[]),...(pend?[kv("초대 이메일",r.invite_email)]:[]),...(r.onboard_sent_at&&!r.used_at?[kv("사번 안내 메일 발송",dt(r.onboard_sent_at))]:[])]);
     const dtl=el("tr",{className:"d",hidden:!OPEN.has(r.id)},[el("td",{colSpan:10},[info,el("div",{className:"dact"},acts)])]);
@@ -88,7 +88,7 @@ function draw(){
 $("hrq").oninput=draw;
 /* 명단 내보내기: 지금 보이는 목록을 엑셀에서 열리는 CSV로 (대표 잠금이 풀려 있을 때만) */
 $("hrcsv").onclick=()=>{if(!PIN)return;if(!view.length)return alert("내보낼 직원이 없어요.");
-  const H=["사번","이름","닉네임","아이디","전화","계약 형태","입사일","계약 만료일","직책","직위","부서","팀","상태","퇴사일","Discord","X","포트폴리오 담당","메모"];
+  const H=["사번","이름","닉네임","아이디","전화","계약 형태","입사일","계약 만료일","직책","직위","본부","부","상태","퇴사일","Discord","X","포트폴리오 담당","메모"];
   const stt=r=>!live(r)?"퇴사":r.used_at?"재직":expired(r)?"가입 기간 만료":"가입 대기";
   const L=view.map(r=>[r.emp_no,r.name,r.nickname,r.used_at?r.email:(r.invite_email?"초대: "+r.invite_email:""),fmtPhone(r.phone),r.kind||"미지정",ymd(r.joined),ymd(r.contract_end),r.position,r.rank,r.division,r.team,stt(r),ymd(r.left_at),r.discord,r.twitter,chOf(r).join(" / "),r.memo]);
   /* 수식으로 읽힐 수 있는 값(=,+,-,@ 로 시작)은 앞에 ' 를 붙여 글자로만 열리게 해요 */
@@ -115,47 +115,49 @@ $("hform").onsubmit=async e=>{e.preventDefault();if(!edit)return;
     p_kind:$("hkd").value,p_joined:$("hjd").value||null,p_contract_end:$("hce").value||null,p_left_at:$("hlf").value||null});
   if(error)return alert("저장하지 못했어요: "+err(error));
   edit=null;$("hmod").hidden=true;load()};
-let TD={"경영지원팀":"경영부","보컬팀":"프로덕션부","사운드제작팀":"프로덕션부","일러스트팀":"프로덕션부","영상제작팀":"프로덕션부"},DV=["경영부","프로덕션부"];
-/* 부서·팀 (org_units) — 관리자 페이지에서 편집 */
+let TD={"경영지원부":"경영본부","보컬부":"프로덕션본부","사운드제작부":"프로덕션본부","일러스트부":"프로덕션본부","영상제작부":"프로덕션본부"},DV=["경영본부","프로덕션본부"];
+/* 본부 · 부 (org_units) — 관리자 페이지에서 편집. 영어 이름은 메일 서명 직함에 자동으로 쓰여요 */
 function fillDivs(){const sel=$("hdv"),cur=sel.value;sel.replaceChildren(el("option",{value:"",textContent:"미배정"}),...DV.map(d=>el("option",{value:d,textContent:d})));if(cur&&!DV.includes(cur))sel.append(el("option",{value:cur,textContent:cur}));sel.value=cur}
-async function loadOrgU(){const {data,error}=await db.from("org_units").select("division,team,sort").order("sort");if(error||!data||!data.length)return null;
-  const o=[];data.forEach(r=>{let d=o.find(x=>x.division===r.division);if(!d){d={division:r.division,teams:[]};o.push(d)}if(r.team)d.teams.push(r.team)});
-  DV=o.map(d=>d.division);TD={};o.forEach(d=>d.teams.forEach(t=>TD[t]=d.division));fillDivs();return o}
-/* 부서는 탭으로, 팀은 칩으로. 바꾼 뒤 '부서 · 팀 저장'을 눌러야 반영돼요 */
+async function loadOrgU(){const {data,error}=await db.from("org_units").select("division,team,sort,name_en").order("sort");if(error||!data||!data.length)return null;
+  const o=[];data.forEach(r=>{let d=o.find(x=>x.division===r.division);if(!d){d={division:r.division,en:"",teams:[]};o.push(d)}if(r.team)d.teams.push({name:r.team,en:r.name_en||""});else d.en=r.name_en||""});
+  DV=o.map(d=>d.division);TD={};o.forEach(d=>d.teams.forEach(t=>TD[t.name]=d.division));fillDivs();return o}
+/* 본부는 탭으로, 부는 줄로(한국어 · 영어). 바꾼 뒤 '본부 · 부 저장'을 눌러야 반영돼요 */
 let OU=[],OS=0,O0="";
 const odirty=()=>JSON.stringify(OU)!==O0;
 const omsg=()=>{$("orgmsg").textContent=odirty()?"저장하지 않은 변경이 있어요.":"";$("orgmsg").className="note"+(odirty()?" warn":"")};
 function drawOrg(){OS=Math.min(OS,Math.max(0,OU.length-1));
-  $("otabs").replaceChildren(...OU.map((d,i)=>{const b=el("button",{type:"button",role:"tab",className:"otab",ariaSelected:String(i===OS)},[document.createTextNode(d.division||"이름 없는 부서"),el("b",{textContent:String(d.teams.length)})]);b.onclick=()=>{OS=i;drawOrg()};return b}),
-    (()=>{const b=el("button",{type:"button",className:"otab add",textContent:"＋ 부서 추가"});b.onclick=()=>{OU.push({division:"",teams:[]});OS=OU.length-1;drawOrg();omsg();$("orgl").querySelector(".odn").focus()};return b})());
-  const d=OU[OS];if(!d){$("orgl").replaceChildren(el("p",{className:"note",textContent:"부서가 없어요. '＋ 부서 추가'를 눌러 만들어 주세요."}));return}
-  const nm=el("input",{className:"odn",maxLength:40,placeholder:"부서 이름 · 예) 프로덕션부",value:d.division});
-  nm.oninput=()=>{d.division=nm.value;const t=$("otabs").children[OS];if(t)t.firstChild.textContent=nm.value||"이름 없는 부서";omsg()};
-  const del=el("button",{type:"button",className:"btn small ghost",textContent:"부서 삭제"});
-  del.onclick=()=>{if(!confirm((d.division||"이 부서")+" 을(를) 지울까요? (저장을 눌러야 반영돼요)"))return;OU.splice(OS,1);OS=Math.max(0,OS-1);drawOrg();omsg()};
-  const chips=el("div",{className:"ochips"},d.teams.map((t,i)=>{const x=el("button",{type:"button",className:"ox",ariaLabel:t+" 빼기",textContent:"×"}),
-      l=el("button",{type:"button",className:"om",ariaLabel:"앞으로",textContent:"‹",disabled:i===0});
+  $("otabs").replaceChildren(...OU.map((d,i)=>{const b=el("button",{type:"button",role:"tab",className:"otab",ariaSelected:String(i===OS)},[document.createTextNode(d.division||"이름 없는 본부"),el("b",{textContent:String(d.teams.length)})]);b.onclick=()=>{OS=i;drawOrg()};return b}),
+    (()=>{const b=el("button",{type:"button",className:"otab add",textContent:"＋ 본부 추가"});b.onclick=()=>{OU.push({division:"",en:"",teams:[]});OS=OU.length-1;drawOrg();omsg();$("orgl").querySelector(".odn").focus()};return b})());
+  const d=OU[OS];if(!d){$("orgl").replaceChildren(el("p",{className:"note",textContent:"본부가 없어요. '＋ 본부 추가'를 눌러 만들어 주세요."}));return}
+  const nm=el("input",{className:"odn",maxLength:40,placeholder:"본부 이름 · 예) 프로덕션본부",value:d.division}),ne=el("input",{className:"oen",maxLength:80,placeholder:"영어 · 예) Production Division",value:d.en||""});
+  nm.oninput=()=>{d.division=nm.value;const t=$("otabs").children[OS];if(t)t.firstChild.textContent=nm.value||"이름 없는 본부";omsg()};ne.oninput=()=>{d.en=ne.value;omsg()};
+  const del=el("button",{type:"button",className:"btn small ghost",textContent:"본부 삭제"});
+  del.onclick=()=>{if(!confirm((d.division||"이 본부")+" 을(를) 지울까요? (저장을 눌러야 반영돼요)"))return;OU.splice(OS,1);OS=Math.max(0,OS-1);drawOrg();omsg()};
+  const rows=el("div",{className:"orows"},d.teams.map((t,i)=>{const x=el("button",{type:"button",className:"ox",ariaLabel:t.name+" 빼기",textContent:"×"}),
+      l=el("button",{type:"button",className:"om",ariaLabel:"위로",textContent:"↑",disabled:i===0}),
+      ki=el("input",{maxLength:40,value:t.name,ariaLabel:"부 이름"}),ei=el("input",{maxLength:80,value:t.en||"",placeholder:"영어 · 예) Vocal Department",ariaLabel:"영어 이름"});
+    ki.oninput=()=>{t.name=ki.value;omsg()};ei.oninput=()=>{t.en=ei.value;omsg()};
     x.onclick=()=>{d.teams.splice(i,1);drawOrg();omsg()};l.onclick=()=>{d.teams.splice(i-1,0,d.teams.splice(i,1)[0]);drawOrg();omsg()};
-    return el("span",{className:"ochip"},[l,el("span",{textContent:t}),x])}));
-  if(!d.teams.length)chips.append(el("span",{className:"note",textContent:"아직 팀이 없어요."}));
-  const ti=el("input",{className:"oti",maxLength:40,placeholder:"새 팀 이름 · 예) 보컬팀"}),ta=el("button",{type:"button",className:"btn small",textContent:"＋ 팀 추가"});
-  const add=()=>{const v=ti.value.trim();if(!v)return ti.focus();if(d.teams.includes(v)){alert("'"+v+"' 팀이 이미 있어요");return}d.teams.push(v);drawOrg();omsg();$("orgl").querySelector(".oti").focus()};
-  ta.onclick=add;ti.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();add()}};
-  $("orgl").replaceChildren(el("div",{className:"ohd"},[el("label",{},[el("span",{textContent:"부서 이름"}),nm]),del]),
-    el("div",{className:"otl"},[el("span",{className:"note",textContent:"팀 ("+d.teams.length+")"}),chips]),el("div",{className:"oadd"},[ti,ta]))}
-async function drawOrgU(){const o=await loadOrgU()||DV.map(d=>({division:d,teams:Object.keys(TD).filter(t=>TD[t]===d)}));OU=o.map(d=>({division:d.division,teams:[...d.teams]}));O0=JSON.stringify(OU);drawOrg();omsg()}
-$("orgsave").onclick=async()=>{const units=OU.map(u=>({division:u.division.trim(),teams:u.teams})).filter(u=>u.division);
-  if(OU.some(u=>!u.division.trim()&&u.teams.length))return alert("이름이 비어 있는 부서가 있어요. 이름을 적거나 부서를 지워 주세요");
-  if(!units.length)return alert("부서를 하나 이상 적어 주세요");const names=units.map(u=>u.division);if(new Set(names).size!==names.length)return alert("같은 이름의 부서가 두 개 있어요");
+    return el("div",{className:"orow2"},[l,ki,ei,x])}));
+  if(!d.teams.length)rows.append(el("span",{className:"note",textContent:"아직 부가 없어요."}));
+  const ti=el("input",{className:"oti",maxLength:40,placeholder:"새 부 이름 · 예) 보컬부"}),te=el("input",{className:"oti",maxLength:80,placeholder:"영어 · 예) Vocal Department"}),ta=el("button",{type:"button",className:"btn small",textContent:"＋ 부 추가"});
+  const add=()=>{const v=ti.value.trim();if(!v)return ti.focus();if(d.teams.some(t=>t.name===v)){alert("'"+v+"' 부가 이미 있어요");return}d.teams.push({name:v,en:te.value.trim()});drawOrg();omsg();$("orgl").querySelector(".oadd .oti").focus()};
+  ta.onclick=add;[ti,te].forEach(x=>x.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();add()}});
+  $("orgl").replaceChildren(el("div",{className:"ohd"},[el("label",{},[el("span",{textContent:"본부 이름"}),nm]),el("label",{},[el("span",{textContent:"영어 이름 (서명에 쓰여요)"}),ne]),del]),
+    el("div",{className:"otl"},[el("span",{className:"note",textContent:"부 ("+d.teams.length+") · 한국어 / 영어"}),rows]),el("div",{className:"oadd"},[ti,te,ta]))}
+async function drawOrgU(){const o=await loadOrgU()||DV.map(d=>({division:d,en:"",teams:Object.keys(TD).filter(t=>TD[t]===d).map(t=>({name:t,en:""}))}));OU=o.map(d=>({division:d.division,en:d.en||"",teams:d.teams.map(t=>({...t}))}));O0=JSON.stringify(OU);drawOrg();omsg()}
+$("orgsave").onclick=async()=>{const units=OU.map(u=>({division:u.division.trim(),division_en:(u.en||"").trim(),teams:u.teams.filter(t=>t.name.trim()).map(t=>({name:t.name.trim(),en:(t.en||"").trim()}))})).filter(u=>u.division);
+  if(OU.some(u=>!u.division.trim()&&u.teams.length))return alert("이름이 비어 있는 본부가 있어요. 이름을 적거나 본부를 지워 주세요");
+  if(!units.length)return alert("본부를 하나 이상 적어 주세요");const names=units.map(u=>u.division);if(new Set(names).size!==names.length)return alert("같은 이름의 본부가 두 개 있어요");
   const b=$("orgsave");b.disabled=true;const {error}=await db.rpc("org_save",{p_pin:PIN,p_units:units});b.disabled=false;
   if(error){$("orgmsg").textContent="저장하지 못했어요: "+err(error);$("orgmsg").className="note err";return}const keep=OU[OS]&&OU[OS].division;await drawOrgU();const i=OU.findIndex(u=>u.division===keep);if(i>=0){OS=i;drawOrg()}
   $("orgmsg").textContent="저장했어요. 인트라넷은 새로고침하면 반영돼요.";$("orgmsg").className="note ok";fillTeams()};
-/* 부서를 고르면 그 부서의 팀만 팀 목록에 나와요 */
-/* 목록에서 지운 부서·팀에 배정돼 있던 직원은 그 값을 그대로 지킬 수 있게 선택지에 남겨 둬요 */
+/* 본부를 고르면 그 본부의 부만 목록에 나와요 */
+/* 목록에서 지운 본부 · 부에 배정돼 있던 직원은 그 값을 그대로 지킬 수 있게 선택지에 남겨 둬요 */
 function fillTeams(keep){const d=$("hdv").value,cur=keep===undefined?$("htm").value:keep,sel=$("htm"),old=edit&&edit.team&&!(edit.team in TD)&&(edit.division||"")===d?edit.team:"";
-  sel.replaceChildren(el("option",{value:"",textContent:"없음"}),...Object.keys(TD).filter(t=>TD[t]===d).map(t=>el("option",{value:t,textContent:t})),...(old?[el("option",{value:old,textContent:old+" (목록에 없는 팀)"})]:[]));
+  sel.replaceChildren(el("option",{value:"",textContent:"없음"}),...Object.keys(TD).filter(t=>TD[t]===d).map(t=>el("option",{value:t,textContent:t})),...(old?[el("option",{value:old,textContent:old+" (목록에 없는 부)"})]:[]));
   sel.value=Object.keys(TD).some(t=>t===cur&&TD[t]===d)||(old&&cur===old)?cur:""}
-function setDT(d,t){const sel=$("hdv");sel.replaceChildren(el("option",{value:"",textContent:"미배정"}),...DV.map(x=>el("option",{value:x,textContent:x})));if(d&&!DV.includes(d))sel.append(el("option",{value:d,textContent:d+" (목록에 없는 부서)"}));sel.value=d;fillTeams(t)}
+function setDT(d,t){const sel=$("hdv");sel.replaceChildren(el("option",{value:"",textContent:"미배정"}),...DV.map(x=>el("option",{value:x,textContent:x})));if(d&&!DV.includes(d))sel.append(el("option",{value:d,textContent:d+" (목록에 없는 본부)"}));sel.value=d;fillTeams(t)}
 $("hdv").addEventListener("change",()=>fillTeams());
 $("htm").addEventListener("mousedown",()=>fillTeams());$("htm").addEventListener("focus",()=>fillTeams());
 $("htm").onchange=()=>{const t=$("htm").value;if(t&&TD[t])$("hdv").value=TD[t]};

@@ -23,7 +23,7 @@ const btn=(t,c,fn,title)=>{const b=el("button",{type:"button",className:"btn sma
 const normSub=s=>{let t=String(s||"").trim();for(let i=0;i<8;i++){const n=t.replace(/^\s*((re|fw|fwd|답장|회신|답신|전달)\s*(\[\d+\])?\s*[:：]\s*)+/i,"").replace(/^\s*\[RIF STUDIO\]\s*/i,"");if(n===t)break;t=n}return t.trim().toLowerCase()};
 const errTxt=e=>{const m=String((e&&e.message)||e||"");
   if(/address exists/.test(m))return"이미 있는 주소예요.";if(/staff address/.test(m))return"사원 메일 주소와 겹쳐요.";if(/bad address/.test(m))return"주소는 영문 소문자·숫자·점(.)·하이픈(-)·밑줄(_)만 쓸 수 있어요.";
-  if(/reserved/.test(m))return"쓸 수 없는 주소예요.";if(/protected/.test(m))return"고객 문의(support@) 메일함은 지울 수 없어요.";if(/mgmt only/.test(m))return"경영지원팀·대표만 할 수 있어요.";if(/ceo only/.test(m))return"대표만 할 수 있어요.";return m};
+  if(/reserved/.test(m))return"쓸 수 없는 주소예요.";if(/protected/.test(m))return"고객 문의(support@) 메일함은 지울 수 없어요.";if(/mgmt only/.test(m))return"경영지원부·대표만 할 수 있어요.";if(/ceo only/.test(m))return"대표만 할 수 있어요.";return m};
 
 /* ───────── 데이터 ───────── */
 async function load(){
@@ -46,7 +46,7 @@ async function load(){
   title()}
 /* 완료 처리한 메일은 이미 다룬 메일이라 안 읽음 숫자에 넣지 않아요 (배지 · 폴더 숫자 · 굵은 글씨 모두 같은 기준) */
 const unreadIn=m=>!m.deleted_at&&!m.done&&!irds.has(m.id);
-/* 배지 숫자 = 내 폴더(받은 편지함 · 내 공용 메일함 · 경영지원팀이면 미분류)에 보이는 안 읽은 메일 수
+/* 배지 숫자 = 내 폴더(받은 편지함 · 내 공용 메일함 · 경영지원부이면 미분류)에 보이는 안 읽은 메일 수
    (다른 직원 개인 주소로 온 메일은 대표의 '전체 메일'에서만 보이니 숫자에 넣지 않아요) */
 function title(){const n=inbox.filter(m=>unreadIn(m)&&(mineMsg(m)||boxesOf(m).length||(isMgmt()&&isOrph(m)))).length;
   const t=$("ib");if(t){t.hidden=!n;t.textContent=n}
@@ -413,20 +413,20 @@ function suggest(inp){
     else if(e.key==="Enter"||e.key==="Tab"){if(ix>=0){e.preventDefault();pick(items[ix])}}else if(e.key==="Escape"){dd.hidden=true}});
   inp.addEventListener("blur",()=>setTimeout(()=>{dd.hidden=true},120))}
 
-/* ───────── 공용 메일함 관리 (경영지원팀·대표) ───────── */
+/* ───────── 공용 메일함 관리 (경영지원부·대표) ───────── */
 const PRESETS=[["support","고객 문의","홈페이지·외부 문의 응대"],["biz","협업·제안","협업·제안·의뢰 접수"],["recruit","채용","지원서·면접 안내"],["billing","계약·정산","계약서·견적·정산 문의"],["press","홍보·보도","취재·홍보·제휴 문의"]];
 function drawManage(om){
   const p=el("div",{className:"orp"});om.append(p);
   p.append(el("h2",{className:"eh",textContent:"공용 메일함 관리"}),el("p",{className:"note",textContent:"주소 하나(예: biz@rif-studio.com)로 온 메일을 정한 사원들이 함께 보고, 그 주소 이름으로 답장하게 만들어요. 따로 설정할 건 없어요 — 만들면 바로 받아요."}));
   const bar=el("div",{className:"jbar"},[btn("＋ 새 공용 메일함","p",()=>boxDlg(null))]);bar.querySelector("button").className="btn";p.append(bar);
   const tb=el("tbody");
-  boxes.forEach(b=>{const mem=((bmem[b.id]||[]).map(nm).join(", ")||(b.private?"(멤버 없음 · 대표만 봐요)":"(멤버 없음 · 대표·경영지원팀만 봐요)"))+(b.private?" · 비공개":"");
+  boxes.forEach(b=>{const mem=((bmem[b.id]||[]).map(nm).join(", ")||(b.private?"(멤버 없음 · 대표만 봐요)":"(멤버 없음 · 대표·경영지원부만 봐요)"))+(b.private?" · 비공개":"");
     const prot=b.addr==="support@rif-studio.com";
     tb.append(el("tr",{},[el("td",{},[el("b",{textContent:(b.private?"🔒 ":"")+b.name})]),el("td",{textContent:b.addr}),el("td",{className:"wd",textContent:mem,title:mem}),el("td",{className:"wd",textContent:b.descr||"",title:b.descr||""}),el("td",{className:"ac"},[btn("수정","",()=>boxDlg(b)),document.createTextNode(" "),...(prot?[]:[btn("삭제","danger",async()=>{if(!confirm("'"+b.name+"' 메일함을 지울까요?\n이 주소로 온 기존 메일은 그대로 남지만 '미분류 메일'로 옮겨져요."))return;const {error}=await db.rpc("mailbox_delete",{p_id:b.id});if(error)return alert(errTxt(error));await load();render()})])])]))});
   if(!boxes.length)tb.append(el("tr",{},[el("td",{colSpan:5,textContent:"아직 공용 메일함이 없어요."})]));
   p.append(el("div",{className:"tbw",style:"margin-top:14px"},[el("table",{className:"jt"},[el("thead",{},[el("tr",{},["이름","주소","멤버","설명",""].map(t=>el("th",{textContent:t})))]),tb])]));
   p.append(el("h3",{className:"sech",textContent:"이런 메일함을 많이 써요 (눌러서 만들기)"}),el("div",{className:"chips2"},PRESETS.filter(x=>!boxes.some(b=>b.addr===x[0]+"@rif-studio.com")).map(([a,n,d])=>{const c=el("button",{type:"button",className:"chip",textContent:n+" · "+a+"@"});c.onclick=()=>boxDlg(null,{local:a,name:n,descr:d});return c})));
-  p.append(el("p",{className:"note",style:"margin-top:16px",textContent:"멤버가 아닌 경영지원팀·대표도 공용 메일함을 볼 수 있어요(🔒 비공개 메일함은 멤버와 대표만). 사원 개인 주소가 아닌 주소로 온 메일 중 만들어 둔 메일함이 없는 것은 '미분류 메일'에 모여요."}))}
+  p.append(el("p",{className:"note",style:"margin-top:16px",textContent:"멤버가 아닌 경영지원부·대표도 공용 메일함을 볼 수 있어요(🔒 비공개 메일함은 멤버와 대표만). 사원 개인 주소가 아닌 주소로 온 메일 중 만들어 둔 메일함이 없는 것은 '미분류 메일'에 모여요."}))}
 function boxDlg(b,pre){
   const old=document.getElementById("bxdlg");if(old)old.remove();pre=pre||{};
   const sel=new Set(b?(bmem[b.id]||[]):[]);
@@ -434,7 +434,7 @@ function boxDlg(b,pre){
     nmI=el("input",{value:b?b.name:(pre.name||""),maxLength:60,placeholder:"예) 협업·제안"}),
     fnI=el("input",{value:b?b.from_name:"RIF STUDIO",maxLength:60,placeholder:"RIF STUDIO"}),
     ds=el("input",{value:b?b.descr:(pre.descr||""),maxLength:300,placeholder:"어떤 메일을 받는 곳인지 한 줄"});
-  const pv=el("input",{type:"checkbox",checked:!!(b&&b.private)}),pvRow=el("label",{className:"ck3"},[pv,document.createTextNode(" 🔒 비공개 — 멤버와 대표만 봐요 (경영지원팀에게도 안 보여요)")]);pvRow.hidden=!X.ceo;
+  const pv=el("input",{type:"checkbox",checked:!!(b&&b.private)}),pvRow=el("label",{className:"ck3"},[pv,document.createTextNode(" 🔒 비공개 — 멤버와 대표만 봐요 (경영지원부에게도 안 보여요)")]);pvRow.hidden=!X.ceo;
   const qI=el("input",{type:"search",placeholder:"사원 검색"}),lst=el("div",{className:"rml"}),cnt=el("span",{className:"note"});
   const dirx=X.dir.length?X.dir:X.staff.map(s=>({email:s.email,name:s.name}));
   const draw=()=>{lst.replaceChildren();const k=lc(qI.value.trim());
@@ -448,7 +448,7 @@ function boxDlg(b,pre){
   const addrRow=el("label",{className:"rmn"},[document.createTextNode("메일 주소"),el("div",{className:"idrow"},[loc,el("span",{textContent:"@rif-studio.com"})]),el("span",{className:"note",textContent:b?"주소는 바꿀 수 없어요.":"영문 소문자·숫자·점(.)·하이픈(-)만 쓸 수 있어요."})]);
   const wrap=el("div",{className:"mod",id:"bxdlg"},[el("div",{className:"mbox wd"},[el("h2",{textContent:b?"공용 메일함 수정":"새 공용 메일함"}),addrRow,row("이름 (사내에서 보이는 이름)",nmI),row("보내는 이름 (받는 사람에게 보이는 이름 · 영문 추천)",fnI),row("설명",ds),pvRow,
     el("div",{className:"rmn"},[document.createTextNode("멤버 — 이 메일함의 메일을 보고 답장할 수 있는 사원")]),
-    el("div",{className:"jbar",style:"margin:0 0 8px"},[quick("경영지원팀 전원",()=>dirx.filter(r=>r.team==="경영지원팀").forEach(r=>sel.add(lc(r.email)))),quick("전체 선택",()=>dirx.forEach(r=>sel.add(lc(r.email)))),quick("모두 해제",()=>sel.clear())]),qI,lst,
+    el("div",{className:"jbar",style:"margin:0 0 8px"},[quick("경영지원부 전원",()=>dirx.filter(r=>r.team==="경영지원부").forEach(r=>sel.add(lc(r.email)))),quick("전체 선택",()=>dirx.forEach(r=>sel.add(lc(r.email)))),quick("모두 해제",()=>sel.clear())]),qI,lst,
     el("div",{className:"wr",style:"justify-content:space-between;align-items:center"},[cnt,msgx,el("span",{className:"jbar",style:"margin:0"},[cx,ok])])])]);
   wrap.addEventListener("click",e=>{if(e.target===wrap)wrap.remove()});
   ok.onclick=async()=>{const n=nmI.value.trim();if(!b&&!loc.value.trim()){msgx.className="note err";msgx.textContent="메일 주소를 써 주세요.";return}if(!n){msgx.className="note err";msgx.textContent="이름을 써 주세요.";return}
@@ -461,7 +461,7 @@ function boxDlg(b,pre){
 /* ───────── 상용구 ───────── */
 function drawTpl(om){
   const p=el("div",{className:"orp"});om.append(p);
-  p.append(el("h2",{className:"eh",textContent:"상용구"}),el("p",{className:"note",textContent:"자주 쓰는 문장을 저장해 두고, 새 메일에서 '상용구 넣기'로 불러와요. '내 것'은 나만, '공용'은 모든 사원이 쓸 수 있어요 (공용은 경영지원팀·대표만 만들어요)."}));
+  p.append(el("h2",{className:"eh",textContent:"상용구"}),el("p",{className:"note",textContent:"자주 쓰는 문장을 저장해 두고, 새 메일에서 '상용구 넣기'로 불러와요. '내 것'은 나만, '공용'은 모든 사원이 쓸 수 있어요 (공용은 경영지원부·대표만 만들어요)."}));
   const bar=el("div",{className:"jbar"},[btn("＋ 새 상용구","p",()=>tplDlg(null))]);bar.firstChild.className="btn";p.append(bar);
   const tb=el("tbody");
   tpls.forEach(t=>{const can=lc(t.owner_email)===X.me&&!t.shared||(t.shared&&isMgmt());

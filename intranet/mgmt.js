@@ -1,4 +1,4 @@
-/* 업무 탭 · 경영지원팀 전용: 지원서 / support@ 문의 게시판 (대표 포함) */
+/* 업무 탭 · 경영지원부 전용: 지원서 / support@ 문의 게시판 (대표 포함) */
 (()=>{
 const $=i=>document.getElementById(i);
 const N={vocal:"보컬",composition:"작곡·편곡",directing:"디렉팅",mixing:"믹싱",mastering:"마스터링",illustration:"일러스트",design:"디자인·굿즈",writer:"작가",streamer:"스트리머",video:"영상",management:"매니지먼트",sales:"영업·운영",etc:"기타"},
@@ -6,7 +6,7 @@ const N={vocal:"보컬",composition:"작곡·편곡",directing:"디렉팅",mixin
 const flds=r=>{const f=(r.fields||"").split(",").filter(Boolean);return f.map(x=>x==="etc"&&r.field_other?"기타("+r.field_other+")":(N[x]||x)).join(", ")||"-"};
 const pad=n=>String(n).padStart(2,"0"),dt=s=>{const d=new Date(s);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes())};
 const url=v=>/^https?:\/\//.test(v||"")?v:null;
-const errMsg=e=>{const m=String((e&&e.message)||e||"");return /applicant is locked/.test(m)?"대표가 채용/거절을 결정한 지원서라 수정할 수 없어요. 대표가 결정을 풀어야 해요.":/boss only/.test(m)?"대표만 할 수 있어요.":/mgmt only/.test(m)?"경영지원팀만 할 수 있어요.":m};
+const errMsg=e=>{const m=String((e&&e.message)||e||"");return /applicant is locked/.test(m)?"대표가 채용/거절을 결정한 지원서라 수정할 수 없어요. 대표가 결정을 풀어야 해요.":/boss only/.test(m)?"대표만 할 수 있어요.":/mgmt only/.test(m)?"경영지원부만 할 수 있어요.":m};
 let mgmt=false,boss=false,started=false,rows=[],msgs=[],reps={},openJ=null,openQ=null,qfilter="all";
 
 const css=document.createElement("style");
@@ -130,7 +130,7 @@ function drawJ(){
         if(data&&data.warn)alert(data.warn)};
       return el("td",{className:"mk bs b"+(i+2)+(i===0?" bl":"")},[el("div",{className:"mdec"},[c,sb,done])])});
     const bm=memoCell(r,"memo","jr_set_boss_memo","대표 메모",lk,"대표만 쓰고 보는 메모");
-    const tm=memoCell(r,"team_memo","jr_set_team_memo","경영지원팀 메모",lk,"경영지원팀 메모");
+    const tm=memoCell(r,"team_memo","jr_set_team_memo","경영지원부 메모",lk,"경영지원부 메모");
     const tr=el("tr",{className:"r"+(dup?" dup":"")+(lk?" rej":"")},[cell(String(r.no),"no"),cell(dt(r.created_at),"dt"),nick,cell(r.nickname?r.name:""),cell(R[r.region]||"-"),cell(flds(r),"fd"),...MC,...(boss?[...CK,el("td",{className:"bs bm br"},[bm]),el("td",{className:"bsx",title:"대표 전용 칸이 접혀 있어요"})]:[]),el("td",{},[tm])]);
     tr.onclick=()=>{openJ=r.id;openJD(r,lk);db.rpc("jr_seen",{p_id:r.id}).then(()=>{},()=>{});tb.querySelectorAll("tr.on").forEach(x=>x.classList.remove("on"));tr.classList.add("on")};
     if(openJ===r.id)tr.classList.add("on");
@@ -196,7 +196,7 @@ function openJD(r,lk){const old=$("mjd");if(old)old.remove();
     if(!th){openQ=null;alert("이 지원자와 주고받은 메일이 아직 없어요.");return}
     openQ=k;drawQ();markRead(th);const d=[...document.querySelectorAll("#mqb tr.d")].find(x=>!x.hidden);if(d&&d.previousSibling)d.previousSibling.scrollIntoView({block:"center"})};
   const body=el("div",{className:"jdb"},[tags,links,el("div",{className:"jdm"},[mb]),sec("경력",r.career,true),sec("자기소개",r.intro,true),sec("지원동기",r.motive,true)]);
-  if(boss&&r.memo)body.append(sec("대표 메모",r.memo,true));if(r.team_memo)body.append(sec("경영지원팀 메모",r.team_memo,true));
+  if(boss&&r.memo)body.append(sec("대표 메모",r.memo,true));if(r.team_memo)body.append(sec("경영지원부 메모",r.team_memo,true));
   if(boss&&!lk){const del=el("button",{className:"mbtn",type:"button",textContent:"이 지원서 삭제"});
     del.onclick=async()=>{if(!confirm((r.nickname||r.name)+" 지원서를 삭제할까요? 되돌릴 수 없어요."))return;const ok=await rpcSet("jr_delete",{p_id:r.id});if(ok){rows=rows.filter(z=>z.id!==r.id);closeJD();drawJ()}};body.append(del)}
   const pnl=el("aside",{id:"mjd",className:"jdp",role:"dialog",ariaLabel:"지원서 상세"},[head,body]);
@@ -425,8 +425,8 @@ function build(){
       el("select",{id:"mjs",title:"상태"},[["","전체 상태"],["nothanks","감사 메일 전"],["interview","면접 안내함"],...(boss?[["open","검토 중"],["hire","대표 채용"],["reject","대표 거절"]]:[])].map(([v,t])=>el("option",{value:v,textContent:t}))),
       el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("button",{className:"mbtn",type:"button",id:"mjlk",textContent:"🔒 잠긴 지원서",hidden:!boss}),el("span",{className:"mnote",textContent:"줄을 누르면 오른쪽에 지원서 전체가 열려요 · ✉ 버튼을 누르면 메일이 나가고 자동으로 체크돼요"})]),
     el("div",{className:"mtw"},[el("table",{className:"mt mtj"},[el("thead",{},[
-      el("tr",{className:"gh"},[["기본 정보",6,""],["경영지원팀 체크",2,"gt"],["대표 전용 · 대표만 보고 수정",3,"gb"],["경영지원팀 메모",1,""]].filter(x=>boss||x[2]!=="gb").map(([t,n,c])=>c==="gb"?bossHead(t):el("th",{textContent:t,colSpan:n,className:c}))),
-      el("tr",{},[["No.",""],["접수일시",""],["닉네임",""],["성명",""],["출신",""],["분야",""],["감사","mk"],["면접","mk"],["대표 채용 · 채용 메일","mk bs b2 bl",1],["대표 거절 · 거절 메일","mk bs b3",1],["대표 메모 🔒","bs bm br",1],["","bsx",1],["경영지원팀 메모",""]].filter(x=>boss||!x[2]).map(([t,c])=>el("th",{textContent:t,className:c})))]),el("tbody",{id:"mjb"})])])]);
+      el("tr",{className:"gh"},[["기본 정보",6,""],["경영지원부 체크",2,"gt"],["대표 전용 · 대표만 보고 수정",3,"gb"],["경영지원부 메모",1,""]].filter(x=>boss||x[2]!=="gb").map(([t,n,c])=>c==="gb"?bossHead(t):el("th",{textContent:t,colSpan:n,className:c}))),
+      el("tr",{},[["No.",""],["접수일시",""],["닉네임",""],["성명",""],["출신",""],["분야",""],["감사","mk"],["면접","mk"],["대표 채용 · 채용 메일","mk bs b2 bl",1],["대표 거절 · 거절 메일","mk bs b3",1],["대표 메모 🔒","bs bm br",1],["","bsx",1],["경영지원부 메모",""]].filter(x=>boss||!x[2]).map(([t,c])=>el("th",{textContent:t,className:c})))]),el("tbody",{id:"mjb"})])])]);
   const sel=el("select",{id:"mqs"},[["all","전체"],["new","읽지 않음"],["chk","확인함"],["rep","답장함"],["done","완료"]].map(([v,t])=>el("option",{value:v,textContent:t})));
   const pq=el("div",{id:"pq",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mqc"}),sel,el("input",{id:"mqq",placeholder:"검색 (제목·보낸 사람·내용)"}),el("button",{className:"mbtn",type:"button",id:"mqr",textContent:"새로고침"}),el("button",{className:"mbtn p",type:"button",id:"mqn",textContent:"✉ 새 메일"}),el("span",{className:"mnote",id:"mqnote",textContent:QT.inq.note})]),
@@ -465,7 +465,7 @@ function openUnlock(){
   const pin=el("input",{type:"password",inputMode:"numeric",autocomplete:"off",maxLength:20,className:"pin",ariaLabel:"대표 비밀번호"});
   const er=el("p",{className:"note err lkerr"}),ok=el("button",{type:"button",className:"btn",textContent:"잠긴 지원서 보기"});
   body.append(el("div",{className:"lkgate"},[el("div",{className:"lkico",textContent:"🔒",ariaHidden:"true"}),el("h2",{textContent:"잠긴 지원서"}),
-    el("p",{className:"note",textContent:"대표 채용 · 대표 거절을 누른 지원서는 경영지원팀에게 보이지 않게 잠겨요. 대표 비밀번호를 넣으면 목록을 보고 잠금을 풀 수 있어요."}),pin,er,ok]));
+    el("p",{className:"note",textContent:"대표 채용 · 대표 거절을 누른 지원서는 경영지원부에게 보이지 않게 잠겨요. 대표 비밀번호를 넣으면 목록을 보고 잠금을 풀 수 있어요."}),pin,er,ok]));
   pin.focus();
   let P=null,rows=[],tab="all",q="";
   const fmt=d=>{const t=new Date(d);return t.getFullYear()+"."+(t.getMonth()+1)+"."+t.getDate()};
@@ -484,7 +484,7 @@ function openUnlock(){
       v.forEach(r=>{const hire=r.decision==="hire",nm=r.nickname||r.name||r.email,sub=r.nickname&&r.name&&r.nickname!==r.name?r.name:"";
         const mailed=hire?r.mail_hire:r.mail_reject;
         const b=el("button",{type:"button",className:"btn small ghost",textContent:"잠금 풀기"});
-        b.onclick=async()=>{if(!confirm(nm+" 님 지원서의 "+(hire?"대표 채용":"대표 거절")+" 결정을 풀까요?\n풀면 경영지원팀에 다시 보이고 수정할 수 있어요."+(mailed?"\n(이미 보낸 "+(hire?"채용":"거절")+" 메일은 되돌려지지 않아요)":"")))return;
+        b.onclick=async()=>{if(!confirm(nm+" 님 지원서의 "+(hire?"대표 채용":"대표 거절")+" 결정을 풀까요?\n풀면 경영지원부에 다시 보이고 수정할 수 있어요."+(mailed?"\n(이미 보낸 "+(hire?"채용":"거절")+" 메일은 되돌려지지 않아요)":"")))return;
           b.disabled=true;b.textContent="푸는 중…";const {error}=await db.rpc("jr_unlock",{p_id:r.id,p_pin:P});
           if(error){b.disabled=false;b.textContent="잠금 풀기";alert("풀지 못했어요"+(/bad pin/.test(error.message)?": 비밀번호가 바뀌었어요. 창을 닫고 다시 열어 주세요":""));return}
           rows=rows.filter(x=>x.id!==r.id);draw();loadJ()};
@@ -493,7 +493,7 @@ function openUnlock(){
             el("div",{className:"lkmeta"},[el("span",{textContent:r.email||""}),...(fieldTxt(r)?[el("span",{textContent:fieldTxt(r)})]:[]),el("span",{textContent:"지원 "+fmt(r.created_at)}),
               ...(mailed?[el("span",{className:"lkmail",textContent:"✓ "+(hire?"채용":"거절")+" 메일 보냄"})]:[])])]),b]))})}
     drawList();
-    body.replaceChildren(el("div",{className:"lkhead"},[el("h2",{textContent:"잠긴 지원서"}),el("p",{className:"note",textContent:"잠금을 풀면 경영지원팀에 다시 보이고, 지원서 목록에서 결정을 바꿀 수 있어요. 창을 닫으면 다시 잠겨요."})]),
+    body.replaceChildren(el("div",{className:"lkhead"},[el("h2",{textContent:"잠긴 지원서"}),el("p",{className:"note",textContent:"잠금을 풀면 경영지원부에 다시 보이고, 지원서 목록에서 결정을 바꿀 수 있어요. 창을 닫으면 다시 잠겨요."})]),
       el("div",{className:"lkbar"},[tabs,s]),list)}
   const go=async()=>{if(!pin.value)return;er.textContent="";ok.disabled=true;
     const {data,error}=await db.rpc("jr_locked_list",{p_pin:pin.value});ok.disabled=false;
