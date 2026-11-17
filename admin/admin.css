@@ -85,10 +85,6 @@ main.wide .chadd select,main.wide .chadd input{padding:6px 12px;font-size:13px}
 #pform .wr .sp{flex:1}
 /* 상품 편집: 옵션 줄 · 상세 설명 도구 · 번역 접기 */
 .popt{display:grid;gap:8px}
-.porow{display:grid;grid-template-columns:minmax(90px,1fr) 2fr auto;gap:8px;align-items:center}
-.porow input{width:100%}
-.porow .px{border:1px solid var(--ln2);background:none;color:var(--fg);border-radius:8px;width:34px;height:34px;cursor:pointer;font:inherit}
-.porow .px:hover{border-color:var(--ac);color:var(--ac)}
 #popadd{justify-self:start}
 .pdw{display:grid;gap:6px}
 .pdh{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -99,4 +95,32 @@ main.wide .chadd select,main.wide .chadd input{padding:6px 12px;font-size:13px}
 .ptr[open]>summary{margin-bottom:10px}
 .ptr>*+*{margin-top:10px}
 .ptrb{align-items:center}
-@media(max-width:600px){.porow{grid-template-columns:1fr 1fr auto}}
+
+/* 옵션 카드 */
+.popt{gap:10px}
+.pohd{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.ppre{border:1px dashed var(--ln2);border-radius:14px;padding:12px;display:grid;gap:10px}
+.ppre .note{margin:0;font-size:13px}
+.pptabs{display:flex;flex-wrap:wrap;gap:6px}
+.ppt{border:1px solid var(--ln2);background:none;color:var(--mut);border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.ppt[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.ppchips{display:flex;flex-wrap:wrap;gap:6px}
+.ppc{border:1px solid var(--ac);background:none;color:var(--ac);border-radius:10px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer}
+.ppc:hover:not(:disabled){background:var(--ac);color:#fff}
+.ppc:disabled{border-color:var(--ln2);color:var(--mut);cursor:default}
+#popw{display:grid;gap:10px}
+#popw:empty{display:none}
+.pcard{border:1px solid var(--ln2);border-radius:14px;padding:12px;display:grid;gap:8px;background:var(--hv)}
+.pchd{display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center}
+.pchd input{font-weight:600;width:100%}
+.pvhd{display:grid;grid-template-columns:1fr 150px 34px;gap:6px;font-size:12px;color:var(--mut);padding:0 2px}
+.pvals{display:grid;gap:6px}
+.pvrow{display:grid;grid-template-columns:1fr 150px 34px;gap:6px;align-items:center}
+.pvrow input{width:100%;min-width:0}
+#pform .padd{display:flex;flex-direction:row;align-items:center;gap:4px;margin:0;color:var(--mut);font-size:13px}
+#pform .padd span{margin:0}
+.padd input{text-align:right}
+.pcard .px{border:1px solid var(--ln2);background:var(--bg);color:var(--fg);border-radius:8px;width:34px;height:34px;cursor:pointer;font:inherit;padding:0}
+.pcard .px:hover{border-color:var(--ac);color:var(--ac)}
+.pcard>.btn{justify-self:start}
+@media(max-width:600px){.pvhd,.pvrow{grid-template-columns:1fr 112px 34px}}

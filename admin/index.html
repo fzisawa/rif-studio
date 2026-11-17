@@ -1,7 +1,7 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Admin · RIF STUDIO</title><link rel="stylesheet" href="../style.css?v=68"><link rel="icon" href="../img/favicon.png" type="image/png">
-<link rel="stylesheet" href="../app.css?v=1"><link rel="stylesheet" href="admin.css?v=4"></head><body>
+<link rel="stylesheet" href="../app.css?v=1"><link rel="stylesheet" href="admin.css?v=5"></head><body>
 <header><a class="logo" href="../">RIF<span>STUDIO</span></a><nav><a class="nl" href="/about/">About</a><a class="nl" href="/news/">News</a><div class="ng"><button type="button" aria-haspopup="true" aria-expanded="false" data-i18n="nav.members">Members</button><div class="nm nmg"><p class="nh" data-g="vocal" data-i18n="nav.vocal">Vocal</p><a href="../rif/">RIF</a><p class="nh" data-g="sound" data-i18n="nav.sound">Sound</p><a href="../charmbung/">Charmbung</a><a href="../se1c/">SE1C</a><p class="nh" data-g="art" data-i18n="nav.art">Art</p><a href="../woljae/">Woljae</a><a href="../gugugong/">gugugong</a><p class="nh" data-g="content" data-i18n="nav.content">Content</p></div></div><a class="nl" href="../contact/">Contact</a><a class="nl" href="../join/">Join Us</a><a class="nl" href="/store/">Store</a><a class="nl" href="../board/">Board</a></nav><a class="mark" href="../" aria-label="RIF STUDIO 홈"><img class="ml" src="../img/logo-mark-dark.png" alt="RIF STUDIO" height="64"><img class="md" src="../img/logo-mark-light.png" alt="" height="64"></a></header>
 <main id="mn" class="wide"><section class="hero"><p class="tag red">RIF STUDIO</p><h1>Admin</h1>
 <form id="login"><input id="em" type="email" value="takanashi@rif-studio.com" hidden autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password"><button class="btn">로그인</button><p class="note err" id="lmsg"></p></form>
@@ -46,7 +46,8 @@
 <label>상품 이름<input id="pn" maxlength="80" required placeholder="예) RIF 아크릴 스탠드"></label>
 <div class="hg"><label>정가 (원)<input id="pp" type="number" min="0" step="100" required></label><label>할인가 (원, 선택)<input id="psp" type="number" min="0" step="100"></label><label>재고 (비우면 무제한)<input id="pstk" type="number" min="0"></label><label>한 번에 최대 수량<input id="pmq" type="number" min="1" max="999" value="10"></label></div>
 <label>한 줄 소개 (선택 · 상품 이름 아래 작게 보여요)<input id="psu" maxlength="300" placeholder="예) 책상 위에 두기 좋은 15cm 투명 아크릴 스탠드"></label>
-<div class="popt"><span class="note">옵션 (선택 · 왼쪽에 옵션 이름, 오른쪽에 고를 값을 쉼표로)</span><div id="popw"></div><button type="button" class="btn small ghost" id="popadd">＋ 옵션 추가</button><textarea id="pop" hidden></textarea></div>
+<div class="popt"><div class="pohd"><b>옵션</b><span class="note">손님이 고르는 것 · 값마다 추가 금액을 붙일 수 있어요 (없으면 비워 두세요)</span></div>
+<div class="ppre" id="ppre"></div><div id="popw"></div><button type="button" class="btn small ghost" id="popadd">＋ 직접 옵션 만들기</button></div>
 <div class="pdw"><div class="pdh"><span class="note">상세 설명 (선택 · 줄바꿈 그대로 보여요)</span><span class="sp"></span><button type="button" class="btn small ghost" id="pdtpl">기본 틀 넣기</button><button type="button" class="btn small ghost" id="pdbul">• 점 찍기</button></div>
 <textarea id="pd" rows="10" maxlength="8000" placeholder="예)&#10;■ 구성&#10;• 아크릴 스탠드 1개 · 받침 1개&#10;&#10;■ 크기 · 소재&#10;• 약 15 × 8cm · 아크릴 3mm&#10;&#10;■ 안내&#10;• 주문 후 제작이라 약 2주 걸려요"></textarea></div>
 <details class="ptr" id="ptr"><summary>일본어 · 영어 (저장할 때 비어 있으면 자동 번역 · 고칠 수 있어요)</summary>
@@ -78,4 +79,4 @@
 <div id="hpm" class="mod" role="dialog" aria-modal="true" aria-labelledby="hpt" hidden><div class="mbox"><button type="button" class="mx" id="hpx" aria-label="닫기">×</button><h2 id="hpt">대표 확인</h2><p class="note">인사정보는 대표만 볼 수 있어요. 대표 비밀번호를 입력해 주세요.</p><input id="hpi" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="20" aria-label="대표 비밀번호"><p class="note err" id="hpe"></p><div class="wr"><button class="btn ghost" id="hpc" type="button">취소</button><button class="btn" id="hpo" type="button">확인</button></div></div></div>
 <footer>PANGYO · TOKYO · NEW YORK<br>© RIF STUDIO</footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../config.js"></script><script src="../lib.js?v=6"></script><script src="app.js?v=4"></script><script src="hr.js?v=20"></script><script src="chan.js?v=2"></script><script src="store.js?v=2"></script><script src="../nav.js?v=4" defer></script></body></html>
+<script src="../config.js"></script><script src="../lib.js?v=6"></script><script src="app.js?v=4"></script><script src="hr.js?v=20"></script><script src="chan.js?v=2"></script><script src="store.js?v=3"></script><script src="../nav.js?v=4" defer></script></body></html>

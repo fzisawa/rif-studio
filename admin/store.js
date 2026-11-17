@@ -38,15 +38,75 @@ function drawP(){const tb=$("sptb");tb.replaceChildren();
     tr.onclick=()=>openP(p);tb.append(tr)});
   if(!prods.length)tb.append(el("tr",{},[el("td",{colSpan:8,textContent:"아직 상품이 없어요. '＋ 상품 추가'로 첫 상품을 올려 보세요."})]))}
 /* 상품 편집 */
-const optTxt=o=>(o||[]).map(x=>x.name+": "+x.values.join(", ")).join("\n");
-const parseOpt=s=>s.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{const i=l.indexOf(":");if(i<1)throw new Error("옵션은 '옵션명: 값, 값' 모양으로 적어 주세요 → "+l);
-  const values=[...new Set(l.slice(i+1).split(",").map(v=>v.trim()).filter(Boolean))];if(!values.length)throw new Error("옵션 값이 비어 있어요 → "+l);return {name:l.slice(0,i).trim(),values}});
-/* 옵션: 줄마다 [옵션 이름][값들] 로 적어요 (속으로는 '옵션명: 값, 값' 글자로 바꿔 저장) */
-function optRow(name,vals){const n=el("input",{maxLength:30,value:name||"",placeholder:"예) 사이즈"}),v=el("input",{maxLength:300,value:vals||"",placeholder:"예) S, M, L (쉼표로)"}),x=el("button",{type:"button",className:"px",textContent:"×",ariaLabel:"이 옵션 빼기"});
-  const r=el("div",{className:"porow"},[n,v,x]);x.onclick=()=>r.remove();return r}
-const drawOpts=o=>$("popw").replaceChildren(...(o||[]).map(x=>optRow(x.name,x.values.join(", "))));
-$("popadd").onclick=()=>{const r=optRow();$("popw").append(r);r.querySelector("input").focus()};
-const syncOpts=()=>{$("pop").value=[...$("popw").children].map(r=>{const [n,v]=r.querySelectorAll("input");return n.value.trim()||v.value.trim()?n.value.trim()+": "+v.value.trim():""}).filter(Boolean).join("\n")};
+/* 옵션 — 우리 작업(믹싱 · 일러스트 · 영상)에 맞춘 카드형 편집.
+   옵션마다 고를 값을 한 줄씩, 값마다 '추가 금액'을 붙일 수 있어요(예: 전신 +30,000원). 금액은 주문 때 서버에서 다시 계산해요.
+   자주 쓰는 옵션은 버튼 한 번으로 넣고, 일본어 · 영어 표기도 함께 들어가요. 직접 만든 옵션은 저장할 때 자동 번역돼요. */
+const D={/* 한국어 → [일본어, 영어] */
+ "트랙(스템) 수":["トラック(ステム)数","Tracks (stems)"],"~8트랙":["〜8トラック","Up to 8"],"~16트랙":["〜16トラック","Up to 16"],"~32트랙":["〜32トラック","Up to 32"],"33트랙 이상":["33トラック以上","33+"],
+ "작업 범위":["作業範囲","Scope"],"믹싱":["ミキシング","Mixing"],"마스터링":["マスタリング","Mastering"],"믹싱 + 마스터링":["ミキシング＋マスタリング","Mixing + mastering"],"보컬 튠":["ボーカル補正","Vocal tuning"],
+ "곡 길이":["曲の長さ","Song length"],"~3분":["〜3分","Up to 3 min"],"~5분":["〜5分","Up to 5 min"],"5분 이상":["5分以上","Over 5 min"],
+ "납품 파일":["納品ファイル","Delivery files"],"WAV":["WAV","WAV"],"WAV + MP3":["WAV＋MP3","WAV + MP3"],"WAV + 스템":["WAV＋ステム","WAV + stems"],
+ "구도":["構図","Framing"],"바스트업":["バストアップ","Bust-up"],"반신":["半身","Half body"],"전신":["全身","Full body"],
+ "배경":["背景","Background"],"없음":["なし","None"],"단색 · 간단 배경":["単色・簡易背景","Simple"],"풀 배경":["フル背景","Full background"],
+ "인원":["人数","Characters"],"1인":["1人","1 character"],"2인":["2人","2 characters"],"3인 이상":["3人以上","3 or more"],
+ "사용 범위":["使用範囲","Usage"],"개인 소장":["個人利用","Personal"],"방송 · 스트리밍":["配信・ストリーミング","Streaming"],"상업용":["商用","Commercial"],
+ "파일 형식":["ファイル形式","File format"],"PNG":["PNG","PNG"],"PNG + PSD (레이어)":["PNG＋PSD（レイヤー）","PNG + PSD (layers)"],
+ "영상 길이":["動画の長さ","Video length"],"~1분":["〜1分","Up to 1 min"],"~4분":["〜4分","Up to 4 min"],"4분 이상":["4分以上","Over 4 min"],
+ "영상 종류":["動画の種類","Video type"],"리릭 비디오":["リリックビデオ","Lyric video"],"MV (일러스트 · 모션)":["MV（イラスト・モーション）","MV (illustration · motion)"],"쇼츠 · 숏폼":["ショート動画","Shorts"],
+ "해상도":["解像度","Resolution"],"FHD (1080p)":["FHD（1080p）","FHD (1080p)"],"4K":["4K","4K"],
+ "자막":["字幕","Subtitles"],"한국어":["韓国語","Korean"],"한국어 + 일본어 · 영어":["韓国語＋日本語・英語","Korean + Japanese · English"],
+ "수정 횟수":["修正回数","Revisions"],"1회":["1回","1"],"2회":["2回","2"],"3회":["3回","3"],
+ "작업 기간":["納期","Turnaround"],"일반 (2주)":["通常（2週間）","Standard (2 weeks)"],"빠르게 (1주)":["お急ぎ（1週間）","Rush (1 week)"],
+ "사이즈":["サイズ","Size"],"S":["S","S"],"M":["M","M"],"L":["L","L"],"XL":["XL","XL"],"색상":["カラー","Color"],"블랙":["ブラック","Black"],"화이트":["ホワイト","White"]};
+const PRE={"믹싱 · 마스터링":[["작업 범위",["믹싱","마스터링","믹싱 + 마스터링"]],["트랙(스템) 수",["~8트랙","~16트랙","~32트랙","33트랙 이상"]],["곡 길이",["~3분","~5분","5분 이상"]],["보컬 튠",["없음","보컬 튠"]],["납품 파일",["WAV","WAV + MP3","WAV + 스템"]],["수정 횟수",["1회","2회","3회"]],["작업 기간",["일반 (2주)","빠르게 (1주)"]]],
+ "일러스트":[["구도",["바스트업","반신","전신"]],["배경",["없음","단색 · 간단 배경","풀 배경"]],["인원",["1인","2인","3인 이상"]],["사용 범위",["개인 소장","방송 · 스트리밍","상업용"]],["파일 형식",["PNG","PNG + PSD (레이어)"]],["수정 횟수",["1회","2회","3회"]],["작업 기간",["일반 (2주)","빠르게 (1주)"]]],
+ "영상":[["영상 종류",["리릭 비디오","MV (일러스트 · 모션)","쇼츠 · 숏폼"]],["영상 길이",["~1분","~4분","4분 이상"]],["해상도",["FHD (1080p)","4K"]],["자막",["없음","한국어","한국어 + 일본어 · 영어"]],["수정 횟수",["1회","2회","3회"]],["작업 기간",["일반 (2주)","빠르게 (1주)"]]],
+ "굿즈":[["사이즈",["S","M","L","XL"]],["색상",["블랙","화이트"]]]};
+const n2=s=>Math.max(0,Math.round(Number(String(s).replace(/[^\d]/g,""))||0));
+const krw=n=>Number(n||0).toLocaleString("ko-KR");
+function valRow(v,add){const vi=el("input",{maxLength:60,value:v||"",placeholder:"예) 전신",ariaLabel:"고를 값"}),
+  ai=el("input",{inputMode:"numeric",maxLength:9,value:add?krw(add):"",placeholder:"0",ariaLabel:"추가 금액 (원)"}),x=el("button",{type:"button",className:"px",textContent:"×",ariaLabel:"이 값 빼기"});
+  ai.oninput=()=>{const n=n2(ai.value);ai.value=ai.value.trim()?krw(n):""};
+  const r=el("div",{className:"pvrow"},[vi,el("label",{className:"padd"},[el("span",{textContent:"+"}),ai,el("span",{textContent:"원"})]),x]);
+  x.onclick=()=>{const box=r.parentNode;r.remove();if(box&&!box.children.length)box.append(valRow())};return r}
+function optCard(o){o=o||{name:"",values:[""]};const ni=el("input",{maxLength:30,value:o.name||"",placeholder:"옵션 이름 · 예) 구도",ariaLabel:"옵션 이름"});
+  const vals=el("div",{className:"pvals"},(o.values.length?o.values:[""]).map(v=>valRow(v,(o.add||{})[v])));
+  const up=el("button",{type:"button",className:"px",textContent:"↑",ariaLabel:"위로"}),dn=el("button",{type:"button",className:"px",textContent:"↓",ariaLabel:"아래로"}),rm=el("button",{type:"button",className:"px",textContent:"×",ariaLabel:"이 옵션 빼기"});
+  const av=el("button",{type:"button",className:"btn small ghost",textContent:"＋ 값 추가"});
+  const c=el("div",{className:"pcard"},[el("div",{className:"pchd"},[ni,up,dn,rm]),el("div",{className:"pvhd"},[el("span",{textContent:"고를 값"}),el("span",{textContent:"추가 금액"})]),vals,av]);
+  c._tr={ja:o.ja,en:o.en,ko:{name:o.name,values:[...o.values]}};
+  av.onclick=()=>{const r=valRow();vals.append(r);r.querySelector("input").focus()};
+  up.onclick=()=>{const p=c.previousElementSibling;if(p)c.parentNode.insertBefore(c,p)};dn.onclick=()=>{const n=c.nextElementSibling;if(n)c.parentNode.insertBefore(n,c)};
+  rm.onclick=()=>{c.remove();drawPre()};ni.oninput=drawPre;return c}
+const cards=()=>[...$("popw").children];
+/* 화면 → 저장할 모양. 비어 있는 줄은 버리고, 틀린 곳은 알려 줘요 */
+function readOpts(strict){const out=[],seen=new Set();
+  for(const c of cards()){const name=c.querySelector(".pchd input").value.trim(),rows=[...c.querySelectorAll(".pvrow")].map(r=>{const [v,a]=r.querySelectorAll("input");return [v.value.trim(),n2(a.value)]}).filter(([v])=>v);
+    if(!name&&!rows.length)continue;
+    if(strict){if(!name)throw new Error("옵션 이름이 비어 있어요 (고를 값: "+rows.map(r=>r[0]).join(", ")+")");if(!rows.length)throw new Error("'"+name+"' 옵션에 고를 값을 하나 이상 적어 주세요");
+      if(seen.has(name))throw new Error("'"+name+"' 옵션이 두 번 있어요");if(new Set(rows.map(r=>r[0])).size<rows.length)throw new Error("'"+name+"' 옵션에 같은 값이 두 번 있어요")}
+    seen.add(name);const add={};rows.forEach(([v,a])=>{if(a)add[v]=a});
+    out.push({name,values:rows.map(r=>r[0]),...(Object.keys(add).length?{add}:{}),_c:c})}
+  return out}
+/* 일본어 · 영어 표기: 자주 쓰는 말은 사전에서, 전에 저장한 번역은 그대로, 나머지만 번역기로 */
+async function optI18n(list){const need=new Set();
+  const old=(c,k,i,lang)=>{const t=c._tr;if(!t||!t[lang])return null;if(i<0)return t.ko.name===k?t[lang].name:null;const j=t.ko.values.indexOf(k);return j>=0&&t[lang].values?t[lang].values[j]:null};
+  list.forEach(o=>[o.name,...o.values].forEach((k,i)=>{if(!D[k]&&!old(o._c,k,i-1,"ja"))need.add(k)}));
+  let M={};if(need.size){const ks=[...need];try{const {data,error}=await db.functions.invoke("news-translate",{body:{title:"",body:ks.join("\n")}});if(error||!data||data.error)throw 0;
+      const ja=data.ja.body.split("\n"),en=data.en.body.split("\n");if(ja.length===ks.length&&en.length===ks.length)ks.forEach((k,i)=>M[k]=[ja[i].trim()||k,en[i].trim()||k])}catch(_){}}
+  const tr=(o,k,i,l)=>(D[k]&&D[k][l==="ja"?0:1])||old(o._c,k,i,l)||(M[k]&&M[k][l==="ja"?0:1])||k;
+  return list.map(o=>{const r={name:o.name,values:o.values,...(o.add?{add:o.add}:{})};
+    ["ja","en"].forEach(l=>{r[l]={name:tr(o,o.name,-1,l),values:o.values.map((v,i)=>tr(o,v,i,l))}});return r})}
+/* 자주 쓰는 옵션 버튼 */
+let preTab="믹싱 · 마스터링";try{preTab=localStorage.getItem("rif-opt-pre")||preTab}catch(_){}if(!PRE[preTab])preTab="믹싱 · 마스터링";
+function drawPre(){const have=new Set(cards().map(c=>c.querySelector(".pchd input").value.trim()));
+  const tabs=el("div",{className:"pptabs",role:"tablist"},Object.keys(PRE).map(k=>{const b=el("button",{type:"button",className:"ppt",textContent:k,ariaPressed:String(k===preTab)});
+    b.onclick=()=>{preTab=k;try{localStorage.setItem("rif-opt-pre",k)}catch(_){}drawPre()};return b}));
+  const chips=el("div",{className:"ppchips"},PRE[preTab].map(([n,vs])=>{const on=have.has(n),b=el("button",{type:"button",className:"ppc",disabled:on,textContent:(on?"✓ ":"＋ ")+n,title:vs.join(" / ")});
+    b.onclick=()=>{$("popw").append(optCard({name:n,values:vs,ja:{name:D[n][0],values:vs.map(v=>D[v][0])},en:{name:D[n][1],values:vs.map(v=>D[v][1])}}));drawPre()};return b}));
+  $("ppre").replaceChildren(tabs,chips,el("p",{className:"note",textContent:"누르면 아래에 옵션 카드가 생겨요. 값 이름과 추가 금액은 마음대로 고칠 수 있어요."}))}
+const drawOpts=o=>{$("popw").replaceChildren(...(o||[]).map(optCard));drawPre()};
+$("popadd").onclick=()=>{const c=optCard();$("popw").append(c);c.querySelector("input").focus();drawPre()};
 /* 상세 설명 도우미 */
 const ins=(ta,txt)=>{const a=ta.selectionStart,b=ta.selectionEnd;ta.setRangeText(txt,a,b,"end");ta.focus()};
 $("pdtpl").onclick=()=>{const ta=$("pd"),tpl="■ 구성\n• \n\n■ 크기 · 소재\n• \n\n■ 안내\n• ";if(ta.value.trim()&&!confirm("지금 적힌 설명 끝에 기본 틀을 붙일까요?"))return;
@@ -65,7 +125,7 @@ async function trP(){const nm=$("pn").value.trim();if(!nm)throw new Error("상�
 $("ptrgo").onclick=()=>trP().catch(e=>{$("ptrm").textContent=e.message||String(e)});
 /* 쓰다가 닫힐 때 내용 지키기 */
 const FIDS=["pk","pst","pn","pnj","pne","pp","psp","pstk","pmq","psu","psuj","psue","pd","pdj","pde","pbm","pbu","pso"];
-const snap=()=>{syncOpts();return JSON.stringify([...FIDS.map(i=>$(i).value),$("pop").value,imgs])};let snap0="";
+const snap=()=>JSON.stringify([...FIDS.map(i=>$(i).value),readOpts(false).map(({_c,...o})=>o),imgs]);let snap0="";
 const dirty=()=>!$("pmod").hidden&&snap()!==snap0;
 window.addEventListener("beforeunload",e=>{if(dirty()){e.preventDefault();e.returnValue=""}});
 function drawImgs(){$("pim").replaceChildren(...imgs.map((u,i)=>{const mv=(d)=>{const j=i+d;if(j<0||j>=imgs.length)return;[imgs[i],imgs[j]]=[imgs[j],imgs[i]];drawImgs()};
@@ -91,11 +151,12 @@ $("pfile").onchange=async e=>{const fs=[...e.target.files];e.target.value="";if(
     catch(er){alert("사진을 올리지 못했어요: "+(er.message||er))}}
   $("pmsg").textContent=""};
 $("pform").onsubmit=async e=>{e.preventDefault();const v=i=>$(i).value.trim(),num=i=>v(i)===""?null:Math.round(Number(v(i)));let options;
-  syncOpts();try{options=parseOpt($("pop").value)}catch(er){$("pmsg").textContent=er.message;return}
+  try{options=readOpts(true)}catch(er){$("pmsg").textContent=er.message;return}
   const noTr=!["pnj","pne","psuj","psue","pdj","pde"].some(i=>$(i).value.trim());
   if(noTr||(trFrom&&trFrom!==koNow()&&confirm("한국어 내용이 바뀌었어요. 일본어 · 영어 번역도 새로 할까요?\n(취소를 누르면 지금 번역 그대로 저장해요)"))){$("psave").disabled=true;$("pmsg").textContent="일본어 · 영어로 번역하는 중…";
     try{await trP()}catch(er){if(!confirm((er.message||er)+"\n\n번역 없이 한국어로만 저장할까요? (일본어 · 영어 화면에는 한국어가 보여요)")){$("psave").disabled=false;$("pmsg").textContent="";return}}
     $("psave").disabled=false;$("pmsg").textContent=""}
+  if(options.length){$("psave").disabled=true;$("pmsg").textContent="옵션 일본어 · 영어 표기 준비 중…";options=await optI18n(options);$("psave").disabled=false;$("pmsg").textContent=""}
   const row={kind:v("pk"),status:v("pst"),name:v("pn"),name_ja:v("pnj")||null,name_en:v("pne")||null,price:num("pp")||0,sale_price:num("psp"),stock:num("pstk"),max_qty:num("pmq")||10,
     summary:v("psu")||null,summary_ja:v("psuj")||null,summary_en:v("psue")||null,options,detail:$("pd").value.trim()||null,detail_ja:$("pdj").value.trim()||null,detail_en:$("pde").value.trim()||null,images:imgs,buy_mode:v("pbm"),buy_url:v("pbu")||null,sort:num("pso")||0,updated_at:new Date().toISOString()};
   if(row.sale_price!=null&&row.sale_price>=row.price){$("pmsg").textContent="할인가는 정가보다 낮아야 해요 (할인이 없으면 비워 두세요).";return}
