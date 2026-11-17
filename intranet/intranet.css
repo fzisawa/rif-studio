@@ -237,3 +237,8 @@ html.ash-in .vbar{bottom:calc(76px + env(safe-area-inset-bottom))}
 .vb.on{background:var(--soft2);border-color:var(--ac);color:var(--ac)}
 .vp.hq>span::after{content:" 🎵";font-size:11px}
 .vp.mu.hq>span::after{content:" 🔇🎵"}
+/* 앱(데스크톱 · 폰)으로 열었을 때: 인트라넷 전용 화면 */
+html.appmode header nav,html.appmode footer,html.appmode #mn .hero>details.inst{display:none!important}
+html.appmode header .logo{pointer-events:none}
+html.appmode header .logo::after{content:"Intranet";margin-left:10px;padding:2px 9px;border-radius:99px;background:var(--soft);color:var(--ac);font-size:12px;font-weight:700;letter-spacing:.04em;vertical-align:middle}
+html.appmode #mn .hero>.tag{display:none}
