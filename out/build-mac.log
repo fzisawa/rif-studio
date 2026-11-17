@@ -1,0 +1,82 @@
+
+> rif-intranet@1.0.1 dist:mac
+> electron-builder --mac dmg --arm64 --publish never && electron-builder --mac dmg --x64 --publish never
+
+  • electron-builder  version=25.1.8 os=25.6.0
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=33.2.1 arch=arm64 buildFromSource=false appDir=./
+  • installing native dependencies  arch=arm64
+  • completed installing native dependencies
+  • packaging       platform=darwin arch=arm64 electron=33.2.1 appOutDir=dist/mac-arm64
+  • downloading     url=https://github.com/electron/electron/releases/download/v33.2.1/electron-v33.2.1-darwin-arm64.zip size=100 MB parts=6
+  • downloaded      url=https://github.com/electron/electron/releases/download/v33.2.1/electron-v33.2.1-darwin-arm64.zip duration=1.108s
+/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app: replacing existing signature
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (GPU).app
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (GPU).app
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/.
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/Helpers/chrome_crashpad_handler
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/Helpers/chrome_crashpad_handler
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/.
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (Plugin).app
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/Squirrel.framework/Versions/Current/.
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/ReactiveObjC.framework/Versions/Current/.
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (Plugin).app
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/Squirrel.framework/Versions/Current/.
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/ReactiveObjC.framework/Versions/Current/.
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (Renderer).app
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/Mantle.framework/Versions/Current/.
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (Renderer).app
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/Mantle.framework/Versions/Current/.
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper.app
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper.app
+/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app: valid on disk
+/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app: satisfies its Designated Requirement
+  • skipped macOS code signing  reason=identity explicitly is set to null
+  • building        target=DMG arch=arm64 file=dist/RIF-Intranet-arm64.dmg
+  • Detected arm64 process, HFS+ is unavailable. Creating dmg with APFS - supports Mac OSX 10.12+
+  • building block map  blockMapFile=dist/RIF-Intranet-arm64.dmg.blockmap
+  • electron-builder  version=25.1.8 os=25.6.0
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=33.2.1 arch=x64 buildFromSource=false appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=darwin arch=x64 electron=33.2.1 appOutDir=dist/mac
+  • downloading     url=https://github.com/electron/electron/releases/download/v33.2.1/electron-v33.2.1-darwin-x64.zip size=105 MB parts=6
+  • downloaded      url=https://github.com/electron/electron/releases/download/v33.2.1/electron-v33.2.1-darwin-x64.zip duration=821ms
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (GPU).app
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (GPU).app
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/.
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/Helpers/chrome_crashpad_handler
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/Helpers/chrome_crashpad_handler
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/Electron Framework.framework/Versions/Current/.
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/Squirrel.framework/Versions/Current/.
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/Squirrel.framework/Versions/Current/.
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/ReactiveObjC.framework/Versions/Current/.
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (Plugin).app
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (Plugin).app
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (Renderer).app
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper (Renderer).app
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/ReactiveObjC.framework/Versions/Current/.
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper.app
+--prepared:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/Mantle.framework/Versions/Current/.
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/Mantle.framework/Versions/Current/.
+--validated:/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app/Contents/Frameworks/RIF Intranet Helper.app
+/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app: valid on disk
+/Users/runner/work/rif-studio/rif-studio/dist/mac/RIF Intranet.app: satisfies its Designated Requirement
+  • skipped macOS code signing  reason=identity explicitly is set to null
+  • building        target=DMG arch=x64 file=dist/RIF-Intranet-x64.dmg
+  • Detected arm64 process, HFS+ is unavailable. Creating dmg with APFS - supports Mac OSX 10.12+
+  • building block map  blockMapFile=dist/RIF-Intranet-x64.dmg.blockmap
+exit=0
+total 426448
+drwxr-xr-x  11 runner  staff        352 Nov 17 06:54 .
+drwxr-xr-x  16 runner  staff        512 Nov 17 06:53 ..
+drwxr-xr-x   3 runner  staff         96 Nov 17 06:53 .icon-icns
+-rw-r--r--   1 runner  staff        910 Nov 17 06:54 builder-debug.yml
+-rw-r--r--   1 runner  staff        337 Nov 17 06:54 latest-mac.yml
+drwxr-xr-x   3 runner  staff         96 Nov 17 06:54 mac
+drwxr-xr-x   3 runner  staff         96 Nov 17 06:53 mac-arm64
+-rw-r--r--@  1 runner  staff   98346770 Nov 17 06:53 RIF-Intranet-arm64.dmg
+-rw-r--r--   1 runner  staff     104602 Nov 17 06:53 RIF-Intranet-arm64.dmg.blockmap
+-rw-r--r--@  1 runner  staff  105631982 Nov 17 06:54 RIF-Intranet-x64.dmg
+-rw-r--r--   1 runner  staff     111587 Nov 17 06:54 RIF-Intranet-x64.dmg.blockmap

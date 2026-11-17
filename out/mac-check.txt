@@ -1,0 +1,11 @@
+Executable=/Users/runner/work/rif-studio/rif-studio/dist/mac-arm64/RIF Intranet.app/Contents/MacOS/RIF Intranet
+Identifier=com.rifstudio.intranet
+Format=app bundle with Mach-O thin (arm64)
+CodeDirectory v=20400 size=335 flags=0x2(adhoc) hashes=4+3 location=embedded
+Signature=adhoc
+Info.plist entries=30
+TeamIdentifier=not set
+Sealed Resources version=2 rules=13 files=11
+Internal requirements count=0 size=12
+verify exit=0
+음성 채팅에서 내 목소리를 동료에게 전하기 위해 마이크를 사용해요.

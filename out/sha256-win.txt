@@ -1,0 +1,5 @@
+
+Algorithm : SHA256
+Hash      : 254BD74BCB237B3C81E86A9AA86E744C132BEE770E09BDE26393E5BA68FFF36D
+Path      : D:\a\rif-studio\rif-studio\dist\RIF-Intranet-Setup.exe
+

@@ -1,0 +1,21 @@
+art/mac/dist/RIF-Intranet-arm64.dmg
+art/mac/dist/RIF-Intranet-arm64.dmg.blockmap
+art/mac/dist/RIF-Intranet-x64.dmg
+art/mac/dist/RIF-Intranet-x64.dmg.blockmap
+art/mac/out/build-mac.log
+art/mac/out/mac-check.txt
+art/mac/out/mac-run.log
+art/mac/out/mac-shot.png
+art/mac/out/sha256-mac.txt
+art/win/dist/RIF-Intranet-Setup.exe
+art/win/dist/RIF-Intranet-Setup.exe.blockmap
+art/win/dist/latest.yml
+art/win/out/build-win.log
+art/win/out/sha256-win.txt
+art/win/out/win-run.txt
+art/win/out/win-shot.png
+art/mac/dist/RIF-Intranet-arm64.dmg
+art/mac/dist/RIF-Intranet-x64.dmg
+art/win/dist/RIF-Intranet-Setup.exe.blockmap
+art/win/dist/RIF-Intranet-Setup.exe
+art/win/dist/latest.yml latest-mac.json

@@ -1,0 +1,2 @@
+f66e73c36f8fe684a08abf6932ea5d451cd1ac87db1a56ea138a9a1e0b2e56d9  dist/RIF-Intranet-arm64.dmg
+c7330e5edcb3640a5fac2ba061e41b2619dc5b1729cd6f41c064108296802541  dist/RIF-Intranet-x64.dmg
