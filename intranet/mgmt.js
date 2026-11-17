@@ -423,7 +423,7 @@ function build(){
     el("div",{className:"mbar"},[el("b",{id:"mjc"}),
       el("select",{id:"mju",title:"분야"},[["","전체 분야"],["vocal","Vocal · 보컬"],["sound","Sound · 작곡·믹싱"],["art","Art · 일러스트·디자인"],["content","Content · 작가·영상"],["etc","기타"]].map(([v,t])=>el("option",{value:v,textContent:t}))),
       el("select",{id:"mjs",title:"상태"},[["","전체 상태"],["nothanks","감사 메일 전"],["interview","면접 안내함"],...(boss?[["open","검토 중"],["hire","대표 채용"],["reject","대표 거절"]]:[])].map(([v,t])=>el("option",{value:v,textContent:t}))),
-      el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("button",{className:"mbtn",type:"button",id:"mjlk",textContent:"🔒 잠긴 지원서",hidden:!boss}),el("button",{className:"mbtn",type:"button",id:"mjop",textContent:"모집 상태 확인 중…",hidden:!boss,title:"홈페이지 Join Us 지원서 접수를 열고 닫아요"}),el("span",{className:"mnote",textContent:"줄을 누르면 오른쪽에 지원서 전체가 열려요 · ✉ 버튼을 누르면 메일이 나가고 자동으로 체크돼요"})]),
+      el("input",{id:"mjq",placeholder:"검색 (이름·이메일·분야·메모)"}),el("button",{className:"mbtn",type:"button",id:"mjlk",textContent:"🔒 잠긴 지원서",hidden:!boss}),el("button",{className:"mbtn",type:"button",id:"mjop",textContent:"모집 상태 확인 중…",hidden:!isCeo(),title:"홈페이지 Join Us 지원서 접수를 열고 닫아요"}),el("span",{className:"mnote",textContent:"줄을 누르면 오른쪽에 지원서 전체가 열려요 · ✉ 버튼을 누르면 메일이 나가고 자동으로 체크돼요"})]),
     el("div",{className:"mtw"},[el("table",{className:"mt mtj"},[el("thead",{},[
       el("tr",{className:"gh"},[["기본 정보",6,""],["경영지원부 체크",2,"gt"],["대표 전용 · 대표만 보고 수정",3,"gb"],["경영지원부 메모",1,""]].filter(x=>boss||x[2]!=="gb").map(([t,n,c])=>c==="gb"?bossHead(t):el("th",{textContent:t,colSpan:n,className:c}))),
       el("tr",{},[["No.",""],["접수일시",""],["닉네임",""],["성명",""],["출신",""],["분야",""],["감사","mk"],["면접","mk"],["대표 채용 · 채용 메일","mk bs b2 bl",1],["대표 거절 · 거절 메일","mk bs b3",1],["대표 메모 🔒","bs bm br",1],["","bsx",1],["경영지원부 메모",""]].filter(x=>boss||!x[2]).map(([t,c])=>el("th",{textContent:t,className:c})))]),el("tbody",{id:"mjb"})])])]);
@@ -450,7 +450,7 @@ function build(){
   pt.prepend(bar);pt.append(pj,pq,ps);
   const host=$("pbd");
   if(host){pbq.hidden=false;host.append(pbq);const tb=document.querySelector('#tabs button[data-t="q"]');if(tb){tb.hidden=false;tb.addEventListener("click",loadB)}loadB()}
-  $("mjq").oninput=drawJ;$("mju").onchange=drawJ;$("mjs").onchange=drawJ;if(boss)$("mjlk").onclick=openUnlock;if(boss)joinToggle();$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;$("mqn").onclick=composeQ;$("msq").oninput=drawS;$("mss").onchange=drawS;$("msh").onchange=drawS;$("msr").onclick=loadS;$("mbq").oninput=drawB;$("mbr").onclick=loadB;
+  $("mjq").oninput=drawJ;$("mju").onchange=drawJ;$("mjs").onchange=drawJ;if(boss)$("mjlk").onclick=openUnlock;if(isCeo())joinToggle();$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;$("mqn").onclick=composeQ;$("msq").oninput=drawS;$("mss").onchange=drawS;$("msh").onchange=drawS;$("msr").onclick=loadS;$("mbq").oninput=drawB;$("mbr").onclick=loadB;
   loadQ(); /* 소메뉴의 새 메일 숫자를 먼저 채워 둬요 */
 }
 
@@ -501,6 +501,7 @@ function openUnlock(){
     P=pin.value;rows=data||[];draw()};
   ok.onclick=go;pin.onkeydown=e=>{if(e.key==="Enter")go()}}
 /* Join Us 모집 열기 · 닫기 (대표만). 닫으면 홈페이지 지원서 대신 '모집 마감' 안내가 나오고 서버에서도 접수를 막아요 */
+const isCeo=()=>{try{return !!ceo}catch(_){return false}};
 async function joinToggle(){const b=$("mjop");if(!b)return;
   const paint=on=>{b.textContent=on?"🟢 모집 중 · 누르면 마감":"⛔ 모집 마감 · 누르면 다시 열기";b.classList.toggle("on",!!on);b.dataset.on=on?"1":""};
   const {data}=await db.rpc("join_is_open");paint(data!==false);
