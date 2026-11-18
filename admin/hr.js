@@ -1,5 +1,5 @@
 (()=>{
-const $=i=>document.getElementById(i),DAYS=14,SOON=30,CEO="takanashi@rif-studio.com",KINDS=["정규직","계약직","인턴"],KC={"정규직":"reg","계약직":"con","인턴":"int"};
+const $=i=>document.getElementById(i),DAYS=14,SOON=30,CEO="takanashi@rif-studio.com",KINDS=["정규직","프리랜서","계약직","인턴"],KC={"정규직":"reg","프리랜서":"fre","계약직":"con","인턴":"int"};
 let PIN=null,rows=[],view=[],owners={},edit=null,tm=null,filt="all";const OPEN=new Set();
 const dt=s=>s?new Date(s).toLocaleDateString("ko-KR"):"";
 /* 날짜만 있는 값(2026-11-16)은 시간대에 흔들리지 않게 글자 그대로 읽어요 */
@@ -24,7 +24,7 @@ const rights=r=>{const em=(r.user_email||"").toLowerCase();if(!em||!r.used_at)re
   if(em===CEO||r.position==="대표이사")return"대표 (전체)";const a=[];if((r.team==="경영지원부"||r.team==="경영지원팀"))a.push("업무 탭 (지원서 · 문의 메일)");
   const ch=chOf(r);if(ch.length)a.push("포트폴리오 수정: "+ch.join(", "));return a.join(" · ")||"기본 (게시판 · 메일 · 채팅)"};
 /* 현황 칩 = 골라 보기 */
-const FILTERS=[["all","전체",()=>true,1],["정규직","정규직",r=>live(r)&&r.kind==="정규직",1],["계약직","계약직",r=>live(r)&&r.kind==="계약직",1],["인턴","인턴",r=>live(r)&&r.kind==="인턴",1],["none","미지정",r=>live(r)&&!KINDS.includes(r.kind),1],["pend","가입 대기",r=>live(r)&&!r.used_at,0],["soon","계약 만료 임박",soon,0,1],["left","퇴사",r=>!live(r),0]];
+const FILTERS=[["all","전체",()=>true,1],["정규직","정규직",r=>live(r)&&r.kind==="정규직",1],["프리랜서","프리랜서",r=>live(r)&&r.kind==="프리랜서",1],["계약직","계약직",r=>live(r)&&r.kind==="계약직",1],["인턴","인턴",r=>live(r)&&r.kind==="인턴",1],["none","미지정",r=>live(r)&&!KINDS.includes(r.kind),1],["pend","가입 대기",r=>live(r)&&!r.used_at,0],["soon","계약 만료 임박",soon,0,1],["left","퇴사",r=>!live(r),0]];
 function chips(){const box=$("hsum");box.replaceChildren();
   FILTERS.forEach(([k,t,f,always,warn],i)=>{const n=rows.filter(f).length;if(!always&&!n&&filt!==k)return;
     if(i===5||(i>5&&!box.querySelector(".sep")))box.append(el("span",{className:"sep"}));

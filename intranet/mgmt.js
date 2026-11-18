@@ -143,7 +143,7 @@ function askHire(r,lang){return new Promise(res=>{
   const esc=e=>{if(e.key==="Escape")done(null)};document.addEventListener("keydown",esc);
   mod.onclick=e=>{if(e.target===mod)done(null)};
   const x=el("button",{type:"button",className:"mx",textContent:"×",ariaLabel:"닫기"});x.onclick=()=>done(null);
-  const kd=el("select",{id:"mhkd"},[["","나중에 정하기"],["정규직","정규직"],["계약직","계약직"],["인턴","인턴"]].map(([v,t])=>el("option",{value:v,textContent:t})));
+  const kd=el("select",{id:"mhkd"},[["","나중에 정하기"],["정규직","정규직"],["프리랜서","프리랜서"],["계약직","계약직"],["인턴","인턴"]].map(([v,t])=>el("option",{value:v,textContent:t})));
   const go=el("button",{type:"button",className:"btn",textContent:"채용 메일 보내기"}),no=el("button",{type:"button",className:"btn ghost",textContent:"취소"});
   go.onclick=()=>done({kind:kd.value});no.onclick=()=>done(null);
   const li=t=>el("li",{textContent:t});

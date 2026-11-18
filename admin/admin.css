@@ -36,7 +36,7 @@
 #hrtb td.kc{max-width:none;overflow:visible}
 #hrtb select.kd{padding:3px 22px 3px 12px;border-radius:99px;font-size:13px;font-weight:700;line-height:1.5;cursor:pointer;border:1px solid transparent;background-color:var(--hv);color:var(--fg);max-width:108px}
 #hrtb select.kd.reg{background-color:var(--soft);border-color:var(--soft2);color:var(--ac)}
-#hrtb select.kd.con{background-color:#e8a33a2e;border-color:#e8a33a55;color:#b8741a}
+#hrtb select.kd.fre{background-color:#2fa36b22;border-color:#2fa36b55;color:#1f7a4f}#hrtb select.kd.con{background-color:#e8a33a2e;border-color:#e8a33a55;color:#b8741a}
 #hrtb select.kd.int{background-color:#2f80ed24;border-color:#2f80ed4d;color:#2f6fd0}
 #hrtb select.kd.none{background-color:transparent;border:1px dashed var(--ln2);color:var(--mut);font-weight:400}
 #hrtb select.kd option{background:var(--bg);color:var(--fg);font-weight:400}
