@@ -1,6 +1,6 @@
 /* 어드민 › 스토어: 주문 관리 · 상품 등록/수정 · 스토어 설정 (대표님만, 서버 정책도 대표님만 허용) */
 (()=>{const $=i=>document.getElementById(i);if(!$("p4"))return;
-const won=n=>"₩"+Number(n||0).toLocaleString("ko-KR"),ST={new:["접수 · 입금 확인 중","wt"],paid:["입금 확인","on"],shipped:["발송함","on"],done:["완료","x"],cancel:["취소","x"]};
+const won=n=>"₩"+Number(n||0).toLocaleString("ko-KR"),ST={new:["접수 · 발송 준비","wt"],shipped:["발송함 · 입금 대기","wt"],paid:["입금 확인","on"],done:["완료","x"],cancel:["취소","x"]};
 const PS={draft:"숨김",sale:"판매 중",soldout:"품절"},BM={order:"사이트 주문",link:"외부 스토어",inquiry:"문의하기"};
 let prods=[],orders=[],set={},edit=null,imgs=[];const OPEN=new Set();
 const td=(t,c)=>el("td",{className:c||"",textContent:t==null?"":String(t),title:t==null?"":String(t)});
@@ -8,8 +8,8 @@ async function load(){
   const [a,b,c]=await Promise.all([db.from("store_products").select("*").order("sort").order("created_at",{ascending:false}),db.from("store_orders").select("*").order("created_at",{ascending:false}).limit(500),db.from("store_settings").select("*").eq("id",1).maybeSingle()]);
   prods=a.data||[];orders=b.data||[];set=(c&&c.data)||{};drawP();drawO();fillS()}
 /* 요약 */
-function stat(){const n=orders.filter(o=>o.status==="new").length,p=orders.filter(o=>o.status==="paid").length,sum=orders.filter(o=>o.status!=="cancel").reduce((a,o)=>a+o.total,0);
-  $("sst").replaceChildren(...[[set.open?"주문 받는 중":"주문 꺼짐 (준비 중)",set.open?"on":"x"],["입금 확인 중 "+n+"건",n?"wt":"x"],["발송 대기 "+p+"건",p?"wt":"x"],["판매 중 상품 "+prods.filter(x=>x.status==="sale").length+"개","x"],["누적 주문 금액 "+won(sum),"x"]].map(([t,c])=>el("span",{className:"hs "+c,textContent:t})))}
+function stat(){const n=orders.filter(o=>o.status==="new").length,p=orders.filter(o=>o.status==="shipped").length,sum=orders.filter(o=>o.status!=="cancel").reduce((a,o)=>a+o.total,0);
+  $("sst").replaceChildren(...[[set.open?"주문 받는 중":"주문 꺼짐 (준비 중)",set.open?"on":"x"],["발송 준비 "+n+"건",n?"wt":"x"],["입금 대기 "+p+"건",p?"wt":"x"],["판매 중 상품 "+prods.filter(x=>x.status==="sale").length+"개","x"],["누적 주문 금액 "+won(sum),"x"]].map(([t,c])=>el("span",{className:"hs "+c,textContent:t})))}
 /* 주문 */
 function drawO(){const f=$("sof").value,tb=$("sotb");tb.replaceChildren();stat();
   const v=orders.filter(o=>!f||o.status===f);
