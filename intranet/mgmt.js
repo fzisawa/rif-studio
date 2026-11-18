@@ -418,7 +418,7 @@ function build(){
   const pt=$("pt");if(!pt||$("msub"))return;
   const w=el("div",{id:"ptw"});[...pt.childNodes].forEach(n=>w.append(n));pt.append(w);
   const bar=el("div",{className:"msub",id:"msub"});
-  const defs=[["w","할 일"],["j","지원서"],["a","지원자 메일"],["q","고객 문의 메일"],["s","보낸 메일"]];
+  const defs=[["w","할 일"],["j","지원서"],["a","지원자 메일"],["q","고객 문의 메일"],["s","보낸 메일"],...(window.RIFSTORE?[["o","🛒 스토어 주문"]]:[])];
   const pj=el("div",{id:"pj",hidden:true},[
     el("div",{className:"mbar"},[el("b",{id:"mjc"}),
       el("select",{id:"mju",title:"분야"},[["","전체 분야"],["vocal","Vocal · 보컬"],["sound","Sound · 작곡·믹싱"],["art","Art · 일러스트·디자인"],["content","Content · 작가·영상"],["etc","기타"]].map(([v,t])=>el("option",{value:v,textContent:t}))),
@@ -438,16 +438,18 @@ function build(){
     el("div",{className:"mbar"},[el("b",{id:"msc"}),el("select",{id:"msh",title:"채널"},[["all","전체 채널"],["join","지원자"],["inq","고객 문의"]].map(([v,t])=>el("option",{value:v,textContent:t}))),el("select",{id:"mss",title:"읽음"},[["all","읽음 전체"],["unread","안 읽음"],["read","읽음"]].map(([v,t])=>el("option",{value:v,textContent:t}))),el("input",{id:"msq",placeholder:"검색 (받는 사람·제목·보낸 사원·내용)"}),el("button",{className:"mbtn",type:"button",id:"msr",textContent:"새로고침"}),el("span",{className:"mnote",textContent:"support@rif-studio.com 이름으로 나간 모든 메일이에요. 채널(지원자 / 고객 문의)로 나눠 볼 수 있고, 줄을 누르면 내용을 보고 같은 사람에게 바로 이어서 보낼 수 있어요. 상대가 답장하면 지원자는 '지원자 메일', 그 밖에는 '고객 문의 메일'로 들어와요."})]),
     el("div",{className:"mtw"},[el("table",{className:"mt"},[el("thead",{},[el("tr",{},["보낸 시각","채널","종류","받는 사람","제목","보낸 사원","읽음"].map(t=>el("th",{textContent:t})))]),el("tbody",{id:"msb"})])])]);
   /* 지원자 메일(a)과 고객 문의 메일(q)은 같은 화면을 쓰고, 채널만 바꿔 보여줘요 */
-  const panes={w:w,j:pj,a:pq,q:pq,s:ps};
+  const po=window.RIFSTORE?RIFSTORE.pane():el("div",{hidden:true});
+  const panes={w:w,j:pj,a:pq,q:pq,s:ps,o:po};
   const show=k=>{[...bar.children].forEach(x=>x.setAttribute("aria-pressed",x.dataset.k===k?"true":"false"));
-    const tgt=panes[k];[w,pj,pq,ps].forEach(p=>{p.hidden=p!==tgt});
+    const tgt=panes[k];[w,pj,pq,ps,po].forEach(p=>{p.hidden=p!==tgt});
+    if(k==="o"&&window.RIFSTORE)RIFSTORE.load();
     if(k==="j")loadJ();
     if(k==="a"||k==="q"){qchan=k==="a"?"join":"inq";$("mqnote").textContent=QT[qchan].note;openQ=null;drawQ();loadQ()}
     if(k==="s")loadS()};
   showSub=show;
   defs.forEach(([k,t],i)=>{const b=el("button",{type:"button"},[t]);b.dataset.k=k;if(k==="a"||k==="q")b.append(el("span",{className:"bd",hidden:true}));
     b.setAttribute("aria-pressed",i===0?"true":"false");b.onclick=()=>show(k);bar.append(b)});
-  pt.prepend(bar);pt.append(pj,pq,ps);
+  pt.prepend(bar);pt.append(pj,pq,ps,po);
   const host=$("pbd");
   if(host){pbq.hidden=false;host.append(pbq);const tb=document.querySelector('#tabs button[data-t="q"]');if(tb){tb.hidden=false;tb.addEventListener("click",loadB)}loadB()}
   $("mjq").oninput=drawJ;$("mju").onchange=drawJ;$("mjs").onchange=drawJ;if(boss)$("mjlk").onclick=openUnlock;if(isCeo())joinToggle();$("mqq").oninput=drawQ;$("mqs").onchange=()=>{qfilter=$("mqs").value;drawQ()};$("mqr").onclick=loadQ;$("mqn").onclick=composeQ;$("msq").oninput=drawS;$("mss").onchange=drawS;$("msh").onchange=drawS;$("msr").onclick=loadS;$("mbq").oninput=drawB;$("mbr").onclick=loadB;
