@@ -7,17 +7,17 @@ const T={
   ckTitle:"주문서",name:"주문자 이름",email:"이메일",phone:"휴대폰 번호",zip:"우편번호",addr:"받는 주소",memo:"요청 사항 (선택)",agree:"주문 내용과 배송 · 교환 · 반품 안내, 개인정보 수집(주문 처리 목적)에 동의해요.",place:"주문 접수하기",back:"장바구니로",doneT:"주문이 접수됐어요",doneNo:"주문번호",doneMail:"주문번호와 이메일로 주문 상태를 확인할 수 있어요.",keep:"쇼핑 계속하기",
   look:"주문 조회",lookBtn:"조회하기",noOrder:"주문을 찾지 못했어요. 주문번호와 이메일을 확인해 주세요.",st:{new:"접수됨 · 입금 확인 중",paid:"입금 확인",shipped:"발송함",done:"완료",cancel:"취소됨"},
   closed:"지금은 판매 준비 중이에요. 곧 열어요!",soon:"Coming soon",planNote:"플랜은 배송 없이 작업으로 진행돼요.",err:"주문하지 못했어요: ",
-  e:{"store closed":"지금은 주문을 받지 않아요.","bad email":"이메일 형식을 확인해 주세요.","bad phone":"휴대폰 번호를 확인해 주세요.","address required":"받는 주소와 우편번호를 적어 주세요.","name required":"이름을 적어 주세요.","too many":"잠시 뒤에 다시 시도해 주세요.","out of stock":"재고가 부족한 상품이 있어요","not for sale":"지금 살 수 없는 상품이 있어요","bad option":"옵션을 다시 골라 주세요"},biz:"사업자 정보",ppT:"해외 결제 (PayPal · 해외 카드)",ppAmt:"결제 금액",ppNote:"원화 금액을 고정 환율로 달러로 바꿔 결제해요. 계좌 입금을 하셔도 돼요.",ppOk:"결제가 완료됐어요. 고마워요!",ppErr:"결제를 마치지 못했어요. 다시 시도하거나 계좌 입금으로 진행해 주세요.",ppPaid:"PayPal로 결제 완료"},
+  e:{"store closed":"지금은 주문을 받지 않아요.","bad email":"이메일 형식을 확인해 주세요.","bad phone":"휴대폰 번호를 확인해 주세요.","address required":"받는 주소와 우편번호를 적어 주세요.","name required":"이름을 적어 주세요.","too many":"잠시 뒤에 다시 시도해 주세요.","out of stock":"재고가 부족한 상품이 있어요","not for sale":"지금 살 수 없는 상품이 있어요","bad option":"옵션을 다시 골라 주세요"},biz:"사업자 정보",ppT:"해외 결제 (PayPal · 해외 카드)",ppAmt:"결제 금액",ppNote:"원화 금액을 고정 환율로 달러로 바꿔 결제해요. 계좌 입금을 하셔도 돼요.",ppOk:"결제가 완료됐어요. 고마워요!",ppErr:"결제를 마치지 못했어요. 다시 시도하거나 계좌 입금으로 진행해 주세요.",ppPaid:"PayPal로 결제 완료",ppGo:"결제 창이 안 열리면: PayPal 결제 페이지로 이동",ppCancel:"PayPal 결제를 취소했어요."},
  ja:{plan:"Plan",goods:"Goods",all:"すべて",soldout:"売り切れ",cart:"カート",add:"カートに入れる",buy:"購入する",ask:"お問い合わせ",ext:"ストアで購入",qty:"数量",ship:"送料",free:"無料",freeOver:"ウォン以上で送料無料",total:"商品合計",sub:"商品金額",pay:"お支払い予定額",empty:"カートは空です。",order:"注文する",remove:"削除",choose:"選択",detail:"詳細",policy:"配送・交換・返品について",added:"カートに入れました。",opt:"オプションを選んでください。",
   ckTitle:"ご注文",name:"お名前",email:"メールアドレス",phone:"電話番号",zip:"郵便番号",addr:"お届け先住所",memo:"ご要望（任意）",agree:"注文内容、配送・交換・返品について、個人情報の収集（注文処理のため）に同意します。",place:"注文を確定する",back:"カートに戻る",doneT:"ご注文を受け付けました",doneNo:"注文番号",doneMail:"注文番号とメールアドレスで注文状況を確認できます。",keep:"買い物を続ける",
   look:"注文照会",lookBtn:"照会する",noOrder:"注文が見つかりません。注文番号とメールアドレスをご確認ください。",st:{new:"受付済み・入金確認中",paid:"入金確認済み",shipped:"発送済み",done:"完了",cancel:"キャンセル"},
   closed:"現在、販売準備中です。もうすぐオープン！",soon:"Coming soon",planNote:"プランは配送なしで制作として進みます。",err:"注文できませんでした: ",
-  e:{"store closed":"現在、注文を受け付けていません。","bad email":"メールアドレスをご確認ください。","bad phone":"電話番号をご確認ください。","address required":"住所と郵便番号を入力してください。","name required":"お名前を入力してください。","too many":"しばらくしてから再度お試しください。","out of stock":"在庫が足りない商品があります","not for sale":"現在購入できない商品があります","bad option":"オプションを選び直してください"},biz:"事業者情報",ppT:"PayPal・カードですぐにお支払い",ppAmt:"お支払い金額",ppNote:"ウォン建ての金額を固定レートで米ドルに換算してお支払いいただきます。",ppOk:"お支払いが完了しました。ありがとうございます！",ppErr:"お支払いを完了できませんでした。もう一度お試しください。",ppPaid:"PayPalでお支払い済み"},
+  e:{"store closed":"現在、注文を受け付けていません。","bad email":"メールアドレスをご確認ください。","bad phone":"電話番号をご確認ください。","address required":"住所と郵便番号を入力してください。","name required":"お名前を入力してください。","too many":"しばらくしてから再度お試しください。","out of stock":"在庫が足りない商品があります","not for sale":"現在購入できない商品があります","bad option":"オプションを選び直してください"},biz:"事業者情報",ppT:"PayPal・カードですぐにお支払い",ppAmt:"お支払い金額",ppNote:"ウォン建ての金額を固定レートで米ドルに換算してお支払いいただきます。",ppOk:"お支払いが完了しました。ありがとうございます！",ppErr:"お支払いを完了できませんでした。もう一度お試しください。",ppPaid:"PayPalでお支払い済み",ppGo:"決済画面が開かない場合：PayPalのページへ移動",ppCancel:"PayPalでのお支払いをキャンセルしました。"},
  en:{plan:"Plan",goods:"Goods",all:"All",soldout:"Sold out",cart:"Cart",add:"Add to cart",buy:"Buy now",ask:"Ask us",ext:"Buy at store",qty:"Qty",ship:"Shipping",free:"Free",freeOver:" KRW+ ships free",total:"Items total",sub:"Items",pay:"Total due",empty:"Your cart is empty.",order:"Check out",remove:"Remove",choose:"Choose",detail:"Details",policy:"Shipping, exchanges & returns",added:"Added to your cart.",opt:"Please choose an option.",
   ckTitle:"Checkout",name:"Your name",email:"Email",phone:"Phone",zip:"Postal code",addr:"Shipping address",memo:"Notes (optional)",agree:"I agree to the order details, the shipping/exchange/return policy, and the collection of my information to process this order.",place:"Place order",back:"Back to cart",doneT:"Your order is in",doneNo:"Order number",doneMail:"You can check your order status with your order number and email.",keep:"Keep shopping",
   look:"Order lookup",lookBtn:"Look up",noOrder:"We couldn't find that order. Please check the order number and email.",st:{new:"Received · awaiting payment",paid:"Payment confirmed",shipped:"Shipped",done:"Completed",cancel:"Cancelled"},
   closed:"The store is getting ready. Opening soon!",soon:"Coming soon",planNote:"Plans are delivered as work, with no shipping.",err:"We couldn't place your order: ",
-  e:{"store closed":"We're not taking orders right now.","bad email":"Please check your email.","bad phone":"Please check your phone number.","address required":"Please enter your address and postal code.","name required":"Please enter your name.","too many":"Please try again in a moment.","out of stock":"An item is out of stock","not for sale":"An item isn't available right now","bad option":"Please choose the options again"},biz:"Business information",ppT:"Pay now with PayPal or card",ppAmt:"Amount",ppNote:"Your KRW total is converted to US dollars at a fixed rate.",ppOk:"Payment complete. Thank you so much!",ppErr:"We couldn't complete the payment. Please try again.",ppPaid:"Paid with PayPal"}};
+  e:{"store closed":"We're not taking orders right now.","bad email":"Please check your email.","bad phone":"Please check your phone number.","address required":"Please enter your address and postal code.","name required":"Please enter your name.","too many":"Please try again in a moment.","out of stock":"An item is out of stock","not for sale":"An item isn't available right now","bad option":"Please choose the options again"},biz:"Business information",ppT:"Pay now with PayPal or card",ppAmt:"Amount",ppNote:"Your KRW total is converted to US dollars at a fixed rate.",ppOk:"Payment complete. Thank you so much!",ppErr:"We couldn't complete the payment. Please try again.",ppPaid:"Paid with PayPal",ppGo:"Window not opening? Go to the PayPal page",ppCancel:"PayPal payment was cancelled."}};
 const lng=()=>{try{const v=localStorage.getItem("rif-lang");if(v==="ja"||v==="en")return v}catch(_){}return "ko"};
 let L=lng(),t=T[L];
 const won=n=>"₩"+Number(n||0).toLocaleString("ko-KR");
@@ -142,19 +142,33 @@ let ppCfg=null,ppSdk=null;
 const PPTEST=(()=>{let on=/[?&]pptest/.test(location.search);try{if(on)sessionStorage.setItem("rif_pptest","1");else on=sessionStorage.getItem("rif_pptest")==="1"}catch(_){}return on})();
 const ppCall=async b=>{const {data,error}=await db.functions.invoke("paypal-pay",{body:b});if(error){let m="";try{m=(await error.context.json()).error}catch(_){}throw new Error(m||error.message)}return data};
 const ppLoad=c=>ppSdk||(ppSdk=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://www.paypal.com/sdk/js?client-id="+encodeURIComponent(c.client)+"&currency="+c.currency+"&intent=capture&components=buttons";sc.onload=()=>ok(window.paypal);sc.onerror=()=>{ppSdk=null;no(new Error("sdk"))};document.head.append(sc)}));
+const ppLog=m=>{try{ppCall({action:"log",msg:String(m)})}catch(_){}};
+/* 결제 창(팝업)이 막히는 브라우저를 위해: PayPal 결제 페이지로 이동했다가 돌아오는 방식도 함께 둬요 (주문번호·이메일은 주소가 아니라 이 탭에만 잠깐 보관) */
+async function ppGo(no,mail,btn,msg){btn.disabled=true;try{const r=await ppCall({action:"create",no,email:mail,redirect:true});if(!r.link)throw new Error("no link");
+  try{sessionStorage.setItem("rif_pp",JSON.stringify({no,email:mail,id:r.id}))}catch(_){}location.href=r.link}catch(e){btn.disabled=false;msg.className="note err";msg.textContent=t.ppErr;ppLog("redirect create: "+(e&&e.message))}}
 function ppBox(no,mail,after){const box=el("div",{className:"spp",hidden:true});if(!no||!mail)return box;
   (async()=>{try{ppCfg=ppCfg||await ppCall({action:"config"});if(!ppCfg.on)return;
     /* 테스트(sandbox) 중에는 주소 끝에 ?pptest 를 붙인 사람에게만 보여요 — 손님이 가짜 돈으로 결제하지 않게 */
     if(ppCfg.env!=="live"&&!PPTEST)return;
-    const q=await ppCall({action:"quote",no,email:mail});const pp=await ppLoad(ppCfg);
+    const q=await ppCall({action:"quote",no,email:mail});
     const msg=el("p",{className:"note",textContent:t.ppNote}),btns=el("div",{className:"sppb"});
-    box.append(el("b",{className:"sppt",textContent:t.ppT}),el("div",{className:"srow"},[el("span",{textContent:t.ppAmt}),el("b",{textContent:"US$ "+q.amount})]),btns,msg);box.hidden=false;
-    pp.Buttons({style:{layout:"vertical",shape:"pill",label:"pay",height:44},
-      createOrder:async()=>(await ppCall({action:"create",no,email:mail})).id,
-      onApprove:async d=>{try{await ppCall({action:"capture",no,email:mail,id:d.orderID});btns.replaceChildren();box.querySelector(".srow").remove();msg.className="note ok";msg.textContent=t.ppOk;
-        panel.querySelectorAll(".sguide").forEach(x=>x.remove());if(after)after()}catch(_){msg.className="note err";msg.textContent=t.ppErr}},
-      onError:()=>{msg.className="note err";msg.textContent=t.ppErr}}).render(btns)}catch(e){console.warn("paypal",e&&e.message)}})();
+    const go=el("button",{type:"button",className:"btn ghost sppgo",textContent:t.ppGo});go.onclick=()=>ppGo(no,mail,go,msg);
+    box.append(el("b",{className:"sppt",textContent:t.ppT}),el("div",{className:"srow"},[el("span",{textContent:t.ppAmt}),el("b",{textContent:"US$ "+q.amount})]),btns,go,msg);box.hidden=false;
+    const done=()=>{btns.replaceChildren();go.remove();const r=box.querySelector(".srow");if(r)r.remove();msg.className="note ok";msg.textContent=t.ppOk;panel.querySelectorAll(".sguide").forEach(x=>x.remove());if(after)after()};
+    let pp=null;try{pp=await ppLoad(ppCfg)}catch(e){ppLog("sdk load: "+(e&&e.message));return}
+    try{await pp.Buttons({style:{layout:"vertical",shape:"pill",label:"pay",height:44},
+      createOrder:async()=>{try{return (await ppCall({action:"create",no,email:mail})).id}catch(e){ppLog("create: "+(e&&e.message));throw e}},
+      onApprove:async d=>{try{await ppCall({action:"capture",no,email:mail,id:d.orderID});done()}catch(e){msg.className="note err";msg.textContent=t.ppErr;ppLog("capture: "+(e&&e.message))}},
+      onError:e=>{msg.className="note err";msg.textContent=t.ppErr;ppLog("sdk: "+(e&&(e.message||e)))}}).render(btns)}catch(e){btns.remove();ppLog("render: "+(e&&e.message))}
+  }catch(e){console.warn("paypal",e&&e.message)}})();
   return box}
+/* PayPal 결제 페이지에서 돌아왔을 때: 결제 확정 후 주문 조회 화면으로 */
+async function ppReturn(){const u=new URLSearchParams(location.search),r=u.get("ppret");if(r==null)return;
+  let s={};try{s=JSON.parse(sessionStorage.getItem("rif_pp")||"{}")}catch(_){}
+  history.replaceState(null,"",location.pathname+location.hash);
+  if(r!=="1"||!s.no){if(s.no)say(t.ppCancel);return}
+  try{await ppCall({action:"capture",no:s.no,email:s.email,id:u.get("token")||s.id});try{sessionStorage.removeItem("rif_pp")}catch(_){}say(t.ppOk)}catch(e){say(t.ppErr);ppLog("return capture: "+(e&&e.message))}
+  open("look");const ins=panel.querySelectorAll("input");if(ins.length>=2){ins[0].value=s.no;ins[1].value=s.email;const f=panel.querySelector("form");if(f)f.requestSubmit()}}
 function drawDone(d,mail){
   panel.append(xBtn(),el("p",{className:"tag",textContent:"THANK YOU"}),el("h2",{textContent:t.doneT}),el("div",{className:"sno2"},[el("span",{textContent:t.doneNo}),el("b",{textContent:d.no})]),
     el("div",{className:"srow big"},[el("span",{textContent:t.pay}),el("b",{textContent:won(d.total)})]),/* 한국어는 무통장 입금 안내가 먼저, 일본어·영어는 PayPal(해외 결제)이 먼저 */...(L==="ko"?[...(d.pay_guide?[el("div",{className:"sguide"},lines(d.pay_guide))]:[]),ppBox(d.no,mail)]:[ppBox(d.no,mail),...(d.pay_guide?[el("div",{className:"sguide"},lines(d.pay_guide))]:[])]),
@@ -176,4 +190,4 @@ async function load(){
   P=(a.data||[]).filter(p=>p.status!=="draft");S=(b&&b.data)||{};draw();cartBadge();
   const id=new URLSearchParams(location.search).get("p"),p=id&&P.find(x=>x.id===id);if(p&&sheet.hidden)open("detail",p)}
 document.addEventListener("rif:lang",()=>{L=lng();t=T[L];labels();draw();if(!sheet.hidden)close()});
-labels();load()})();
+labels();load().then(ppReturn)})();
