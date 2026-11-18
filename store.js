@@ -143,6 +143,8 @@ const ppCall=async b=>{const {data,error}=await db.functions.invoke("paypal-pay"
 const ppLoad=c=>ppSdk||(ppSdk=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://www.paypal.com/sdk/js?client-id="+encodeURIComponent(c.client)+"&currency="+c.currency+"&intent=capture&components=buttons";sc.onload=()=>ok(window.paypal);sc.onerror=()=>{ppSdk=null;no(new Error("sdk"))};document.head.append(sc)}));
 function ppBox(no,mail,after){const box=el("div",{className:"spp",hidden:true});if(!no||!mail)return box;
   (async()=>{try{ppCfg=ppCfg||await ppCall({action:"config"});if(!ppCfg.on)return;
+    /* 테스트(sandbox) 중에는 주소 끝에 ?pptest 를 붙인 사람에게만 보여요 — 손님이 가짜 돈으로 결제하지 않게 */
+    if(ppCfg.env!=="live"&&!/[?&]pptest/.test(location.search))return;
     const q=await ppCall({action:"quote",no,email:mail});const pp=await ppLoad(ppCfg);
     const msg=el("p",{className:"note",textContent:t.ppNote}),btns=el("div",{className:"sppb"});
     box.append(el("b",{className:"sppt",textContent:t.ppT}),el("div",{className:"srow"},[el("span",{textContent:t.ppAmt}),el("b",{textContent:"US$ "+q.amount})]),btns,msg);box.hidden=false;
