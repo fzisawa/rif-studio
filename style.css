@@ -273,3 +273,6 @@ html.snoscroll{overflow:hidden}
 header nav:has(.nmg){position:relative}
 .ng:has(>.nmg){position:static}
 .nm.nmg{left:auto;right:0;width:max-content;max-width:min(520px,calc(100vw - 32px))}
+
+/* 바닥글 사업자 정보: 한 줄로 작게 */
+footer .biz{display:block;margin-top:10px;font-size:10.5px;letter-spacing:.04em;opacity:.75}
