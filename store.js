@@ -139,12 +139,13 @@ function drawCheck(){
 /* 완료 · 조회 */
 /* PayPal 결제 — 금액은 서버(paypal-pay)가 주문에서 다시 계산하고, 결제 확인도 서버가 PayPal 에 직접 물어봐요 */
 let ppCfg=null,ppSdk=null;
+const PPTEST=(()=>{let on=/[?&]pptest/.test(location.search);try{if(on)sessionStorage.setItem("rif_pptest","1");else on=sessionStorage.getItem("rif_pptest")==="1"}catch(_){}return on})();
 const ppCall=async b=>{const {data,error}=await db.functions.invoke("paypal-pay",{body:b});if(error){let m="";try{m=(await error.context.json()).error}catch(_){}throw new Error(m||error.message)}return data};
 const ppLoad=c=>ppSdk||(ppSdk=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://www.paypal.com/sdk/js?client-id="+encodeURIComponent(c.client)+"&currency="+c.currency+"&intent=capture&components=buttons";sc.onload=()=>ok(window.paypal);sc.onerror=()=>{ppSdk=null;no(new Error("sdk"))};document.head.append(sc)}));
 function ppBox(no,mail,after){const box=el("div",{className:"spp",hidden:true});if(!no||!mail)return box;
   (async()=>{try{ppCfg=ppCfg||await ppCall({action:"config"});if(!ppCfg.on)return;
     /* 테스트(sandbox) 중에는 주소 끝에 ?pptest 를 붙인 사람에게만 보여요 — 손님이 가짜 돈으로 결제하지 않게 */
-    if(ppCfg.env!=="live"&&!/[?&]pptest/.test(location.search))return;
+    if(ppCfg.env!=="live"&&!PPTEST)return;
     const q=await ppCall({action:"quote",no,email:mail});const pp=await ppLoad(ppCfg);
     const msg=el("p",{className:"note",textContent:t.ppNote}),btns=el("div",{className:"sppb"});
     box.append(el("b",{className:"sppt",textContent:t.ppT}),el("div",{className:"srow"},[el("span",{textContent:t.ppAmt}),el("b",{textContent:"US$ "+q.amount})]),btns,msg);box.hidden=false;
