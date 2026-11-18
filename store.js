@@ -7,7 +7,7 @@ const T={
   ckTitle:"주문서",name:"주문자 이름",email:"이메일",phone:"휴대폰 번호",zip:"우편번호",addr:"받는 주소",memo:"요청 사항 (선택)",agree:"주문 내용과 배송 · 교환 · 반품 안내, 개인정보 수집(주문 처리 목적)에 동의해요.",place:"주문 접수하기",back:"장바구니로",doneT:"주문이 접수됐어요",doneNo:"주문번호",doneMail:"주문번호와 이메일로 주문 상태를 확인할 수 있어요.",keep:"쇼핑 계속하기",
   look:"주문 조회",lookBtn:"조회하기",noOrder:"주문을 찾지 못했어요. 주문번호와 이메일을 확인해 주세요.",st:{new:"접수됨 · 입금 확인 중",paid:"입금 확인",shipped:"발송함",done:"완료",cancel:"취소됨"},
   closed:"지금은 판매 준비 중이에요. 곧 열어요!",soon:"Coming soon",planNote:"플랜은 배송 없이 작업으로 진행돼요.",err:"주문하지 못했어요: ",
-  e:{"store closed":"지금은 주문을 받지 않아요.","bad email":"이메일 형식을 확인해 주세요.","bad phone":"휴대폰 번호를 확인해 주세요.","address required":"받는 주소와 우편번호를 적어 주세요.","name required":"이름을 적어 주세요.","too many":"잠시 뒤에 다시 시도해 주세요.","out of stock":"재고가 부족한 상품이 있어요","not for sale":"지금 살 수 없는 상품이 있어요","bad option":"옵션을 다시 골라 주세요"},biz:"사업자 정보",ppT:"PayPal · 카드로 바로 결제",ppAmt:"결제 금액",ppNote:"원화 금액을 고정 환율로 달러로 바꿔 결제해요. 계좌 입금을 하셔도 돼요.",ppOk:"결제가 완료됐어요. 고마워요!",ppErr:"결제를 마치지 못했어요. 다시 시도하거나 계좌 입금으로 진행해 주세요.",ppPaid:"PayPal로 결제 완료"},
+  e:{"store closed":"지금은 주문을 받지 않아요.","bad email":"이메일 형식을 확인해 주세요.","bad phone":"휴대폰 번호를 확인해 주세요.","address required":"받는 주소와 우편번호를 적어 주세요.","name required":"이름을 적어 주세요.","too many":"잠시 뒤에 다시 시도해 주세요.","out of stock":"재고가 부족한 상품이 있어요","not for sale":"지금 살 수 없는 상품이 있어요","bad option":"옵션을 다시 골라 주세요"},biz:"사업자 정보",ppT:"해외 결제 (PayPal · 해외 카드)",ppAmt:"결제 금액",ppNote:"원화 금액을 고정 환율로 달러로 바꿔 결제해요. 계좌 입금을 하셔도 돼요.",ppOk:"결제가 완료됐어요. 고마워요!",ppErr:"결제를 마치지 못했어요. 다시 시도하거나 계좌 입금으로 진행해 주세요.",ppPaid:"PayPal로 결제 완료"},
  ja:{plan:"Plan",goods:"Goods",all:"すべて",soldout:"売り切れ",cart:"カート",add:"カートに入れる",buy:"購入する",ask:"お問い合わせ",ext:"ストアで購入",qty:"数量",ship:"送料",free:"無料",freeOver:"ウォン以上で送料無料",total:"商品合計",sub:"商品金額",pay:"お支払い予定額",empty:"カートは空です。",order:"注文する",remove:"削除",choose:"選択",detail:"詳細",policy:"配送・交換・返品について",added:"カートに入れました。",opt:"オプションを選んでください。",
   ckTitle:"ご注文",name:"お名前",email:"メールアドレス",phone:"電話番号",zip:"郵便番号",addr:"お届け先住所",memo:"ご要望（任意）",agree:"注文内容、配送・交換・返品について、個人情報の収集（注文処理のため）に同意します。",place:"注文を確定する",back:"カートに戻る",doneT:"ご注文を受け付けました",doneNo:"注文番号",doneMail:"注文番号とメールアドレスで注文状況を確認できます。",keep:"買い物を続ける",
   look:"注文照会",lookBtn:"照会する",noOrder:"注文が見つかりません。注文番号とメールアドレスをご確認ください。",st:{new:"受付済み・入金確認中",paid:"入金確認済み",shipped:"発送済み",done:"完了",cancel:"キャンセル"},
@@ -156,7 +156,7 @@ function ppBox(no,mail,after){const box=el("div",{className:"spp",hidden:true});
   return box}
 function drawDone(d,mail){
   panel.append(xBtn(),el("p",{className:"tag",textContent:"THANK YOU"}),el("h2",{textContent:t.doneT}),el("div",{className:"sno2"},[el("span",{textContent:t.doneNo}),el("b",{textContent:d.no})]),
-    el("div",{className:"srow big"},[el("span",{textContent:t.pay}),el("b",{textContent:won(d.total)})]),ppBox(d.no,mail),...(d.pay_guide?[el("div",{className:"sguide"},lines(d.pay_guide))]:[]),
+    el("div",{className:"srow big"},[el("span",{textContent:t.pay}),el("b",{textContent:won(d.total)})]),/* 한국어는 무통장 입금 안내가 먼저, 일본어·영어는 PayPal(해외 결제)이 먼저 */...(L==="ko"?[...(d.pay_guide?[el("div",{className:"sguide"},lines(d.pay_guide))]:[]),ppBox(d.no,mail)]:[ppBox(d.no,mail),...(d.pay_guide?[el("div",{className:"sguide"},lines(d.pay_guide))]:[])]),
     el("p",{className:"note",textContent:t.doneMail}),(()=>{const b=el("button",{type:"button",className:"btn",textContent:t.keep});b.onclick=close;return b})())}
 function drawLook(){
   const no=el("input",{placeholder:"261116-1234",maxLength:20,autocomplete:"off"}),em=el("input",{type:"email",placeholder:t.email,maxLength:120,autocomplete:"email"}),out=el("div",{className:"slout"});
