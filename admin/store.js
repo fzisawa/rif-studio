@@ -16,7 +16,7 @@ function drawO(){const f=$("sof").value,tb=$("sotb");tb.replaceChildren();stat()
   v.forEach(o=>{const sel=el("select",{className:"ost"},Object.entries(ST).map(([k,[t]])=>el("option",{value:k,textContent:t})));sel.value=o.status;sel.onclick=e=>e.stopPropagation();
     sel.onchange=async()=>{const {error}=await db.from("store_orders").update({status:sel.value,updated_at:new Date().toISOString()}).eq("id",o.id);if(error){sel.value=o.status;return alert("바꾸지 못했어요: "+error.message)}o.status=sel.value;stat()};
     const it=(o.items||[]).map(i=>i.name+(Object.keys(i.opts||{}).length?"("+Object.values(i.opts).join("/")+")":"")+" ×"+i.qty).join(", ");
-    const tr=el("tr",{className:"r"},[td(o.no,"en"),td(o.name),td(it,"hm wd"),td(won(o.total)),el("td",{className:"ac"},[sel]),td(new Date(o.created_at).toLocaleString("ko-KR",{dateStyle:"short",timeStyle:"short"}),"hm sm")]);
+    const tr=el("tr",{className:"r"},[td(o.no,"en"),td(o.name),td(it,"hm wd"),el("td",{},[document.createTextNode(won(o.total)),...(o.pay_method==="paypal"?[el("small",{className:"pp",textContent:" · PayPal US$"+o.pp_amount,title:"PayPal 결제 ID "+(o.pp_capture||"")})]:[])]),el("td",{className:"ac"},[sel]),td(new Date(o.created_at).toLocaleString("ko-KR",{dateStyle:"short",timeStyle:"short"}),"hm sm")]);
     const memo=el("textarea",{rows:2,maxLength:1000,value:o.admin_memo||"",placeholder:"관리 메모 (손님에게 안 보여요) · 송장번호 등"}),ms=el("button",{type:"button",className:"btn small",textContent:"메모 저장"});
     ms.onclick=async()=>{const {error}=await db.from("store_orders").update({admin_memo:memo.value}).eq("id",o.id);if(error)return alert(error.message);o.admin_memo=memo.value;ms.textContent="저장했어요 ✓";setTimeout(()=>ms.textContent="메모 저장",1500)};
     const kv=(k,v)=>el("div",{},[el("b",{textContent:k}),el("span",{textContent:v||"-"})]);
@@ -168,11 +168,11 @@ $("pdel").onclick=async()=>{if(!edit)return;if(!confirm("'"+edit.name+"' 상품�
   const {error}=await db.from("store_products").delete().eq("id",edit.id);if(error)return alert("삭제하지 못했어요: "+error.message);shutP();load()};
 /* 설정 */
 const BZ=["name","ceo","reg","mail_order","addr","contact"];
-function fillS(){$("sopen").checked=!!set.open;$("sship").value=set.ship_fee??3000;$("sfree").value=set.free_over??"";$("spay").value=set.pay_guide||"";$("spol").value=set.policy||"";BZ.forEach(k=>$("sb_"+k).value=(set.biz||{})[k]||"")}
+function fillS(){$("sopen").checked=!!set.open;$("sship").value=set.ship_fee??3000;$("sfree").value=set.free_over??"";$("sppon").checked=set.pp_on!==false;$("sprate").value=set.pp_rate??1450;$("spay").value=set.pay_guide||"";$("spol").value=set.policy||"";BZ.forEach(k=>$("sb_"+k).value=(set.biz||{})[k]||"")}
 $("ssf").onsubmit=async e=>{e.preventDefault();const m=$("ssmsg");
   if($("sopen").checked&&!set.open&&!confirm("주문 받기를 켤까요?\n\n· 손님이 이 사이트에서 바로 주문을 넣을 수 있게 돼요\n· 사업자등록 · 통신판매업 신고와 입금 안내 문구를 먼저 준비해 주세요"))return;
   const biz={};BZ.forEach(k=>{const x=$("sb_"+k).value.trim();if(x)biz[k]=x});
-  const row={open:$("sopen").checked,ship_fee:Math.max(0,Math.round(Number($("sship").value)||0)),free_over:$("sfree").value===""?null:Math.max(0,Math.round(Number($("sfree").value))),pay_guide:$("spay").value.trim()||null,policy:$("spol").value.trim()||null,biz,updated_at:new Date().toISOString()};
+  const row={open:$("sopen").checked,ship_fee:Math.max(0,Math.round(Number($("sship").value)||0)),free_over:$("sfree").value===""?null:Math.max(0,Math.round(Number($("sfree").value))),pp_on:$("sppon").checked,pp_rate:Math.min(5000,Math.max(500,Number($("sprate").value)||1450)),pay_guide:$("spay").value.trim()||null,policy:$("spol").value.trim()||null,biz,updated_at:new Date().toISOString()};
   $("ssave").disabled=true;const {error}=await db.from("store_settings").update(row).eq("id",1);$("ssave").disabled=false;
   if(error){m.className="note err";m.textContent="저장하지 못했어요: "+error.message;return}m.className="note";m.textContent="저장했어요 ✓";set={...set,...row};stat()};
 const ap=$("app");const go=()=>{if(!ap.hidden)load()};new MutationObserver(go).observe(ap,{attributes:true,attributeFilter:["hidden"]});go();

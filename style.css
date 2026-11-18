@@ -276,3 +276,5 @@ header nav:has(.nmg){position:relative}
 
 /* 바닥글 사업자 정보: 한 줄로 작게 */
 footer .biz{display:block;margin-top:10px;font-size:10.5px;letter-spacing:.04em;opacity:.75}
+/* 스토어 PayPal 결제 */
+.spp{margin:16px 0;padding:16px;border:1px solid #7774;border-radius:14px;display:grid;gap:10px}.spp[hidden]{display:none}.sppt{font-size:15px}.sppb{min-height:44px}.spp .note{margin:0;font-size:12px}.spp .note.ok{color:#2fa36b;font-weight:700;font-size:14px}
