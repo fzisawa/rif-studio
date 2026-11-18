@@ -15,3 +15,12 @@ empt();
   rows();(await r.json()).forEach(c=>{const ps=document.querySelector('header .nrow[data-g="'+c.grp+'"] .nps');if(!ps)return;
     const a=document.createElement("a");a.href="/"+encodeURIComponent(c.slug)+"/";a.textContent=c.name;if(cur===c.slug){a.className="on";ps.closest(".ng").classList.add("on")}ps.append(a)})}catch(_){}
   finally{empt()}})();
+/* 퇴사 처리된 사원의 페이지는 메뉴에서 빼고, 그 페이지로 들어오면 홈으로 보내요 (대표가 다시 '재직'으로 바꾸면 돌아와요) */
+(async()=>{try{
+  const U="https://noqtyhmgdfzziymfclnx.supabase.co",K=(window.RIF&&RIF.KEY)||"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcXR5aG1nZGZ6eml5bWZjbG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4OTg1MzMsImV4cCI6MjEwOTQ3NDUzM30.fMmKix0TBw_LLaXrPVapMpKj6DciSVVUKX1XvBFtfaM";
+  const r=await fetch(U+"/rest/v1/rpc/hidden_pages",{method:"POST",headers:{apikey:K,Authorization:"Bearer "+K,"Content-Type":"application/json"},body:"{}"});if(!r.ok)return;
+  const hid=new Set((await r.json()).map(x=>typeof x==="string"?x:x.hidden_pages).filter(Boolean));if(!hid.size)return;
+  const seg=p=>{try{return new URL(p,location.href).pathname.split("/")[1]||""}catch(_){return""}};
+  document.querySelectorAll("header .nm a[href]").forEach(a=>{if(hid.has(seg(a.getAttribute("href"))))a.remove()});empt();
+  const cur=location.pathname.split("/")[1]||"";
+  if(hid.has(cur)&&!document.getElementById("anone")&&!/^\/(admin|intranet|mail)/.test(location.pathname))location.replace("/")}catch(_){}})();
