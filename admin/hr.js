@@ -115,7 +115,7 @@ $("hform").onsubmit=async e=>{e.preventDefault();if(!edit)return;
     p_kind:$("hkd").value,p_joined:$("hjd").value||null,p_contract_end:$("hce").value||null,p_left_at:$("hlf").value||null});
   if(error)return alert("저장하지 못했어요: "+err(error));
   edit=null;$("hmod").hidden=true;load()};
-let TD={"경영지원부":"경영본부","보컬부":"프로덕션본부","사운드제작부":"프로덕션본부","일러스트부":"프로덕션본부","영상제작부":"프로덕션본부"},DV=["경영본부","프로덕션본부"];
+let TD={"경영지원부":"경영본부","울림공방":"프로덕션본부","소리공방":"프로덕션본부","붓끝공방":"프로덕션본부","장면공방":"프로덕션본부","꿈틀공방":"프로덕션본부","이야기공방":"프로덕션본부"},DV=["경영본부","프로덕션본부"];
 /* 본부 · 부 (org_units) — 관리자 페이지에서 편집. 영어 이름은 메일 서명 직함에 자동으로 쓰여요 */
 function fillDivs(){const sel=$("hdv"),cur=sel.value;sel.replaceChildren(el("option",{value:"",textContent:"미배정"}),...DV.map(d=>el("option",{value:d,textContent:d})));if(cur&&!DV.includes(cur))sel.append(el("option",{value:cur,textContent:cur}));sel.value=cur}
 async function loadOrgU(){const {data,error}=await db.from("org_units").select("division,team,sort,name_en").order("sort");if(error||!data||!data.length)return null;
@@ -135,12 +135,12 @@ function drawOrg(){OS=Math.min(OS,Math.max(0,OU.length-1));
   del.onclick=()=>{if(!confirm((d.division||"이 본부")+" 을(를) 지울까요? (저장을 눌러야 반영돼요)"))return;OU.splice(OS,1);OS=Math.max(0,OS-1);drawOrg();omsg()};
   const rows=el("div",{className:"orows"},d.teams.map((t,i)=>{const x=el("button",{type:"button",className:"ox",ariaLabel:t.name+" 빼기",textContent:"×"}),
       l=el("button",{type:"button",className:"om",ariaLabel:"위로",textContent:"↑",disabled:i===0}),
-      ki=el("input",{maxLength:40,value:t.name,ariaLabel:"부 이름"}),ei=el("input",{maxLength:80,value:t.en||"",placeholder:"영어 · 예) Vocal Department",ariaLabel:"영어 이름"});
+      ki=el("input",{maxLength:40,value:t.name,ariaLabel:"부 이름"}),ei=el("input",{maxLength:80,value:t.en||"",placeholder:"영어 · 예) Echo Lab",ariaLabel:"영어 이름"});
     ki.oninput=()=>{t.name=ki.value;omsg()};ei.oninput=()=>{t.en=ei.value;omsg()};
     x.onclick=()=>{d.teams.splice(i,1);drawOrg();omsg()};l.onclick=()=>{d.teams.splice(i-1,0,d.teams.splice(i,1)[0]);drawOrg();omsg()};
     return el("div",{className:"orow2"},[l,ki,ei,x])}));
   if(!d.teams.length)rows.append(el("span",{className:"note",textContent:"아직 부가 없어요."}));
-  const ti=el("input",{className:"oti",maxLength:40,placeholder:"새 부 이름 · 예) 보컬부"}),te=el("input",{className:"oti",maxLength:80,placeholder:"영어 · 예) Vocal Department"}),ta=el("button",{type:"button",className:"btn small",textContent:"＋ 부 추가"});
+  const ti=el("input",{className:"oti",maxLength:40,placeholder:"새 부 이름 · 예) 울림공방"}),te=el("input",{className:"oti",maxLength:80,placeholder:"영어 · 예) Echo Lab"}),ta=el("button",{type:"button",className:"btn small",textContent:"＋ 부 추가"});
   const add=()=>{const v=ti.value.trim();if(!v)return ti.focus();if(d.teams.some(t=>t.name===v)){alert("'"+v+"' 부가 이미 있어요");return}d.teams.push({name:v,en:te.value.trim()});drawOrg();omsg();$("orgl").querySelector(".oadd .oti").focus()};
   ta.onclick=add;[ti,te].forEach(x=>x.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();add()}});
   $("orgl").replaceChildren(el("div",{className:"ohd"},[el("label",{},[el("span",{textContent:"본부 이름"}),nm]),el("label",{},[el("span",{textContent:"영어 이름 (서명에 쓰여요)"}),ne]),del]),

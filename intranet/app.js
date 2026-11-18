@@ -185,7 +185,7 @@ async function loadDir(){const {data}=await db.rpc("staff_directory");dir=data||
   const mine=dir.find(r=>r.email.toLowerCase()===me)||{};
   avatar($("pfav"),mine.avatar,mine.name);$("pfnk").value=mine.nickname||"";$("pfen").value=mine.name_en||"";$("pfdc").value=mine.discord||"";$("pftw").value=mine.twitter||"";$("pfdu").value=mine.duties||"";
   drawTree();drawDir();loadOrg()}
-let DIVS={"경영본부":["경영지원부"],"프로덕션본부":["보컬부","사운드제작부","일러스트부","영상제작부"]};
+let DIVS={"경영본부":["경영지원부"],"프로덕션본부":["울림공방","소리공방","붓끝공방","장면공방","꿈틀공방","이야기공방"]};
 const TEAM_DIV={};const mapDiv=()=>{for(const k in TEAM_DIV)delete TEAM_DIV[k];Object.entries(DIVS).forEach(([d,ts])=>ts.forEach(t=>TEAM_DIV[t]=d))};mapDiv();
 /* 본부 · 부 목록은 관리자 페이지에서 바꿀 수 있어요 (org_units) */
 let orgLoaded=false;
@@ -311,7 +311,7 @@ async function loadRooms(){const [a,b]=await Promise.all([db.from("chat_rooms").
 function roomDlg(rm){
   const old=document.getElementById("rmdlg");if(old)old.remove();
   const sel=new Set(rm?(roomMem[rm.id]||[]).map(e=>e.toLowerCase()):[]);
-  const nm=el("input",{value:rm?rm.name:"",maxLength:60,placeholder:"예: 사운드제작부 채팅방"});
+  const nm=el("input",{value:rm?rm.name:"",maxLength:60,placeholder:"예: 소리공방 채팅방"});
   const q=el("input",{type:"search",placeholder:"사원 검색"});const lst=el("div",{className:"rml"});const cnt=el("span",{className:"note"});
   const myT=(dir.find(x=>x.email.toLowerCase()===me)||{}).team||"";
   const draw=()=>{lst.replaceChildren();const k=q.value.trim().toLowerCase();
