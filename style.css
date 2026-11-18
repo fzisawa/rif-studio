@@ -278,3 +278,5 @@ header nav:has(.nmg){position:relative}
 footer .biz{display:block;margin-top:10px;font-size:10.5px;letter-spacing:.04em;opacity:.75}
 /* 스토어 PayPal 결제 */
 .spp{margin:16px 0;padding:16px;border:1px solid #7774;border-radius:14px;display:grid;gap:10px}.spp[hidden]{display:none}.sppt{font-size:15px}.sppb{min-height:44px}.spp .note{margin:0;font-size:12px}.sppgo{width:100%;font-size:13px}.spp .note.ok{color:#2fa36b;font-weight:700;font-size:14px}
+/* 스토어 주문 조회 결과 카드 */
+.slcard{margin:14px 0;padding:14px 16px;border:1px solid #7774;border-radius:14px}.slhd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap}
