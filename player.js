@@ -3,7 +3,7 @@
 (()=>{if(window.RIFP)return;window.RIFP=1;
   const a=new Audio();a.preload="none";let cur=null;
   const fmt=s=>Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0"),Q=(r,s)=>r.querySelector(s);
-  const icon=(r,p)=>{const b=Q(r,".pl");b.textContent=p?"❚❚":"▶";b.setAttribute("aria-label",p?"일시정지":"재생")};
+  const icon=(r,p)=>{const b=Q(r,".pl");b.textContent=p?"❚❚":"▶";b.setAttribute("aria-label",window.T?(p?window.T("a.pause","일시정지"):window.T("a.play","재생")):(p?"일시정지":"재생"))};
   const reset=r=>{r.classList.remove("on");icon(r,false);Q(r,".bar u").style.width="0";if(r.dataset.dur)Q(r,".du").textContent=r.dataset.dur};
   function play(r){
     if(cur===r){a.paused?a.play().catch(()=>{}):a.pause();return}

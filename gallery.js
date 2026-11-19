@@ -10,7 +10,7 @@
   /* 올린 음원은 RIF 페이지의 Tracks 와 같은 디자인으로 (사진·영상 아래 한 줄씩) */
   const tl=el("ol"),tw=el("div",{className:"tracks up",hidden:true},[tl]);g.after(tw);
   const fmt=x=>Math.floor(x/60)+":"+String(Math.floor(x%60)).padStart(2,"0");
-  const trow=it=>{const du=el("span",{className:"du",textContent:"–:––"}),li=el("li",{},[el("button",{className:"pl",type:"button",textContent:"▶",ariaLabel:"재생"}),el("div",{className:"ti"},[el("b",{textContent:it.caption||"Untitled"}),el("i",{className:"bar"},[el("u")])]),du]);
+  const trow=it=>{const du=el("span",{className:"du",textContent:"–:––"}),li=el("li",{},[el("button",{className:"pl",type:"button",textContent:"▶",ariaLabel:(window.T?window.T("a.play","재생"):"재생")}),el("div",{className:"ti"},[el("b",{textContent:it.caption||"Untitled"}),el("i",{className:"bar"},[el("u")])]),du]);
     li.dataset.src=it.url;
     const m=new Audio();m.preload="metadata";m.onloadedmetadata=()=>{if(isFinite(m.duration)){li.dataset.dur=fmt(m.duration);if(!li.classList.contains("on"))du.textContent=li.dataset.dur}m.removeAttribute("src");m.load()};m.src=it.url;
     if(admin){const x=el("button",{className:"tdel2",type:"button",textContent:"×",ariaLabel:"삭제",title:"이 음원 삭제"});x.onclick=async()=>{if(confirm("'"+(it.caption||"Untitled")+"' 음원을 삭제할까요?")){try{await delItem(it)}catch(e){alert("삭제하지 못했어요: "+e.message)}load()}};li.append(x);li.classList.add("ed")}

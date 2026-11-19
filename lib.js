@@ -22,7 +22,7 @@ async function addItem(page,file,ytUrl,cap,section){
 async function delItem(it){const {error}=await db.from("items").delete().eq("id",it.id);if(error)throw error;if(it.path)await db.storage.from(B).remove([it.path])}
 /* 이 채널(page)을 고칠 수 있는 계정인지: 대표 또는 그 채널 주인 (서버에서도 똑같이 막아요) */
 const canEdit=async page=>{const s=(await db.auth.getSession()).data.session;if(!s)return false;try{const {data}=await db.rpc("can_edit_page",{p:page});return data===true}catch(_){return false}};
-const yt=it=>{const b=el("button",{className:"yt",type:"button",ariaLabel:"영상 재생"},[el("img",{loading:"lazy",alt:"",src:"https://img.youtube.com/vi/"+it.url+"/hqdefault.jpg"}),el("span",{textContent:"▶"})]);
+const yt=it=>{const b=el("button",{className:"yt",type:"button",ariaLabel:(window.T?window.T("a.video","영상 재생"):"영상 재생")},[el("img",{loading:"lazy",alt:"",src:"https://img.youtube.com/vi/"+it.url+"/hqdefault.jpg"}),el("span",{textContent:"▶"})]);
   b.onclick=()=>b.replaceWith(el("iframe",{allow:"autoplay; encrypted-media; picture-in-picture",allowFullscreen:true,src:"https://www.youtube-nocookie.com/embed/"+it.url+"?autoplay=1"}));return b};
 const zoom=i=>{i.style.cursor="zoom-in";i.onclick=()=>{const o=el("div",{className:"lb"},[el("img",{src:i.src,alt:i.alt})]);o.onclick=()=>o.remove();document.addEventListener("keydown",function k(e){if(e.key==="Escape"){o.remove();document.removeEventListener("keydown",k)}});document.body.append(o)};return i};
 const media=it=>it.kind==="youtube"?yt(it):it.kind==="audio"?el("audio",{controls:true,preload:"none",src:it.url}):zoom(el("img",{loading:"lazy",alt:it.caption||"",src:it.url}));
