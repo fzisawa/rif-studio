@@ -27,7 +27,7 @@ $("mkgo").onclick=async()=>{const v=i=>$(i).value.trim(),m=$("sigmsg");
    +(v("mk3")?'<div style="font-size:12px;color:#888888;line-height:18px">'+eh(v("mk3"))+'</div>':"")
    +'<div style="font-size:12px;font-weight:bold;color:#6b4fbb;line-height:18px">'+eh(v("mk4"))+'</div>'
    +'</div><div style="padding-left:14px;padding-top:10px"><div style="font-size:13px;font-weight:bold;color:#222222;letter-spacing:1px;line-height:18px">RIF STUDIO <span style="font-weight:normal;color:#666666;letter-spacing:0;font-size:12px">リフ スタジオ</span></div><table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin-top:6px;font-size:12px;line-height:18px;color:#333333">'
-   +L("OFFICE",v("mk5"),tel(v("mk5")))+L("MOBILE",v("mk6"),tel(v("mk6")))+L("MAIL",v("mk7"),'<a href="mailto:'+eh(v("mk7"))+'" style="color:#6b4fbb;text-decoration:none">'+eh(v("mk7"))+'</a>')+'</table></div></div>';
+   +L("Office",v("mk5"),tel(v("mk5")))+L("Mobile",v("mk6"),tel(v("mk6")))+L("Mail",v("mk7"),'<a href="mailto:'+eh(v("mk7"))+'" style="color:#6b4fbb;text-decoration:none">'+eh(v("mk7"))+'</a>')+'</table></div></div>';
   ed.innerHTML=html;m.className="note";m.textContent="만들었어요. 아래에서 확인하고 '서명 저장'을 눌러 주세요."};
 const esc=t=>t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 function setSig(){const h=(staff.signature_html||"").trim();$("sig").innerHTML=h||(staff.signature?esc(staff.signature).replace(/\n/g,"<br>"):"");selImg=null}
