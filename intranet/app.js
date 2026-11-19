@@ -344,7 +344,7 @@ $("cf2").onsubmit=e=>{e.preventDefault();sendChat()};
 $("ci").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendChat()}};
 
 /* 탭 */
-const P={b:"pb",t:"pt",i:"pi",c:"pc",q:"pbd",e:"pe",s:"ps"};
+const P={b:"pb",t:"pt",k:"pk",i:"pi",c:"pc",q:"pbd",e:"pe",s:"ps"};
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));
   Object.entries(P).forEach(([k,id])=>$(id).hidden=k!==b.dataset.t);if(b.dataset.t==="c")openChat();});

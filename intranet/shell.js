@@ -4,7 +4,7 @@
 const $=i=>document.getElementById(i),H=document.documentElement,mq=matchMedia("(max-width:760px)");
 const tabs=$("tabs"),app=$("app"),box=$("box");if(!tabs||!app||!box)return;
 const mk=(t,p,c)=>{const e=Object.assign(document.createElement(t),p||{});(c||[]).forEach(x=>e.append(x));return e};
-const NAME={b:"게시판",t:"업무",i:"메일",c:"채팅",q:"문의 게시판",e:"사원 정보",s:"내 프로필"};
+const NAME={b:"게시판",t:"업무",k:"작업·단가",i:"메일",c:"채팅",q:"문의 게시판",e:"사원 정보",s:"내 프로필"};
 H.classList.add("ash");
 const sa=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;if(sa)H.classList.add("ash-sa");
 /* 상단 바 */
@@ -13,7 +13,7 @@ const bar=mk("div",{className:"ash-bar"},[mk("span",{className:"ash-logo"}),ttl,
 /* 더보기 버튼 (하단 탭 5번째) */
 const more=mk("button",{type:"button",className:"ash-more",textContent:"더보기"});more.setAttribute("aria-pressed","false");tabs.append(more);
 const cur=()=>{const b=tabs.querySelector('button[data-t][aria-pressed="true"]');return b?b.dataset.t:"b"};
-const sync=()=>{const t=cur();H.dataset.tab=t;ttl.textContent=NAME[t]||"";more.setAttribute("aria-pressed",String("qes".includes(t)));
+const sync=()=>{const t=cur();H.dataset.tab=t;ttl.textContent=NAME[t]||"";more.setAttribute("aria-pressed",String("qesk".includes(t)));
   const pa=$("pfav");if(pa){av.style.backgroundImage=pa.style.backgroundImage;av.textContent=pa.style.backgroundImage?"":pa.textContent}};
 const inSync=()=>{H.classList.toggle("ash-in",!app.hidden&&!box.hidden);sync()};
 new MutationObserver(inSync).observe(app,{attributes:true,attributeFilter:["hidden"]});
@@ -27,7 +27,7 @@ function openSheet(){closeSheet();
   const go=t=>()=>{const b=tabs.querySelector('button[data-t="'+t+'"]');if(b)b.click();scrollTo(0,0)};
   const who=($("who")||{}).textContent||"",items=[];
   const qb=tabs.querySelector('button[data-t="q"]');if(qb&&!qb.hidden)items.push(row("📮","문의 게시판",go("q")));
-  items.push(row("👥","사원 정보",go("e")),row("🙂","내 프로필",go("s")));
+  items.push(row("📝","작업 배정서 · 단가표",go("k")),row("👥","사원 정보",go("e")),row("🙂","내 프로필",go("s")));
   const adm=$("admlink");if(adm&&!adm.hidden)items.push(row("⚙️","관리자 페이지",()=>{location.href=adm.href}));
   if(!sa)items.push(row("📱","앱으로 설치하기",()=>{const d=document.querySelector("details.inst");if(!d)return;const pm=$("pm"),pb=$("pmb");if(pm&&pb){pb.replaceChildren(mk("h2",{textContent:"앱으로 설치하기"}),d.querySelector(".instb").cloneNode(true));pm.hidden=false}}));
   items.push(row("🌐","RIF STUDIO 사이트",()=>{location.href="../"}),row("↩","로그아웃",()=>{const o=$("out");if(o&&confirm("로그아웃할까요?"))o.click()},"out"));
