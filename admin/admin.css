@@ -38,6 +38,7 @@
 #hrtb select.kd.reg{background-color:var(--soft);border-color:var(--soft2);color:var(--ac)}
 #hrtb select.kd.fre{background-color:#2fa36b22;border-color:#2fa36b55;color:#1f7a4f}#hrtb select.kd.con{background-color:#e8a33a2e;border-color:#e8a33a55;color:#b8741a}
 #hrtb select.kd.int{background-color:#2f80ed24;border-color:#2f80ed4d;color:#2f6fd0}
+#hrtb select.kd.tra{background-color:#d94f9a22;border-color:#d94f9a55;color:#b0377a}
 #hrtb select.kd.none{background-color:transparent;border:1px dashed var(--ln2);color:var(--mut);font-weight:400}
 #hrtb select.kd option{background:var(--bg);color:var(--fg);font-weight:400}
 .dd{display:inline-block;margin-left:8px;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:700;line-height:1.6;background:var(--hv);color:var(--mut);white-space:nowrap}
