@@ -18,6 +18,13 @@ const T={
   look:"Order lookup",lookBtn:"Look up",noOrder:"We couldn't find an order. Please check the name and email you ordered with.",st:{new:"Received · preparing to ship",shipped:"Shipped · payment due",paid:"Payment confirmed",done:"Completed",cancel:"Cancelled"},later:"You pay after your order arrives (pay later). Once it ships, check Order lookup for bank details and PayPal.",laterKR:"You pay after your order arrives (pay later). Once it ships, check Order lookup for our bank details.",laterPP:"You pay after your order arrives (pay later). Once it ships, you can pay with PayPal from Order lookup.",
   closed:"The store is getting ready. Opening soon!",soon:"Coming soon",planNote:"Plans are delivered as work, with no shipping.",err:"We couldn't place your order: ",
   e:{"store closed":"We're not taking orders right now.","bad email":"Please check your email.","bad phone":"Please check your phone number.","address required":"Please enter your address and postal code.","name required":"Please enter your name.","too many":"Please try again in a moment.","out of stock":"An item is out of stock","not for sale":"An item isn't available right now","bad option":"Please choose the options again"},biz:"Business information",ppT:"Pay now with PayPal or card",ppAmt:"Amount",ppNote:"Your KRW total is converted to US dollars at a fixed rate.",ppOk:"Payment complete. Thank you so much!",ppErr:"We couldn't complete the payment. Please try again.",ppPaid:"Paid with PayPal",ppGo:"Window not opening? Go to the PayPal page",ppCancel:"PayPal payment was cancelled."}};
+/* 패키지(플랜) 화면 문구 */
+Object.assign(T.ko,{prev:"대표님에게만 보이는 미리보기예요. 손님에게는 아직 Coming soon으로 보여요.",draft:"비공개",view:"자세히 보기",listp:"정가",first:n=>"선착순 "+n+"건",left:n=>n+"건 남음",inc:"구성",team:"만드는 사람들",teamNote:"담당을 고를 수 있는 파트는 작업을 보고 직접 골라 주세요.",flow:"진행 순서",roles:{mix:"믹싱",art:"일러스트",video:"영상",direct:"디렉팅"},pick:"이 담당으로 선택",picked:"선택됨",folio:"포트폴리오 전체 보기",play:"재생",payLater:"결제는 결과물을 받은 뒤에 해요.",askPre:"주문 전에 궁금한 점이 있나요?",
+  steps:[["주문 접수","지금은 결제하지 않아요. 이름과 연락처만 남겨 주세요."],["디렉팅","리후가 연락드려 곡과 방향을 함께 정해요."],["제작","믹싱 · 일러스트 · 영상을 만들어요."],["납품과 결제","결과물을 받은 뒤에 결제해요. 국내는 계좌 입금, 해외는 PayPal이에요."]]});
+Object.assign(T.ja,{prev:"代表だけに見えるプレビューです。お客様にはまだ Coming soon と表示されます。",draft:"非公開",view:"詳しく見る",listp:"通常価格",first:n=>"先着"+n+"件",left:n=>"残り"+n+"件",inc:"セット内容",team:"制作メンバー",teamNote:"担当を選べるパートは、作品を見てお選びください。",flow:"ご利用の流れ",roles:{mix:"ミックス",art:"イラスト",video:"映像",direct:"ディレクション"},pick:"この担当を選ぶ",picked:"選択中",folio:"ポートフォリオをすべて見る",play:"再生",payLater:"お支払いは納品後です。",askPre:"ご注文前にご質問はありますか？",
+  steps:[["ご注文","この時点ではお支払いは不要です。お名前とご連絡先だけご入力ください。"],["ディレクション","RIFからご連絡し、曲と方向性を一緒に決めます。"],["制作","ミックス・イラスト・映像を制作します。"],["納品とお支払い","納品後にお支払いください。海外からはPayPalをご利用いただけます。"]]});
+Object.assign(T.en,{prev:"Preview: only the CEO account can see this. Customers still see “Coming soon.”",draft:"Hidden",view:"See details",listp:"Regular price",first:n=>"First "+n+" orders",left:n=>n+" left",inc:"What's included",team:"Who makes it",teamNote:"Where you have a choice, look through their work and pick your creator.",flow:"How it works",roles:{mix:"Mixing",art:"Illustration",video:"Video",direct:"Directing"},pick:"Choose this creator",picked:"Selected",folio:"See full portfolio",play:"Play",payLater:"You pay after you receive the finished work.",askPre:"Questions before you order?",
+  steps:[["Place your order","No payment yet. Just leave your name and contact details."],["Directing","RIF gets in touch and settles the song and direction with you."],["Production","We make the mix, illustration and video."],["Delivery and payment","Pay once you have the finished work. From outside Korea, pay with PayPal."]]});
 const lng=()=>{try{const v=localStorage.getItem("rif-lang");if(v==="ja"||v==="en")return v}catch(_){}return "ko"};
 let L=lng(),t=T[L];
 const won=n=>"₩"+Number(n||0).toLocaleString("ko-KR");
@@ -33,24 +40,27 @@ const lines=s=>String(s||"").split("\n").flatMap((x,i)=>i?[el("br"),document.cre
 const KEY="rif-cart";
 const getCart=()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(v)?v:[]}catch(_){return []}};
 const setCart=c=>{try{localStorage.setItem(KEY,JSON.stringify(c))}catch(_){}cartBadge()};
-let P=[],S={},tab=null;
+let P=[],S={},tab=null,PREV=false,IT={};
 
 /* 화면 뼈대 */
 const bar=el("div",{className:"tabs"}),grid=el("div",{className:"sgrid"}),note=el("p",{className:"snote",hidden:true});
 const cartBtn=el("button",{type:"button",className:"scart",ariaLabel:"cart"},[el("span",{className:"sci"}),el("b",{className:"scn",textContent:"0"})]);
 const lookBtn=el("button",{type:"button",className:"slook"});
 const tools=el("div",{className:"stools"},[lookBtn,cartBtn]);
-const biz=el("dl",{className:"sbiz",hidden:true});
-root.replaceChildren(el("div",{className:"stop"},[bar,tools]),note,grid,biz);
+const biz=el("dl",{className:"sbiz",hidden:true}),prev=el("p",{className:"sprev",hidden:true});
+root.replaceChildren(prev,el("div",{className:"stop"},[bar,tools]),note,grid,biz);
 const sheet=el("div",{className:"smod",hidden:true,role:"dialog",ariaModal:"true"}),panel=el("div",{className:"spanel"});sheet.append(panel);document.body.append(sheet);
 const toast=el("div",{className:"stoast",role:"status",hidden:true});document.body.append(toast);
+/* 작품 사진 크게 보기 */
+const lb=el("div",{className:"pklb",hidden:true});document.body.append(lb);lb.onclick=()=>{lb.hidden=true;lb.replaceChildren()};
+const zoom=u=>{lb.replaceChildren(el("img",{src:u,alt:""}));lb.hidden=false};
 let tt=0;const say=m=>{toast.textContent=m;toast.hidden=false;clearTimeout(tt);tt=setTimeout(()=>toast.hidden=true,2200)};
 let lastFocus=null;
 function open(kind,...a){lastFocus=document.activeElement;panel.className="spanel "+kind;panel.replaceChildren();sheet.hidden=false;document.documentElement.classList.add("snoscroll");
   ({detail:drawDetail,cart:drawCart,check:drawCheck,done:drawDone,look:drawLook})[kind](...a);
   const f=panel.querySelector("button,select,input");if(f)f.focus({preventScroll:true})}
-function close(){sheet.hidden=true;document.documentElement.classList.remove("snoscroll");if(/[?&]p=/.test(location.search))history.replaceState(null,"",location.pathname+location.hash);if(lastFocus&&lastFocus.focus)lastFocus.focus({preventScroll:true})}
-sheet.onclick=e=>{if(e.target===sheet)close()};document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!sheet.hidden)close()});
+function close(){sheet.hidden=true;panel.replaceChildren();/* 재생 중인 영상 · 음원도 같이 멈춰요 */document.documentElement.classList.remove("snoscroll");if(/[?&]p=/.test(location.search))history.replaceState(null,"",location.pathname+location.hash);if(lastFocus&&lastFocus.focus)lastFocus.focus({preventScroll:true})}
+sheet.onclick=e=>{if(e.target===sheet)close()};document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!lb.hidden)lb.click();else if(!sheet.hidden)close()});
 const xBtn=()=>{const b=el("button",{type:"button",className:"sx",textContent:"×",ariaLabel:"close"});b.onclick=close;return b};
 const priceEl=p=>{const u=unit(p),off=p.sale_price!=null&&p.sale_price<p.price;return el("div",{className:"spr"},[...(off?[el("em",{textContent:Math.round((1-p.sale_price/p.price)*100)+"%"}),el("s",{textContent:won(p.price)})]:[]),el("b",{textContent:won(u)+((p.options||[]).some(o=>o.add&&Object.values(o.add).some(Number))?" ~":"")})])};
 function cartBadge(){const n=getCart().reduce((a,c)=>a+c.qty,0);cartBtn.querySelector(".scn").textContent=String(n);cartBtn.classList.toggle("has",n>0);cartBtn.setAttribute("aria-label",t.cart+" "+n)}
@@ -60,43 +70,112 @@ function labels(){lookBtn.textContent=t.look;cartBtn.title=t.cart;cartBadge()}
 function draw(){
   const kinds=["plan","goods"].filter(k=>P.some(p=>p.kind===k));if(!kinds.includes(tab))tab=kinds[kinds.length>1&&location.hash==="#goods"?1:0]||null;
   bar.replaceChildren(...kinds.map(k=>{const b=el("button",{type:"button",className:"tab"+(k===tab?" on":""),textContent:t[k]});b.onclick=()=>{tab=k;history.replaceState(null,"","#"+k);draw()};return b}));
-  note.hidden=!!S.open||!P.some(p=>p.buy_mode==="order");note.textContent=t.closed;
+  prev.hidden=!PREV;prev.textContent=t.prev;
+  note.hidden=!!S.open||!P.some(p=>p.buy_mode==="order"&&p.status!=="draft");note.textContent=t.closed;
   const its=P.filter(p=>p.kind===tab);grid.replaceChildren();grid.className="sgrid"+(tab==="plan"?" plans":"");
   if(!its.length){grid.append(el("p",{className:"empty",textContent:t.soon}));return}
   its.forEach(p=>{const img=(p.images||[])[0],so=p.status==="soldout";
-    const c=el("a",{className:"scard"+(so?" so":""),href:"?p="+p.id},[el("div",{className:"sth"},[img?el("img",{src:img,alt:"",loading:"lazy"}):el("span",{className:"sno",textContent:"RIF"}),...(so?[el("span",{className:"sbadge",textContent:t.soldout})]:[])]),
+    const c=isPack(p)?packCard(p):el("a",{className:"scard"+(so?" so":""),href:"?p="+p.id},[el("div",{className:"sth"},[img?el("img",{src:img,alt:"",loading:"lazy"}):el("span",{className:"sno",textContent:"RIF"}),...(so?[el("span",{className:"sbadge",textContent:t.soldout})]:[]),...(p.status==="draft"?[el("span",{className:"pkd",textContent:t.draft})]:[])]),
       el("div",{className:"sinfo"},[el("h3",{textContent:nm(p)}),...(sm(p)&&tab==="plan"?[el("p",{className:"ssum",textContent:sm(p)})]:[]),priceEl(p)])]);
     c.onclick=e=>{if(e.metaKey||e.ctrlKey)return;e.preventDefault();history.replaceState(null,"","?p="+p.id+location.hash);open("detail",p)};grid.append(c)});
   /* 사업자 정보 (어드민에서 채우면 보여요) */
   const B=S.biz||{},BL={ko:["상호","대표","사업자등록번호","통신판매업 신고","주소","연락처"],ja:["商号","代表者","事業者登録番号","通信販売業申告","所在地","連絡先"],en:["Business name","Representative","Business registration no.","Mail-order business report","Address","Contact"]}[L]||[],rows=[[BL[0],B.name],[BL[1],B.ceo],[BL[2],B.reg],[BL[3],B.mail_order],[BL[4],B.addr],[BL[5],B.contact]].filter(r=>r[1]);
   biz.hidden=!rows.length;biz.replaceChildren(...rows.flatMap(([k,v])=>[el("dt",{textContent:k}),el("dd",{textContent:v})]))}
 
-/* 상세 */
-function drawDetail(p){
-  const imgs=(p.images||[]).length?p.images:[null];let cur=0;
-  const big=el("div",{className:"sbig"}),thumbs=el("div",{className:"sthumbs"});
-  const show=i=>{cur=i;big.replaceChildren(imgs[i]?el("img",{src:imgs[i],alt:nm(p)}):el("span",{className:"sno",textContent:"RIF"}));[...thumbs.children].forEach((b,j)=>b.classList.toggle("on",j===i))};
-  if(imgs.length>1)imgs.forEach((u,i)=>{const b=el("button",{type:"button"},[el("img",{src:u,alt:"",loading:"lazy"})]);b.onclick=()=>show(i);thumbs.append(b)});
+/* 구매 조작부: 옵션 · 수량 · 합계 · 버튼 (일반 상세와 패키지 상세가 같이 써요) */
+function buyUI(p){
   const sels=(p.options||[]).map(o=>{const s=el("select",{},[el("option",{value:"",textContent:oN(o)+" "+t.choose}),...o.values.map(v=>{const a=Number((o.add||{})[v])||0;return el("option",{value:v,textContent:oV(o,v)+(a?" (+"+won(a)+")":"")})})]);s.dataset.n=o.name;s.setAttribute("aria-label",oN(o));return s});
   const picked=()=>{const o={};sels.forEach(s=>{if(s.value)o[s.dataset.n]=s.value});return o};
   let q=1;const qv=el("output",{textContent:"1"}),minus=el("button",{type:"button",textContent:"−",ariaLabel:"-"}),plus=el("button",{type:"button",textContent:"+",ariaLabel:"+"});
   const lim=Math.max(1,Math.min(p.max_qty||10,p.stock==null?999:p.stock));
   const sum=el("b",{className:"stot"});const upd=()=>{qv.textContent=String(q);sum.textContent=won((unit(p)+oAdd(p,picked()))*q);minus.disabled=q<=1;plus.disabled=q>=lim};
-  minus.onclick=()=>{q=Math.max(1,q-1);upd()};plus.onclick=()=>{q=Math.min(lim,q+1);upd()};sels.forEach(s=>s.onchange=upd);upd();
+  minus.onclick=()=>{q=Math.max(1,q-1);upd()};plus.onclick=()=>{q=Math.min(lim,q+1);upd()};sels.forEach(s=>s.addEventListener("change",upd));upd();
   const opts=()=>{const o={};for(const s of sels){if(!s.value){s.focus();say(t.opt);return null}o[s.dataset.n]=s.value}return o};
-  const so=p.status==="soldout",acts=el("div",{className:"sacts"});
+  const so=p.status==="soldout",acts=el("div",{className:"sacts"}),live=!!S.open&&p.status==="sale";let buy=null;
   if(so)acts.append(el("button",{type:"button",className:"btn",disabled:true,textContent:t.soldout}));
   else if(p.buy_mode==="link"&&p.buy_url)acts.append(el("a",{className:"btn",href:p.buy_url,target:"_blank",rel:"noopener",textContent:t.ext+" ↗"}));
   else if(p.buy_mode==="inquiry")acts.append(el("a",{className:"btn",href:"../contact/",textContent:t.ask}));
   else{const a=el("button",{type:"button",className:"btn ghost",textContent:t.add}),b=el("button",{type:"button",className:"btn",textContent:t.buy});
-    a.disabled=b.disabled=!S.open;
+    a.disabled=b.disabled=!live;
     const put=()=>{const o=opts();if(!o)return false;const c=getCart(),k=p.id+"|"+JSON.stringify(o),hit=c.find(x=>x.k===k);if(hit)hit.qty=Math.min(lim,hit.qty+q);else c.push({k,id:p.id,opts:o,qty:q});setCart(c);return true};
-    a.onclick=()=>{if(put())say(t.added)};b.onclick=()=>{if(put())open("cart")};acts.append(a,b)}
+    buy=()=>{if(put())open("cart")};a.onclick=()=>{if(put())say(t.added)};b.onclick=buy;acts.append(a,b)}
+  return {sels,so,lim,acts,live,buy,canOrder:!so&&p.buy_mode==="order",
+    qty:el("div",{className:"sqty"},[el("span",{textContent:t.qty}),el("div",{className:"sstep"},[minus,qv,plus])]),tot:el("div",{className:"srow"},[el("span",{textContent:t.total}),sum])}}
+
+/* 상세 */
+function drawDetail(p){
+  if(isPack(p))return drawPack(p);
+  const imgs=(p.images||[]).length?p.images:[null];
+  const big=el("div",{className:"sbig"}),thumbs=el("div",{className:"sthumbs"});
+  const show=i=>{big.replaceChildren(imgs[i]?el("img",{src:imgs[i],alt:nm(p)}):el("span",{className:"sno",textContent:"RIF"}));[...thumbs.children].forEach((b,j)=>b.classList.toggle("on",j===i))};
+  if(imgs.length>1)imgs.forEach((u,i)=>{const b=el("button",{type:"button"},[el("img",{src:u,alt:"",loading:"lazy"})]);b.onclick=()=>show(i);thumbs.append(b)});
+  const U=buyUI(p);
   const ship=p.kind==="goods"?el("p",{className:"sship",textContent:t.ship+" "+(S.ship_fee?won(S.ship_fee):t.free)+(S.free_over?" · "+(L==="en"?won(S.free_over)+t.freeOver:Number(S.free_over).toLocaleString("ko-KR")+t.freeOver):"")}):el("p",{className:"sship",textContent:t.planNote});
   const buyBox=el("div",{className:"sbuy"},[el("p",{className:"tag",textContent:t[p.kind]}),el("h2",{textContent:nm(p)}),...(sm(p)?[el("p",{className:"ssum",textContent:sm(p)})]:[]),priceEl(p),ship,
-    ...(so||p.buy_mode!=="order"?[]:[...sels,el("div",{className:"sqty"},[el("span",{textContent:t.qty}),el("div",{className:"sstep"},[minus,qv,plus])]),el("div",{className:"srow"},[el("span",{textContent:t.total}),sum])]),acts]);
+    ...(U.canOrder?[...U.sels,U.qty,U.tot]:[]),U.acts]);
   const more=el("div",{className:"smore"},[...(dt(p)?[el("h3",{textContent:t.detail}),el("p",{},lines(dt(p)))]:[]),...(S.policy?[el("details",{},[el("summary",{textContent:t.policy}),el("p",{},lines(S.policy))])]:[])]);
   panel.append(xBtn(),el("div",{className:"sdet"},[el("div",{className:"sgal"},[big,thumbs]),buyBox]),more);show(0)}
+
+/* ── 패키지(플랜): 구성 · 만드는 사람들(포트폴리오) · 진행 순서 ──
+   상품의 pack 칸(JSON)에 파트와 담당을 적어 두면, 담당의 채널에 올라온 작품을 가져와 보여 줘요.
+   pack = {limit:한정 수량, tag:{ko,ja,en}, priceLabel:{ko,ja,en}, cover:["채널" 또는 "채널:몇 번째"], parts:[{key:"mix|art|video|direct", opt:"옵션 이름", who:[{name,en,page,sec,n,val,note}]}]} */
+const isPack=p=>!!(p&&p.pack&&Array.isArray(p.pack.parts));
+const tx=o=>o==null?"":typeof o==="string"?o:(o[L]||o.ko||"");
+const whoN=w=>(L!=="ko"&&w.en)||w.name;
+const ytImg=id=>"https://i.ytimg.com/vi/"+id+"/hqdefault.jpg";
+const pct=p=>Math.round((1-p.sale_price/p.price)*100)+"%",isOff=p=>p.sale_price!=null&&p.sale_price<p.price;
+/* 담당의 작품 고르기: 최신 순. sec 를 여러 개 적으면 탭마다 번갈아 한 점씩, skip 에 적은 글자가 주소에 들어간 작품은 빼요 */
+const samples=w=>{if(!w.page||w.n===0)return [];let a=(IT[w.page]||[]).filter(i=>!(w.skip||[]).some(k=>String(i.url).includes(k)));
+  if(w.sec){const g=[].concat(w.sec).map(k=>a.filter(i=>i.section===k));a=[];for(let i=0;g.some(x=>x[i]);i++)g.forEach(x=>{if(x[i])a.push(x[i])})}
+  return a.slice(0,w.n||4)};
+/* 남은 자리: 한정 수량(pack.limit) 중 재고(stock)만큼 남았어요 */
+const meter=p=>{const tot=p.pack.limit,left=p.stock;if(!tot||left==null)return null;const n=Math.max(0,Math.min(tot,left));
+  return el("div",{className:"sleft"},[el("div",{className:"sdots",ariaHidden:"true"},Array.from({length:tot},(_,i)=>el("i",{className:i<tot-n?"x":""}))),el("span",{textContent:t.first(tot)+" · "+t.left(n)})])};
+/* 카드 그림: cover 에 적은 것 3장 — 사진 주소, "yt:영상ID", "채널" 또는 "채널:몇 번째" */
+const packVis=p=>{const out=[];(p.pack.cover||[]).forEach(c=>{c=String(c);if(c.startsWith("yt:")){out.push(ytImg(c.slice(3)));return}if(c.includes("/")){out.push(c);return}
+    const [pg,ix]=c.split(":"),a=IT[pg]||[],im=a.filter(x=>x.kind==="image"),yt=a.filter(x=>x.kind==="youtube"),i=+ix||0;if(im[i])out.push(im[i].url);else if(yt[i])out.push(ytImg(yt[i].url))});
+  return (out.length?out:(p.images||[])).slice(0,3)};
+function packCard(p){const pk=p.pack,so=p.status==="soldout",vis=packVis(p),m=meter(p);
+  return el("a",{className:"scard pkc"+(so?" so":""),href:"?p="+p.id},[
+    el("div",{className:"pkv n"+vis.length},[...vis.map(u=>el("img",{src:u,alt:"",loading:"lazy",decoding:"async"})),...(vis.length?[]:[el("span",{className:"sno",textContent:"RIF"})]),...(so?[el("span",{className:"sbadge",textContent:t.soldout})]:[]),...(p.status==="draft"?[el("span",{className:"pkd",textContent:t.draft})]:[])]),
+    el("div",{className:"pkb"},[...(tx(pk.tag)?[el("p",{className:"tag",textContent:tx(pk.tag)})]:[]),el("h3",{textContent:nm(p)}),...(sm(p)?[el("p",{className:"ssum",textContent:sm(p)})]:[]),
+      el("p",{className:"pkr",textContent:pk.parts.map(pt=>t.roles[pt.key]||pt.key).join(" / ")}),
+      el("div",{className:"pkp"},[el("b",{textContent:won(unit(p))}),...(isOff(p)?[el("s",{textContent:won(p.price)}),el("em",{textContent:pct(p)})]:[])]),
+      ...(m?[m]:[]),el("span",{className:"btn",textContent:t.view})])])}
+function sampleEls(ss){const im=ss.filter(i=>i.kind==="image"),yt=ss.filter(i=>i.kind==="youtube"),au=ss.filter(i=>i.kind==="audio"),out=[];
+  if(im.length)out.push(el("div",{className:"pks imgs"},im.map(i=>{const g=el("img",{alt:i.caption||"",loading:"lazy",decoding:"async"}),b=el("button",{type:"button",className:"pkim"},[g]);
+    const fit=()=>{if(g.naturalWidth)b.style.setProperty("--r",(g.naturalWidth/g.naturalHeight).toFixed(3))};g.addEventListener("load",fit);g.src=i.url;if(g.complete)fit();b.onclick=()=>zoom(i.url);return b})));
+  if(yt.length)out.push(el("div",{className:"pks yts"},yt.map(i=>{const b=el("button",{type:"button",className:"pkyt",ariaLabel:t.play+(i.caption?" · "+i.caption:"")},[el("img",{src:ytImg(i.url),alt:"",loading:"lazy",decoding:"async"}),el("span",{className:"pkpl"})]);
+    b.onclick=()=>b.replaceWith(el("iframe",{src:"https://www.youtube-nocookie.com/embed/"+encodeURIComponent(i.url)+"?autoplay=1&rel=0",allow:"autoplay; encrypted-media; picture-in-picture",allowFullscreen:true,title:i.caption||"YouTube"}));
+    return el("figure",{},[b,...(i.caption?[el("figcaption",{textContent:i.caption})]:[])])})));
+  if(au.length)out.push(el("div",{className:"pks aus"},au.map(i=>el("div",{},[el("b",{textContent:i.caption||""}),el("audio",{controls:true,preload:"none",src:i.url})]))));
+  return out}
+function drawPack(p){const pk=p.pack,U=buyUI(p),off=isOff(p),picks=[];panel.classList.add("pack");
+  const sec=(h,...k)=>el("section",{className:"pksec"},[el("h3",{textContent:h}),...k]);
+  const head=el("div",{className:"pkh"},[el("p",{className:"tag",textContent:[t.plan,tx(pk.tag)].filter(Boolean).join(" / ")}),el("h2",{textContent:nm(p)}),...(sm(p)?[el("p",{className:"pklead",textContent:sm(p)})]:[])]);
+  /* 구성: 파트마다 누가 맡는지 */
+  const inc=el("ul",{className:"pkinc"},pk.parts.map(pt=>el("li",{},[el("b",{textContent:t.roles[pt.key]||pt.key}),el("span",{},(pt.who||[]).flatMap((w,i)=>[...(i?[el("i",{textContent:" / "})]:[]),whoN(w),...(tx(w.note)?[el("small",{textContent:" ("+tx(w.note)+")"})]:[])]))])));
+  /* 만드는 사람들: 담당마다 작품 몇 점 + 고를 수 있으면 '선택' */
+  const team=pk.parts.map(pt=>{const sel=pt.opt&&U.canOrder?U.sels.find(s=>s.dataset.n===pt.opt):null;
+    const blocks=(pt.who||[]).map(w=>{const ss=samples(w);if(!ss.length&&!sel)return null;const val=w.val||w.name;let btn=null;
+      if(sel&&pt.who.length>1){btn=el("button",{type:"button",className:"pkpick"});btn.onclick=()=>{sel.value=sel.value===val?"":val;sel.dispatchEvent(new Event("change"))}}
+      const a=el("article",{className:"pkw"},[el("div",{className:"pkwh"},[el("h5",{textContent:whoN(w)}),...(tx(w.note)?[el("span",{className:"pkn",textContent:tx(w.note)})]:[]),...(w.page?[el("a",{className:"pkfo",href:"../"+w.page+"/",target:"_blank",rel:"noopener",textContent:t.folio})]:[]),...(btn?[btn]:[])]),...sampleEls(ss)]);
+      if(btn)picks.push([sel,val,btn,a]);return a}).filter(Boolean);
+    return blocks.length?el("div",{className:"pkpart"},[el("h4",{textContent:t.roles[pt.key]||pt.key}),...blocks]):null}).filter(Boolean);
+  const sync=()=>picks.forEach(([sel,val,btn,a])=>{const on=sel.value===val;btn.textContent=on?t.picked:t.pick;btn.setAttribute("aria-pressed",String(on));a.classList.toggle("on",on)});
+  U.sels.forEach(s=>s.addEventListener("change",sync));sync();
+  const flow=el("ol",{className:"pkflow"},t.steps.map(([a,b])=>el("li",{},[el("b",{textContent:a}),el("span",{textContent:b})])));
+  /* 구매 칸 */
+  const price=el("div",{className:"pkpr"},[...(off&&tx(pk.priceLabel)?[el("p",{textContent:tx(pk.priceLabel)})]:[]),el("b",{textContent:won(unit(p))}),...(off?[el("p",{className:"pkwas"},[t.listp+" ",el("s",{textContent:won(p.price)})," ",el("em",{textContent:pct(p)})])]:[])]);
+  const m=meter(p),hasAdd=(p.options||[]).some(o=>o.add&&Object.values(o.add).some(Number));
+  const buy=el("div",{className:"pkbuy"},[price,...(m?[m]:[]),...(U.canOrder?[...U.sels.map(s=>el("label",{className:"pksel"},[el("span",{textContent:s.getAttribute("aria-label")}),s])),...(U.lim>1?[U.qty]:[]),...(U.lim>1||hasAdd?[U.tot]:[])]:[]),U.acts,
+    ...(U.canOrder?[el("p",{className:"pklater",textContent:t.payLater})]:[]),...(!U.so&&!U.live&&p.buy_mode==="order"?[el("p",{className:"note",textContent:t.closed})]:[]),el("a",{className:"pkask",href:"../contact/",textContent:t.askPre})]);
+  const main=el("div",{className:"pkmain"},[sec(t.inc,inc),...(team.length?[sec(t.team,...(picks.length?[el("p",{className:"pknote",textContent:t.teamNote})]:[]),...team)]:[]),sec(t.flow,flow),
+    ...(dt(p)?[sec(t.detail,el("p",{className:"pktxt"},lines(dt(p))))]:[]),...(S.policy?[el("details",{className:"pkpol"},[el("summary",{textContent:t.policy}),el("p",{},lines(S.policy))])]:[])]);
+  /* 휴대폰: 아래에 붙어 있는 주문 띠 */
+  const go=el("button",{type:"button",className:"btn",textContent:U.so?t.soldout:t.order,disabled:!U.buy||!U.live});go.onclick=()=>U.buy&&U.buy();
+  const bar=el("div",{className:"pkbar"},[el("div",{},[el("b",{textContent:won(unit(p))}),...(off?[el("s",{textContent:won(p.price)})]:[])]),go]);
+  panel.append(xBtn(),el("div",{className:"pkg"},[head,el("aside",{className:"pkside"},[buy]),main]),...(U.canOrder?[bar]:[]))}
 
 /* 장바구니 */
 const itemsOf=()=>getCart().map(c=>({c,p:P.find(p=>p.id===c.id)})).filter(x=>x.p&&x.p.status==="sale"&&x.p.buy_mode==="order");
@@ -203,8 +282,13 @@ function drawLook(pre){
 cartBtn.onclick=()=>open("cart");lookBtn.onclick=()=>open("look");
 
 async function load(){
-  const [a,b]=await Promise.all([db.from("store_products").select("*").neq("status","draft").order("sort").order("created_at",{ascending:false}),db.from("store_settings").select("*").eq("id",1).maybeSingle()]);
-  P=(a.data||[]).filter(p=>p.status!=="draft");S=(b&&b.data)||{};draw();cartBadge();
+  const adm=await isAdmin().catch(()=>false);let pq=db.from("store_products").select("*");if(!adm)pq=pq.neq("status","draft");
+  const [a,b]=await Promise.all([pq.order("sort").order("created_at",{ascending:false}),db.from("store_settings").select("*").eq("id",1).maybeSingle()]);
+  P=(a.data||[]).filter(p=>adm||p.status!=="draft");S=(b&&b.data)||{};PREV=adm&&P.some(p=>p.status==="draft");
+  /* 패키지에 적힌 담당들의 채널 작품 (최신 순) */
+  const pages=[...new Set(P.filter(isPack).flatMap(p=>p.pack.parts.flatMap(pt=>(pt.who||[]).map(w=>w.page))).filter(Boolean))];IT={};
+  if(pages.length)try{const {data}=await db.from("items").select("page,kind,url,caption,section,created_at").in("page",pages).order("created_at",{ascending:false});(data||[]).forEach(i=>(IT[i.page]=IT[i.page]||[]).push(i))}catch(_){}
+  draw();cartBadge();
   const id=new URLSearchParams(location.search).get("p"),p=id&&P.find(x=>x.id===id);if(p&&sheet.hidden)open("detail",p)}
 document.addEventListener("rif:lang",()=>{L=lng();t=T[L];labels();draw();if(!sheet.hidden)close()});
 labels();load().then(ppReturn)})();
