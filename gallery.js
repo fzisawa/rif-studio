@@ -74,13 +74,20 @@
     curCv.forEach(addRow);if(!curCv.length)addRow({});
     const add=el("button",{type:"button",className:"btn small ghost",textContent:"＋ 경력 추가"});add.onclick=()=>{addRow({});rows.lastChild.querySelector("input").focus()};
     const msg=el("p",{className:"note"}),sv=el("button",{type:"button",className:"btn",textContent:"저장"}),cc=el("button",{type:"button",className:"btn ghost",textContent:"닫기"});
-    const box=el("div",{className:"pe",id:"pe"},[el("h2",{textContent:"내 채널 편집"}),el("p",{className:"note",textContent:"캐치프레이즈와 경력은 저장하면 바로 이 페이지에 나와요. 제목·배치 같은 페이지 틀은 사이트 통일을 위해 바꿀 수 없어요. (일본어·영어 번역이 있는 줄을 고치면 그 줄은 번역이 지워지고 한국어로 나와요. 새 번역은 대표님께 요청해 주세요)"}),el("label",{textContent:"캐치프레이즈"},[ld]),rows,add,el("div",{className:"pe-acts"},[cc,sv]),msg]);
+    const box=el("div",{className:"pe",id:"pe"},[el("h2",{textContent:"내 채널 편집"}),el("p",{className:"note",textContent:"캐치프레이즈와 경력은 저장하면 바로 이 페이지에 나와요. 제목·배치 같은 페이지 틀은 사이트 통일을 위해 바꿀 수 없어요. (새로 쓰거나 고친 줄은 저장할 때 일본어·영어로 자동 번역돼요. 번역이 어색하면 대표님께 말씀해 주세요)"}),el("label",{textContent:"캐치프레이즈"},[ld]),rows,add,el("div",{className:"pe-acts"},[cc,sv]),msg]);
     cc.onclick=()=>box.remove();
     sv.onclick=async()=>{sv.disabled=true;msg.textContent="저장 중…";
       const career=[...rows.children].map(r=>({role:r.querySelector(".r1").value.trim(),text:r.querySelector(".r2").value.trim(),tag:r.querySelector(".r3").value.trim()})).filter(c=>c.role||c.text);
       const nl=ld.value.trim()||null,old=Array.isArray(meta.career)?meta.career:[],i18n=JSON.parse(JSON.stringify(meta.i18n||{}));
       ["ja","en"].forEach(L=>{const t=i18n[L];if(!t)return;if(nl!==(meta.lead||null)&&!(meta.lead==null&&nl===koText()))delete t.lead;
         const oc=Array.isArray(t.career)?t.career:[];t.career=career.map(c=>{const j=old.findIndex(o=>o&&o.text===c.text&&o.role===c.role);return j>=0&&oc[j]?oc[j]:{}})});
+      /* 번역이 빈 칸(새로 쓰거나 고친 줄)은 자동 번역으로 채워요. 실패하면 그 줄만 한국어로 나와요 */
+      try{["ja","en"].forEach(L=>{i18n[L]=i18n[L]||{};if(!Array.isArray(i18n[L].career))i18n[L].career=career.map(()=>({}))});
+        const jobs=[];if(nl&&!i18n.ja.lead&&!i18n.en.lead)jobs.push(["lead",-1,nl]);
+        career.forEach((c,i)=>{if(Object.keys(i18n.ja.career[i]||{}).length||Object.keys(i18n.en.career[i]||{}).length)return;["text","tag","role"].forEach(k=>{if(c[k])jobs.push([k,i,c[k]])})});
+        if(jobs.length){msg.textContent="일본어·영어로 번역하는 중…";
+          const {data:tj,error:te}=await db.functions.invoke("news-translate",{body:{lines:jobs.map(j=>j[2])}});
+          if(!te&&tj&&tj.ok)["ja","en"].forEach(L=>jobs.forEach(([k,i],n)=>{const v=(tj[L]||[])[n];if(!v)return;if(i<0)i18n[L].lead=v;else (i18n[L].career[i]=i18n[L].career[i]||{})[k]=v}))}}catch(_){}
       try{await saveMeta({lead:nl,career,i18n});applyMeta();msg.textContent="저장했어요."}catch(e){msg.textContent="저장하지 못했어요: "+e.message}sv.disabled=false};
     return box}
   if(admin){const eb=el("button",{type:"button",className:"btn small pe-open",textContent:"✎ 캐치프레이즈 · 경력 편집"});

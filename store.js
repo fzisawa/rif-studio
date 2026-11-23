@@ -68,7 +68,7 @@ function draw(){
       el("div",{className:"sinfo"},[el("h3",{textContent:nm(p)}),...(sm(p)&&tab==="plan"?[el("p",{className:"ssum",textContent:sm(p)})]:[]),priceEl(p)])]);
     c.onclick=e=>{if(e.metaKey||e.ctrlKey)return;e.preventDefault();history.replaceState(null,"","?p="+p.id+location.hash);open("detail",p)};grid.append(c)});
   /* 사업자 정보 (어드민에서 채우면 보여요) */
-  const B=S.biz||{},rows=[["상호",B.name],["대표",B.ceo],["사업자등록번호",B.reg],["통신판매업 신고",B.mail_order],["주소",B.addr],["연락처",B.contact]].filter(r=>r[1]);
+  const B=S.biz||{},BL={ko:["상호","대표","사업자등록번호","통신판매업 신고","주소","연락처"],ja:["商号","代表者","事業者登録番号","通信販売業申告","所在地","連絡先"],en:["Business name","Representative","Business registration no.","Mail-order business report","Address","Contact"]}[L]||[],rows=[[BL[0],B.name],[BL[1],B.ceo],[BL[2],B.reg],[BL[3],B.mail_order],[BL[4],B.addr],[BL[5],B.contact]].filter(r=>r[1]);
   biz.hidden=!rows.length;biz.replaceChildren(...rows.flatMap(([k,v])=>[el("dt",{textContent:k}),el("dd",{textContent:v})]))}
 
 /* 상세 */
