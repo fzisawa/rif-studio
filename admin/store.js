@@ -33,7 +33,7 @@ $("socsv").onclick=()=>{if(!orders.length)return alert("내보낼 주문이 없�
 function drawP(){const tb=$("sptb");tb.replaceChildren();
   prods.forEach(p=>{const img=(p.images||[])[0],b=el("button",{type:"button",className:"btn small",textContent:"수정"});b.onclick=e=>{e.stopPropagation();openP(p)};
     const ss=saleState(p),pr=ss.has?(ss.on?won(p.sale_price)+" (정가 "+won(p.price)+")":won(p.price)+" · "+ss.txt+" "+won(p.sale_price))+(ss.on&&ss.txt?" · "+ss.txt:"")+(p.sale_members?" · 회원 전용":""):won(p.price);
-    const tr=el("tr",{className:"r"},[el("td",{},[img?el("img",{className:"pth",src:img,alt:""}):el("span",{className:"pth"})]),td(p.name),td(p.kind==="plan"?"Plan":"Goods","hm"),td(pr),td(p.stock==null?"무제한":p.stock+"개","hm"),
+    const tr=el("tr",{className:"r"},[el("td",{},[img?el("img",{className:"pth",src:img,alt:""}):el("span",{className:"pth"})]),td(p.name),td(({plan:"플랜",mix:"믹싱",illust:"일러스트",video:"영상",goods:"굿즈"})[p.kind]||p.kind,"hm"),td(pr),td(p.stock==null?"무제한":p.stock+"개","hm"),
       el("td",{},[el("span",{className:"hs "+(p.status==="sale"?"on":p.status==="soldout"?"wt":"x"),textContent:PS[p.status]})]),td(BM[p.buy_mode],"hm"),el("td",{className:"ac"},[b])]);
     tr.onclick=()=>openP(p);tb.append(tr)});
   if(!prods.length)tb.append(el("tr",{},[el("td",{colSpan:8,textContent:"아직 상품이 없어요. '＋ 상품 추가'로 첫 상품을 올려 보세요."})]))}
