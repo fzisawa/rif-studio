@@ -26,10 +26,12 @@ const css=`#pk .wkbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;mar
 #pk .pcard .pf b.ok{color:#1f7a4f}#pk .pcard .pf b.no{color:#c0392b}
 #pk .ped input{width:100%;box-sizing:border-box;padding:5px 8px;font-size:13px;border:1px solid var(--ln2);border-radius:8px;background:var(--bg);color:var(--fg)}
 #pk .ped .num{text-align:right}#pk .ped .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-#pk .lrows{margin-top:6px}#pk .lrow{display:grid;grid-template-columns:80px 100px 1fr 1fr 120px 36px;gap:6px;align-items:end;padding:8px 0;border-top:1px solid var(--ln)}
+#pk .ped .row4{display:grid;grid-template-columns:1fr 2fr 110px 1fr;gap:8px}#pk .lk{display:block;box-sizing:border-box;padding:8px 10px;border:1px dashed var(--ln);border-radius:10px;background:color-mix(in srgb,var(--mut) 8%,transparent);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;min-height:38px}
+#pk .c7 .lk{font-weight:700}#pk .c8 .lk{color:var(--ac,#7c5cd6);font-weight:700}#pk td.net{color:var(--mut);font-size:12px;white-space:nowrap}
+#pk .lrows{margin-top:6px}#pk .lrow{display:grid;grid-template-columns:70px 110px 1fr 1fr 110px 92px 92px 104px 36px;gap:6px;align-items:end;padding:8px 0;border-top:1px solid var(--ln)}
 #pk .lf{display:flex;flex-direction:column;gap:3px;min-width:0}#pk .lf span{font-size:11px;color:var(--mut)}#pk .lrow .lx{padding:6px 0;min-width:0}
 @media(max-width:700px){#pk .ped input{font-size:16px;padding:9px 10px}#pk .ped .row3{grid-template-columns:1fr 1fr}#pk .ped .row3>:first-child{grid-column:1/-1}
-#pk .lrow{grid-template-columns:1fr 1fr 44px;gap:8px}#pk .lrow .c3,#pk .lrow .c4{grid-column:1/-1}#pk .lrow .c5{grid-column:1/3}#pk .lrow .lx{grid-row:1;grid-column:3;align-self:end;height:42px}
+#pk .ped .row4{grid-template-columns:1fr 1fr}#pk .lrow{grid-template-columns:1fr 1fr 44px;gap:8px}#pk .lrow .c3,#pk .lrow .c4,#pk .lrow .c5{grid-column:1/-1}#pk .lrow .c6{grid-column:1/2}#pk .lrow .c7{grid-column:2/-1}#pk .lrow .c8{grid-column:1/-1}#pk .lrow .lx{grid-row:1;grid-column:3;align-self:end;height:42px}
 #pk .ped .wkbar{flex-wrap:wrap}}
 .wodoc{font-size:14px;line-height:1.7}.wodoc h2{margin:0 0 2px}.wodoc .sub{color:var(--mut);font-size:13px;margin:0 0 14px}
 .wodoc dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0 0 14px}.wodoc dt{color:var(--mut)}.wodoc dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -129,38 +131,53 @@ async function offerForm(){
     el("div",{className:"row2"},[el("label",{},["금액 (세전, 원)",am]),el("label",{},["마감일",du])]),el("label",{},["기본 수정 횟수",rv]),el("label",{},["특약 · 메모",mm]),calc,go);
 }
 /* ---------- 패키지 단가표 ---------- */
+/* 원천징수 3.3% = 소득세 3% + 지방소득세(소득세의 10%), 원 단위 내림 — 작업 배정서와 같은 계산 */
+const net=a=>a-wh(a);
 function drawPlans(){
   const b=$("wkbody"),boss=pk.boss,m=me();
   if(edit&&boss)return drawEditor();
   const plans=pk.plans||[];if(!plans.length){b.replaceChildren(el("p",{className:"note",textContent:boss?"아직 게시된 단가표가 없어요.":"지금 게시된 패키지 중 내가 맡는 항목이 없어요."}));return}
   b.replaceChildren(el("div",{className:"pgrid"},plans.map(p=>{const cost=p.lines.reduce((s,l)=>s+(l.amount||0),0);
-    const rows=p.lines.map(l=>el("tr",{className:l.assignee_email&&l.assignee_email.toLowerCase()===m?"mine":""},[el("td",{textContent:l.field}),el("td",{textContent:l.who}),el("td",{textContent:l.item}),el("td",{className:"a",textContent:won(l.amount)})]));
+    const rows=p.lines.map(l=>el("tr",{className:l.assignee_email&&l.assignee_email.toLowerCase()===m?"mine":""},[el("td",{textContent:l.field}),el("td",{textContent:l.who}),el("td",{textContent:l.item}),el("td",{className:"a",textContent:won(l.amount)}),el("td",{className:"a net",textContent:"실수령 "+won(net(l.amount||0))})]));
     const foot=boss?[el("div",{className:"pf"},[el("span",{textContent:"판매가 "+won(p.price)+" · 원가 "+won(cost)}),el("b",{className:(p.price-cost)>=p.price*0.13?"ok":"no",textContent:"몫 "+won(p.price-cost)+(p.price?" ("+((p.price-cost)/p.price*100).toFixed(1)+"%)":"")})])]:[];
     return el("div",{className:"pcard",style:p.active?"":"opacity:.55"},[el("h3",{textContent:p.name+(p.active?"":" (숨김)")}),el("p",{className:"pd",textContent:p.descr}),el("table",{},[el("tbody",{},rows)]),...foot])})));
 }
 function drawEditor(){
   const b=$("wkbody"),data=JSON.parse(JSON.stringify(pk.plans||[]));
+  /* 예전 단가표(파트 가격 없음)는 작업자 몫에서 파트 가격을 거꾸로 채워요 */
+  data.forEach(p=>{p.fee_pct=p.fee_pct==null?13:Number(p.fee_pct);p.lines.forEach(l=>{if(!l.gross)l.gross=Math.round((l.amount||0)/(1-p.fee_pct/100)/100)*100})});
   const wrap=el("div");
   const render=()=>{wrap.replaceChildren(...data.map((p,pi)=>{
-    const inp=(o,k,ph,num)=>{const i=el("input",{value:o[k]??"",placeholder:ph,className:num?"num":""});if(num)i.type="number";i.oninput=()=>{o[k]=num?Math.round(Number(i.value)||0):i.value;if(num&&p._calc)p._calc()};if(num)i.inputMode="numeric";return i};
-    /* 항목 한 줄: PC는 한 줄, 휴대폰은 칸이 넉넉하게 여러 줄로 나눠요 */
+    const inp=(o,k,ph,num)=>{const i=el("input",{value:o[k]??"",placeholder:ph,className:num?"num":""});if(num)i.type="number";i.oninput=()=>{o[k]=num?Math.max(0,Number(i.value)||0):i.value;if(num&&p._calc)p._calc()};if(num)i.inputMode="decimal";return i};
+    /* 잠긴 칸: 계산 결과만 보여 줘요 (직접 고칠 수 없음) */
+    const lock=(lab,cl)=>{const o=el("output",{className:"lk"});return [el("label",{className:"lf "+cl},[el("span",{textContent:lab+" 🔒"}),o]),o]};
+    const outs=[];
+    /* 항목 한 줄: 파트 가격을 적으면 회사 몫 · 작업자 몫 · 3.3% 뗀 실수령이 바로 계산돼요 */
     const rows=p.lines.map((l,li)=>{const x=el("button",{type:"button",className:"mbtn lx",textContent:"✕",title:"항목 삭제"});x.onclick=()=>{p.lines.splice(li,1);render()};
       const f=(k,lab,ph,num,cl)=>el("label",{className:"lf "+cl},[el("span",{textContent:lab}),inp(l,k,ph,num)]);
-      return el("div",{className:"lrow"},[f("field","분야","믹싱",0,"c1"),f("who","담당","이름",0,"c2"),f("assignee_email","담당 메일 (선택)","name@rif-studio.com",0,"c3"),f("item","작업 내용","예: 소리 다듬기",0,"c4"),f("amount","작업자 몫 (원)","0",1,"c5"),x])});
-    const sum=el("div",{className:"pf"}),calc=()=>{const c=p.lines.reduce((a,l)=>a+(Number(l.amount)||0),0),pr=Number(p.price)||0,m=pr-c;
-      sum.replaceChildren(el("span",{textContent:"판매가 "+won(pr)+" − 작업자 몫 합계 "+won(c)}),el("b",{className:m>=pr*0.13&&m>0?"ok":"no",textContent:"회사 몫 "+won(m)+(pr?" ("+(m/pr*100).toFixed(1)+"%)":"")}))};
+      const [cA,oC]=lock("회사 몫","c6"),[wA,oW]=lock("작업자 몫","c7"),[nA,oN]=lock("3.3% 뗀 실수령","c8");outs.push([l,oC,oW,oN]);
+      return el("div",{className:"lrow"},[f("field","분야","믹싱",0,"c1"),f("who","담당","이름",0,"c2"),f("assignee_email","담당 메일 (선택)","name@rif-studio.com",0,"c3"),f("item","작업 내용","예: 소리 다듬기",0,"c4"),f("gross","파트 가격 (원)","100000",1,"c5"),cA,wA,nA,x])});
+    const prO=el("output",{className:"lk"}),sum=el("div",{className:"pf"});
+    const calc=()=>{const fp=Number(p.fee_pct)||0;let G=0,C=0,W=0,N=0;
+      outs.forEach(([l,oC,oW,oN])=>{const g=Math.round(Number(l.gross)||0),c=Math.round(g*fp/100),w=g-c;l.amount=w;G+=g;C+=c;W+=w;N+=net(w);oC.textContent=won(c);oW.textContent=won(w);oN.textContent=won(net(w))});
+      p.price=G;prO.textContent=won(G);
+      sum.replaceChildren(el("span",{textContent:"판매가 "+won(G)+" = 작업자 몫 "+won(W)+" (3.3% 뗀 실수령 합계 "+won(N)+", 원천세 "+won(W-N)+")"}),el("b",{className:"ok",textContent:"회사 몫 "+won(C)+" ("+fp+"%)"}))};
     p._calc=calc;
-    const add=el("button",{type:"button",className:"mbtn",textContent:"＋ 항목"});add.onclick=()=>{p.lines.push({field:"",who:"",assignee_email:"",item:"",amount:0});render()};
+    const add=el("button",{type:"button",className:"mbtn",textContent:"＋ 항목"});add.onclick=()=>{p.lines.push({field:"",who:"",assignee_email:"",item:"",gross:0,amount:0});render()};
     const act=el("input",{type:"checkbox",checked:p.active!==false});act.onchange=()=>{p.active=act.checked};
     const del=el("button",{type:"button",className:"mbtn",textContent:"플랜 삭제"});del.onclick=()=>{if(confirm(p.name+" 플랜을 지울까요? (게시해야 반영돼요)")){data.splice(pi,1);render()}};
-    return el("div",{className:"pcard ped",style:"margin-bottom:14px"},[el("div",{className:"row2",className:"row3"},[inp(p,"code","코드 (예: LITE)"),inp(p,"name","이름"),inp(p,"price","판매가",1)]),
+    const fee=inp(p,"fee_pct","13",1);fee.step="0.5";fee.min="0";fee.max="100";
+    return el("div",{className:"pcard ped",style:"margin-bottom:14px"},[el("div",{className:"row4"},[
+        el("label",{className:"lf"},[el("span",{textContent:"코드"}),inp(p,"code","예: BASIC")]),el("label",{className:"lf"},[el("span",{textContent:"이름"}),inp(p,"name","이름")]),
+        el("label",{className:"lf"},[el("span",{textContent:"회사 몫 (%)"}),fee]),el("label",{className:"lf"},[el("span",{textContent:"판매가 = 파트 가격 합계 🔒"}),prO])]),
       el("div",{style:"margin:6px 0"},[inp(p,"descr","설명")]),el("div",{className:"lrows"},rows),sum,el("div",{className:"wkbar",style:"margin:8px 0 0"},[add,el("label",{style:"display:flex;gap:6px;align-items:center;font-size:13px;white-space:nowrap"},[act,"게시"]),el("span",{className:"sp"}),del])])}));data.forEach(p=>p._calc&&p._calc())};
   render();
-  const addp=el("button",{type:"button",className:"mbtn",textContent:"＋ 플랜 추가"});addp.onclick=()=>{data.push({code:"",name:"",descr:"",price:0,active:true,lines:[]});render()};
+  const addp=el("button",{type:"button",className:"mbtn",textContent:"＋ 플랜 추가"});addp.onclick=()=>{data.push({code:"",name:"",descr:"",price:0,fee_pct:13,active:true,lines:[]});render()};
   const note=el("input",{placeholder:"이번 변경 메모 (예: 우듭 단가 반영)",style:"flex:1 1 240px"}),save=el("button",{type:"button",className:"btn",textContent:"새 버전으로 게시"});
   save.onclick=async()=>{if(data.some(p=>!String(p.code).trim()||!String(p.name).trim()))return alert("플랜마다 코드와 이름을 넣어 주세요.");
     if(!confirm("이 단가표를 새 버전으로 게시할까요?\n이미 동의한 작업 배정서에는 영향이 없어요."))return;save.disabled=true;
-    const {data:v,error}=await db.rpc("pkg_save",{p_plans:data,p_note:note.value});save.disabled=false;if(error)return alert("게시하지 못했어요: "+error.message);edit=false;toast("단가표 v"+v+" 게시 ✓");load()};
+    const body=data.map(({_calc,...p})=>p);
+    const {data:v,error}=await db.rpc("pkg_save",{p_plans:body,p_note:note.value});save.disabled=false;if(error)return alert("게시하지 못했어요: "+error.message);edit=false;toast("단가표 v"+v+" 게시 ✓");load()};
   b.replaceChildren(wrap,el("div",{className:"wkbar"},[addp,note,save]));
 }
 const toast=t=>{try{window.RIFAPP&&RIFAPP.toast(t)}catch(_){}};
