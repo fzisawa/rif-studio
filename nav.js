@@ -5,7 +5,14 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelect
 function rows(){document.querySelectorAll("header .nm.nmg").forEach(m=>{if(m.dataset.rows)return;m.dataset.rows="1";
   [...m.querySelectorAll(":scope>p.nh")].forEach(h=>{const r=document.createElement("div"),ps=document.createElement("div");r.className="nrow";r.dataset.g=h.dataset.g;ps.className="nps";
     let x=h.nextElementSibling;while(x&&x.tagName==="A"){const n=x.nextElementSibling;ps.append(x);x=n}m.insertBefore(r,h);r.append(h,ps)})})}
-function empt(){rows();document.querySelectorAll("header .nrow").forEach(r=>r.classList.toggle("emp",!r.querySelector(".nps a")))}
+function empt(){rows();document.querySelectorAll("header .nrow").forEach(r=>r.classList.toggle("emp",!r.querySelector(".nps a")));roster()}
+/* 홈 'Members' 명단: 위쪽 Members 메뉴를 그대로 옮겨 그려요 (채널 추가 · 퇴사 처리도 같이 반영) */
+function roster(){const box=document.getElementById("roster");if(!box)return;const out=[];
+  document.querySelectorAll("header .nrow").forEach(r=>{const as=[...r.querySelectorAll(".nps a")];if(!as.length)return;
+    const g=document.createElement("div"),h=document.createElement("h3");g.className="rg";h.textContent=(r.querySelector(".nh")||{}).textContent||"";g.append(h);
+    as.forEach(a=>{const x=document.createElement("a");x.href=a.getAttribute("href");x.textContent=a.textContent;g.append(x)});out.push(g)});
+  box.replaceChildren(...out);const sec=document.getElementById("rosec");if(sec)sec.hidden=!out.length}
+document.addEventListener("rif:lang",()=>setTimeout(roster,0));
 empt();
 /* 관리자 페이지 '채널 관리'에서 추가한 채널을 메뉴에 붙여요 (실패해도 메뉴는 그대로) */
 (async()=>{try{if(!document.querySelector("header .ng"))return;
@@ -24,3 +31,22 @@ empt();
   document.querySelectorAll("header .nm a[href]").forEach(a=>{if(hid.has(seg(a.getAttribute("href"))))a.remove()});empt();
   const cur=location.pathname.split("/")[1]||"";
   if(hid.has(cur)&&!document.getElementById("anone")&&!/^\/(admin|intranet|mail)/.test(location.pathname))location.replace("/")}catch(_){}})();
+
+/* 공개 페이지 꼬리말: 워드마크 · 사이트 메뉴 · 사업자 정보 (site.css 를 쓰는 페이지에서만) */
+(()=>{const f=document.querySelector("body>footer");if(!f||f.dataset.v2||!document.querySelector('link[href*="site.css"]'))return;f.dataset.v2="1";
+  const E=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n};
+  const biz=f.querySelector(".biz"),adm=f.querySelector(".adm");
+  const l=E("div"),w=E("a","fw","RIF STUDIO");w.href="/";l.append(w,E("p","fc","Pangyo / Tokyo / New York"));
+  const n=E("nav","fn");n.setAttribute("aria-label","Footer");
+  [["About","/about/"],["News","/news/"],["Store","/store/"],["Board","/board/"],["Contact","/contact/"],["Join Us","/join/"]].forEach(([t,h])=>{const a=E("a","",t);a.href=h;n.append(a)});
+  const b=E("div","fb"),c=E("span");if(biz)c.append(biz);const r=E("span","","\u00a9 RIF STUDIO ");if(adm)r.append(adm);b.append(c,r);
+  f.replaceChildren(l,n,b)})();
+/* 홈 소식 목록: 최근 글 5개 */
+(async()=>{const ul=document.getElementById("hnews");if(!ul)return;try{
+  const U="https://noqtyhmgdfzziymfclnx.supabase.co",K=(window.RIF&&RIF.KEY)||"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcXR5aG1nZGZ6eml5bWZjbG54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4OTg1MzMsImV4cCI6MjEwOTQ3NDUzM30.fMmKix0TBw_LLaXrPVapMpKj6DciSVVUKX1XvBFtfaM";
+  const r=await fetch(U+"/rest/v1/news_posts?select=id,title,title_ja,title_en,created_at,pinned&published=eq.true&order=pinned.desc,created_at.desc&limit=5",{headers:{apikey:K,Authorization:"Bearer "+K}});if(!r.ok)return;
+  const ps=await r.json();if(!ps.length)return;
+  const draw=()=>{const L=document.documentElement.lang||"ko";ul.replaceChildren(...ps.map(p=>{const li=document.createElement("li"),a=document.createElement("a"),t=document.createElement("time"),b=document.createElement("b"),i=document.createElement("i"),d=new Date(p.created_at);
+    a.href="/news/?id="+encodeURIComponent(p.id);t.dateTime=p.created_at;t.textContent=d.getFullYear()+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getDate()).padStart(2,"0");
+    b.textContent=(L==="ja"&&p.title_ja)||(L==="en"&&p.title_en)||p.title||"";i.textContent="Read";a.append(t,b,i);li.append(a);return li}))};
+  draw();document.addEventListener("rif:lang",()=>setTimeout(draw,0))}catch(_){}})();
