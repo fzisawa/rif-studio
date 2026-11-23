@@ -215,10 +215,10 @@ function drawF(){const tb=$("fntb");tb.replaceChildren();const real=fans.filter(
     b.onclick=async()=>{const v=prompt((f.nick||f.email)+" 님 적립금 (지금 "+won(f.points)+")\n줄 금액은 숫자만, 뺄 금액은 앞에 - 를 붙여 주세요. 예) 3000 또는 -1000");if(v==null)return;const d=Math.round(Number(String(v).replace(/[,\s₩원]/g,"")));if(!d)return alert("금액을 숫자로 적어 주세요.");
       const why=prompt("사유 (회원의 적립금 내역에 보여요)",d>0?"이벤트 적립":"적립금 조정");if(why==null)return;const {data,error}=await db.rpc("fan_admin_point",{p_user:f.user_id,p_delta:d,p_reason:why});
       if(error)return alert(/not enough/.test(error.message)?"보유 적립금보다 많이 뺄 수 없어요.":"바꾸지 못했어요: "+error.message);f.points=data;drawF()};
-    tb.append(el("tr",{},[td((f.nick||"-")+(f.staff?" (직원)":"")),td(f.email,"en"),td(new Date(f.created_at).toLocaleDateString("ko-KR"),"hm sm"),td(f.orders+"건","hm"),td(won(f.spent),"hm"),td(won(f.points)),td(f.marketing?"동의":"-","hm"),el("td",{className:"ac"},[b])]))});
+    tb.append(el("tr",{},[td((f.nick||"-")+(f.name?" · "+f.name:"")+(f.discord?" · @"+f.discord.replace(/^@/,""):"")+(f.staff?" (직원)":"")),td(f.email,"en"),td(new Date(f.created_at).toLocaleDateString("ko-KR"),"hm sm"),td(f.orders+"건","hm"),td(won(f.spent),"hm"),td(won(f.points)),td(f.marketing?"동의":"-","hm"),el("td",{className:"ac"},[b])]))});
   if(!fans.length)tb.append(el("tr",{},[el("td",{colSpan:8,textContent:"아직 가입한 회원이 없어요."})]))}
 $("fncsv").onclick=()=>{if(!fans.length)return alert("내보낼 회원이 없어요.");const cell=v=>{let s=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
-  const rows=[["닉네임","이메일","가입일","주문 수","결제 금액","적립금","소식 수신 동의"],...fans.filter(f=>!f.staff).map(f=>[f.nick,f.email,new Date(f.created_at).toLocaleDateString("ko-KR"),f.orders,f.spent,f.points,f.marketing?"동의":""])];
+  const rows=[["닉네임","이름","이메일","휴대폰","디스코드","우편번호","주소","가입일","주문 수","결제 금액","적립금","소식 수신 동의"],...fans.filter(f=>!f.staff).map(f=>[f.nick,f.name,f.email,f.phone,f.discord,f.zip,f.addr,new Date(f.created_at).toLocaleDateString("ko-KR"),f.orders,f.spent,f.points,f.marketing?"동의":""])];
   const a=el("a",{href:URL.createObjectURL(new Blob(["\ufeff"+rows.map(l=>l.map(cell).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"})),download:"RIF_스토어_회원.csv"});document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)};
 /* 설정 */
 const BZ=["name","ceo","reg","mail_order","addr","contact"];
