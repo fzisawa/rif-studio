@@ -25,7 +25,12 @@ const css=`#pk .wkbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;mar
 #pk .pcard .pf{display:flex;justify-content:space-between;font-size:13px;margin-top:8px;padding-top:8px;border-top:2px solid var(--ln2)}
 #pk .pcard .pf b.ok{color:#1f7a4f}#pk .pcard .pf b.no{color:#c0392b}
 #pk .ped input{width:100%;box-sizing:border-box;padding:5px 8px;font-size:13px;border:1px solid var(--ln2);border-radius:8px;background:var(--bg);color:var(--fg)}
-#pk .ped td{padding:3px 2px}#pk .ped .num{text-align:right}
+#pk .ped .num{text-align:right}#pk .ped .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+#pk .lrows{margin-top:6px}#pk .lrow{display:grid;grid-template-columns:80px 100px 1fr 1fr 120px 36px;gap:6px;align-items:end;padding:8px 0;border-top:1px solid var(--ln)}
+#pk .lf{display:flex;flex-direction:column;gap:3px;min-width:0}#pk .lf span{font-size:11px;color:var(--mut)}#pk .lrow .lx{padding:6px 0;min-width:0}
+@media(max-width:700px){#pk .ped input{font-size:16px;padding:9px 10px}#pk .ped .row3{grid-template-columns:1fr 1fr}#pk .ped .row3>:first-child{grid-column:1/-1}
+#pk .lrow{grid-template-columns:1fr 1fr 44px;gap:8px}#pk .lrow .c3,#pk .lrow .c4{grid-column:1/-1}#pk .lrow .c5{grid-column:1/3}#pk .lrow .lx{grid-row:1;grid-column:3;align-self:end;height:42px}
+#pk .ped .wkbar{flex-wrap:wrap}}
 .wodoc{font-size:14px;line-height:1.7}.wodoc h2{margin:0 0 2px}.wodoc .sub{color:var(--mut);font-size:13px;margin:0 0 14px}
 .wodoc dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0 0 14px}.wodoc dt{color:var(--mut)}.wodoc dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
 .wodoc .terms{white-space:pre-wrap;font-size:12.5px;background:var(--hv);border-radius:12px;padding:12px 14px;max-height:220px;overflow:auto;margin:0 0 14px}
@@ -137,14 +142,19 @@ function drawEditor(){
   const b=$("wkbody"),data=JSON.parse(JSON.stringify(pk.plans||[]));
   const wrap=el("div");
   const render=()=>{wrap.replaceChildren(...data.map((p,pi)=>{
-    const inp=(o,k,ph,num)=>{const i=el("input",{value:o[k]??"",placeholder:ph,className:num?"num":""});if(num)i.type="number";i.oninput=()=>{o[k]=num?Math.round(Number(i.value)||0):i.value};return i};
-    const rows=p.lines.map((l,li)=>{const x=el("button",{type:"button",className:"mbtn",textContent:"✕"});x.onclick=()=>{p.lines.splice(li,1);render()};
-      return el("tr",{},[el("td",{style:"width:70px"},[inp(l,"field","분야")]),el("td",{style:"width:90px"},[inp(l,"who","담당")]),el("td",{},[inp(l,"assignee_email","담당 메일 (선택)")]),el("td",{},[inp(l,"item","항목")]),el("td",{style:"width:110px"},[inp(l,"amount","금액",1)]),el("td",{},[x])])});
+    const inp=(o,k,ph,num)=>{const i=el("input",{value:o[k]??"",placeholder:ph,className:num?"num":""});if(num)i.type="number";i.oninput=()=>{o[k]=num?Math.round(Number(i.value)||0):i.value;if(num&&p._calc)p._calc()};if(num)i.inputMode="numeric";return i};
+    /* 항목 한 줄: PC는 한 줄, 휴대폰은 칸이 넉넉하게 여러 줄로 나눠요 */
+    const rows=p.lines.map((l,li)=>{const x=el("button",{type:"button",className:"mbtn lx",textContent:"✕",title:"항목 삭제"});x.onclick=()=>{p.lines.splice(li,1);render()};
+      const f=(k,lab,ph,num,cl)=>el("label",{className:"lf "+cl},[el("span",{textContent:lab}),inp(l,k,ph,num)]);
+      return el("div",{className:"lrow"},[f("field","분야","믹싱",0,"c1"),f("who","담당","이름",0,"c2"),f("assignee_email","담당 메일 (선택)","name@rif-studio.com",0,"c3"),f("item","작업 내용","예: 소리 다듬기",0,"c4"),f("amount","작업자 몫 (원)","0",1,"c5"),x])});
+    const sum=el("div",{className:"pf"}),calc=()=>{const c=p.lines.reduce((a,l)=>a+(Number(l.amount)||0),0),pr=Number(p.price)||0,m=pr-c;
+      sum.replaceChildren(el("span",{textContent:"판매가 "+won(pr)+" − 작업자 몫 합계 "+won(c)}),el("b",{className:m>=pr*0.13&&m>0?"ok":"no",textContent:"회사 몫 "+won(m)+(pr?" ("+(m/pr*100).toFixed(1)+"%)":"")}))};
+    p._calc=calc;
     const add=el("button",{type:"button",className:"mbtn",textContent:"＋ 항목"});add.onclick=()=>{p.lines.push({field:"",who:"",assignee_email:"",item:"",amount:0});render()};
     const act=el("input",{type:"checkbox",checked:p.active!==false});act.onchange=()=>{p.active=act.checked};
     const del=el("button",{type:"button",className:"mbtn",textContent:"플랜 삭제"});del.onclick=()=>{if(confirm(p.name+" 플랜을 지울까요? (게시해야 반영돼요)")){data.splice(pi,1);render()}};
-    return el("div",{className:"pcard ped",style:"margin-bottom:14px"},[el("div",{className:"row2",style:"display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"},[inp(p,"code","코드 (예: LITE)"),inp(p,"name","이름"),inp(p,"price","판매가",1)]),
-      el("div",{style:"margin:6px 0"},[inp(p,"descr","설명")]),el("table",{},[el("tbody",{},rows)]),el("div",{className:"wkbar",style:"margin:8px 0 0"},[add,el("label",{style:"display:flex;gap:6px;align-items:center;font-size:13px"},[act,"게시"]),el("span",{className:"sp"}),del])])}))};
+    return el("div",{className:"pcard ped",style:"margin-bottom:14px"},[el("div",{className:"row2",className:"row3"},[inp(p,"code","코드 (예: LITE)"),inp(p,"name","이름"),inp(p,"price","판매가",1)]),
+      el("div",{style:"margin:6px 0"},[inp(p,"descr","설명")]),el("div",{className:"lrows"},rows),sum,el("div",{className:"wkbar",style:"margin:8px 0 0"},[add,el("label",{style:"display:flex;gap:6px;align-items:center;font-size:13px;white-space:nowrap"},[act,"게시"]),el("span",{className:"sp"}),del])])}));data.forEach(p=>p._calc&&p._calc())};
   render();
   const addp=el("button",{type:"button",className:"mbtn",textContent:"＋ 플랜 추가"});addp.onclick=()=>{data.push({code:"",name:"",descr:"",price:0,active:true,lines:[]});render()};
   const note=el("input",{placeholder:"이번 변경 메모 (예: 우듭 단가 반영)",style:"flex:1 1 240px"}),save=el("button",{type:"button",className:"btn",textContent:"새 버전으로 게시"});
