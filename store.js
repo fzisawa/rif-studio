@@ -324,7 +324,7 @@ function drawLook(pre){
 /* ===== 회원 (팬 계정) =====
    가입·로그인은 Supabase Auth. 직원 주소(@rif-studio.com)는 여기서 가입할 수 없어요 (서버에서 막아요).
    내 정보 · 주문 · 적립금은 서버 함수(fan_me · fan_save · fan_orders · fan_points_log · fan_withdraw)로만 읽고 써요. */
-const AX={ko:{joinLogin:"회원가입 · 로그인",pw2:"비밀번호 확인",pwRule:"영문과 숫자를 섞어 8자 이상",pwMis:"비밀번호가 서로 달라요.",pwWeak:"비밀번호는 영문과 숫자를 섞어 8자 이상으로 해 주세요. 이메일이나 너무 흔한 비밀번호는 쓸 수 없어요.",locked:n=>"여러 번 틀렸어요. "+n+"초 뒤에 다시 시도해 주세요.",staffNo:"직원 계정은 인트라넷에서 로그인해 주세요.",phTaken:"이미 다른 계정에 등록된 휴대폰 번호예요.",dcTaken:"이미 다른 계정에 등록된 디스코드 아이디예요.",slow:"조금 천천히 다시 눌러 주세요.",login:"로그인",my:"내 계정",join:"회원가입",email:"이메일",pw:"비밀번호",pw8:"비밀번호 (8자 이상)",nick:"닉네임",go:"로그인",goJoin:"가입하기",toJoin:"처음이신가요? 회원가입",toLogin:"이미 회원이에요 · 로그인",forgot:"비밀번호를 잊었어요",
+const AX={ko:{pwAsk:"회원 정보를 보거나 고치려면 비밀번호를 한 번 더 입력해 주세요.",pwGo:"확인",fillBan:"연락처 · 디스코드 같은 필수 정보가 아직 비어 있어요. 적립금 사용과 1:1 문의에 필요해요.",fillGo:"정보 입력하기",joinLogin:"회원가입 · 로그인",pw2:"비밀번호 확인",pwRule:"영문과 숫자를 섞어 8자 이상",pwMis:"비밀번호가 서로 달라요.",pwWeak:"비밀번호는 영문과 숫자를 섞어 8자 이상으로 해 주세요. 이메일이나 너무 흔한 비밀번호는 쓸 수 없어요.",locked:n=>"여러 번 틀렸어요. "+n+"초 뒤에 다시 시도해 주세요.",staffNo:"직원 계정은 인트라넷에서 로그인해 주세요.",phTaken:"이미 다른 계정에 등록된 휴대폰 번호예요.",dcTaken:"이미 다른 계정에 등록된 디스코드 아이디예요.",slow:"조금 천천히 다시 눌러 주세요.",login:"로그인",my:"내 계정",join:"회원가입",email:"이메일",pw:"비밀번호",pw8:"비밀번호 (8자 이상)",nick:"닉네임",go:"로그인",goJoin:"가입하기",toJoin:"처음이신가요? 회원가입",toLogin:"이미 회원이에요 · 로그인",forgot:"비밀번호를 잊었어요",
   agree:"이용 안내와 개인정보 수집 · 이용에 동의해요. (필수)",age:"만 14세 이상이에요. (필수)",mkt:"세일 · 신상품 소식을 이메일로 받을게요. (선택)",privT:"개인정보 수집 · 이용 안내 보기",
   priv:"· 수집 항목: (필수) 이메일, 비밀번호, 닉네임, 이름, 휴대폰 번호, 디스코드 아이디 / (선택) 배송지 주소\n· 이용 목적: 회원 확인, 주문 연락 · 처리와 굿즈 배송, 디스코드 1:1 문의 응대, 적립금 관리, 문의 응대\n· 보관 기간: 탈퇴하면 바로 지워요. 다만 주문 기록은 전자상거래법에 따라 5년 동안 보관해요.\n· 동의하지 않을 수 있지만, 그러면 회원가입은 할 수 없어요. 비회원으로도 주문할 수 있어요.\n· 문의: rif@rif-studio.com",
   sent:m=>m+" 로 인증 메일을 보냈어요. 메일의 링크를 누르면 가입이 끝나요. (메일이 안 보이면 스팸함도 확인해 주세요)",exists:"이미 가입된 이메일이에요. 로그인하거나 비밀번호 찾기를 써 주세요.",badLogin:"이메일이나 비밀번호가 맞지 않아요.",notConf:"아직 이메일 인증이 안 됐어요. 받은 메일의 링크를 눌러 주세요.",weak:"비밀번호는 8자 이상으로 해 주세요.",fail:"잠시 뒤에 다시 시도해 주세요.",noJoin:"이 이메일로는 가입할 수 없어요.",
@@ -334,7 +334,7 @@ const AX={ko:{joinLogin:"회원가입 · 로그인",pw2:"비밀번호 확인",pw
   leaveQ:"정말 탈퇴할까요?\n계정과 적립금이 바로 지워지고 되돌릴 수 없어요. (주문 기록은 법에 따라 보관돼요)",left:"탈퇴했어요. 그동안 고마웠어요.",chpw:"비밀번호 바꾸기",
   ptUse:b=>"적립금 쓰기 (보유 "+b+")",ptAll:"모두 쓰기",ptMin:m=>"적립금은 "+m+"부터 쓸 수 있어요.",ptErr:"적립금을 쓸 수 없어요. 보유 적립금을 확인해 주세요.",earn:e=>"결제가 확인되면 약 "+e+" 적립돼요.",earned:"적립",
   ckHint:"로그인하면 적립금을 쓰고 쌓을 수 있어요 · 로그인 / 회원가입",monly:"회원가",mprice:pv=>"회원가 "+pv+" · 로그인하면 받아요",welcome:"가입이 끝났어요. 환영해요!"},
- ja:{joinLogin:"会員登録 · ログイン",pw2:"パスワード（確認）",pwRule:"英字と数字を含む8文字以上",pwMis:"パスワードが一致しません。",pwWeak:"パスワードは英字と数字を含む8文字以上にしてください。メールアドレスやよくあるパスワードは使えません。",locked:n=>"何度か間違えました。"+n+"秒後にもう一度お試しください。",staffNo:"スタッフアカウントはイントラネットからログインしてください。",phTaken:"この電話番号はすでに別のアカウントで登録されています。",dcTaken:"このDiscord IDはすでに別のアカウントで登録されています。",slow:"少し時間をおいてもう一度お試しください。",login:"ログイン",my:"マイページ",join:"会員登録",email:"メールアドレス",pw:"パスワード",pw8:"パスワード（8文字以上）",nick:"ニックネーム",go:"ログイン",goJoin:"登録する",toJoin:"はじめての方 · 会員登録",toLogin:"会員の方 · ログイン",forgot:"パスワードをお忘れの方",
+ ja:{pwAsk:"会員情報の確認・変更には、パスワードをもう一度入力してください。",pwGo:"確認",fillBan:"連絡先やDiscordなどの必須情報がまだ未入力です。ポイント利用と1対1のお問い合わせに必要です。",fillGo:"情報を入力する",joinLogin:"会員登録 · ログイン",pw2:"パスワード（確認）",pwRule:"英字と数字を含む8文字以上",pwMis:"パスワードが一致しません。",pwWeak:"パスワードは英字と数字を含む8文字以上にしてください。メールアドレスやよくあるパスワードは使えません。",locked:n=>"何度か間違えました。"+n+"秒後にもう一度お試しください。",staffNo:"スタッフアカウントはイントラネットからログインしてください。",phTaken:"この電話番号はすでに別のアカウントで登録されています。",dcTaken:"このDiscord IDはすでに別のアカウントで登録されています。",slow:"少し時間をおいてもう一度お試しください。",login:"ログイン",my:"マイページ",join:"会員登録",email:"メールアドレス",pw:"パスワード",pw8:"パスワード（8文字以上）",nick:"ニックネーム",go:"ログイン",goJoin:"登録する",toJoin:"はじめての方 · 会員登録",toLogin:"会員の方 · ログイン",forgot:"パスワードをお忘れの方",
   agree:"ご利用案内と個人情報の収集・利用に同意します。（必須）",age:"14歳以上です。（必須）",mkt:"セール・新商品のお知らせをメールで受け取ります。（任意）",privT:"個人情報の収集・利用について",
   priv:"· 収集項目:（必須）メールアドレス、パスワード、ニックネーム、お名前、電話番号、Discord ID /（任意）お届け先住所\n· 利用目的: 会員確認、ご注文の処理と発送、ポイント管理、お問い合わせ対応\n· 保管期間: 退会後すぐに削除します。ただし注文記録は韓国の電子商取引法により5年間保管します。\n· 同意されない場合、会員登録はできませんが、非会員でもご注文いただけます。\n· お問い合わせ: rif@rif-studio.com",
   sent:m=>m+" に確認メールを送りました。メール内のリンクを押すと登録完了です。（届かない場合は迷惑メールもご確認ください）",exists:"すでに登録済みのメールアドレスです。ログインするか、パスワード再設定をご利用ください。",badLogin:"メールアドレスまたはパスワードが違います。",notConf:"メール認証がまだ完了していません。届いたメールのリンクを押してください。",weak:"パスワードは8文字以上にしてください。",fail:"しばらくしてからもう一度お試しください。",noJoin:"このメールアドレスでは登録できません。",
@@ -344,7 +344,7 @@ const AX={ko:{joinLogin:"회원가입 · 로그인",pw2:"비밀번호 확인",pw
   leaveQ:"本当に退会しますか？\nアカウントとポイントはすぐに削除され、元に戻せません。（注文記録は法令に基づき保管されます）",left:"退会しました。ありがとうございました。",chpw:"パスワード変更",
   ptUse:b=>"ポイントを使う（保有 "+b+"）",ptAll:"すべて使う",ptMin:m=>"ポイントは "+m+" からご利用いただけます。",ptErr:"ポイントを利用できません。保有ポイントをご確認ください。",earn:e=>"お支払い確認後、約 "+e+" 分のポイントが貯まります。",earned:"獲得ポイント",
   ckHint:"ログインするとポイントが使えて貯まります · ログイン / 会員登録",monly:"会員価格",mprice:pv=>"会員価格 "+pv+" · ログインで適用",welcome:"登録が完了しました。ようこそ！"},
- en:{joinLogin:"Sign up · Log in",pw2:"Confirm password",pwRule:"8+ characters with letters and numbers",pwMis:"The passwords don't match.",pwWeak:"Use at least 8 characters with both letters and numbers. Your email or very common passwords aren't allowed.",locked:n=>"Too many attempts. Please try again in "+n+" seconds.",staffNo:"Staff accounts log in from the intranet.",phTaken:"This phone number is already registered to another account.",dcTaken:"This Discord ID is already registered to another account.",slow:"Please wait a moment and try again.",login:"Log in",my:"My account",join:"Sign up",email:"Email",pw:"Password",pw8:"Password (8+ characters)",nick:"Nickname",go:"Log in",goJoin:"Create account",toJoin:"New here? Sign up",toLogin:"Already a member? Log in",forgot:"Forgot your password?",
+ en:{pwAsk:"Please enter your password again to view or edit your info.",pwGo:"Confirm",fillBan:"Required details such as phone and Discord are still missing. They are needed to use points and for 1:1 support.",fillGo:"Add details",joinLogin:"Sign up · Log in",pw2:"Confirm password",pwRule:"8+ characters with letters and numbers",pwMis:"The passwords don't match.",pwWeak:"Use at least 8 characters with both letters and numbers. Your email or very common passwords aren't allowed.",locked:n=>"Too many attempts. Please try again in "+n+" seconds.",staffNo:"Staff accounts log in from the intranet.",phTaken:"This phone number is already registered to another account.",dcTaken:"This Discord ID is already registered to another account.",slow:"Please wait a moment and try again.",login:"Log in",my:"My account",join:"Sign up",email:"Email",pw:"Password",pw8:"Password (8+ characters)",nick:"Nickname",go:"Log in",goJoin:"Create account",toJoin:"New here? Sign up",toLogin:"Already a member? Log in",forgot:"Forgot your password?",
   agree:"I agree to the terms and to the collection and use of my personal information. (Required)",age:"I am 14 or older. (Required)",mkt:"Email me about sales and new items. (Optional)",privT:"How we use your information",
   priv:"· What we collect: (required) email, password, nickname, full name, phone, Discord ID / (optional) shipping address\n· Why: to identify members, process and ship orders, manage points and answer questions\n· How long: deleted as soon as you close your account. Order records are kept for 5 years under Korean e-commerce law.\n· You may decline, but then you can't create an account. You can still order as a guest.\n· Contact: rif@rif-studio.com",
   sent:m=>"We sent a confirmation email to "+m+". Open the link in it to finish signing up. (Check your spam folder if you don't see it.)",exists:"This email is already registered. Log in or reset your password.",badLogin:"The email or password is incorrect.",notConf:"Your email isn't confirmed yet. Please open the link we sent you.",weak:"Please use at least 8 characters.",fail:"Please try again in a moment.",noJoin:"You can't sign up with this email.",
@@ -369,6 +369,7 @@ const saveErr=e=>{const m=String((e&&e.message)||e);return /phone taken/.test(m)
 const lockLeft=()=>{try{const o=JSON.parse(sessionStorage.getItem("rif-fan-lock")||"{}");return o.until&&o.until>Date.now()?Math.ceil((o.until-Date.now())/1000):0}catch(_){return 0}};
 const lockFail=()=>{try{const o=JSON.parse(sessionStorage.getItem("rif-fan-lock")||"{}");o.n=(o.n||0)+1;if(o.n>=5){o.until=Date.now()+60000;o.n=0}sessionStorage.setItem("rif-fan-lock",JSON.stringify(o))}catch(_){}};
 const seen=()=>{try{return localStorage.getItem("rif-fan-seen")==="1"}catch(_){return false}},markSeen=()=>{try{localStorage.setItem("rif-fan-seen","1")}catch(_){}};
+let pwOkUntil=0;/* 내 정보 탭 비밀번호 확인이 유효한 시각 */
 const needFill=()=>!!ME&&(!ME.name||!ME.phone||!ME.discord||!ME.agreed);
 const pfErr=pf=>!pf.name||!pf.phone||!pf.discord?ax().need:!PHONE_RE.test(pf.phone)?ax().badPhone:!DC_RE.test(pf.discord)?ax().badDc:"";
 /* 한국 주소 찾기 (카카오 우편번호 서비스, 무료). 해외 주소는 직접 입력 */
@@ -391,7 +392,7 @@ function drawAcct(mode,note){
   /* 새 비밀번호 (메일의 재설정 링크로 들어왔을 때) */
   if(mode==="newpw"){const f=el("form",{className:"sform"},[inp("apw",ax().pw8,"password","new-password",8),inp("apw2",ax().pw2,"password","new-password",8),el("p",{className:"note",textContent:ax().pwRule}),el("button",{className:"btn",textContent:ax().newpwGo}),msg]);
     f.onsubmit=async e=>{e.preventDefault();const pw=f.querySelector("#apw").value;if(pw!==f.querySelector("#apw2").value)return say(ax().pwMis,1);const pe=pwErr(pw,ME&&ME.email,ME&&ME.nick);if(pe)return say(pe,1);
-      const {error}=await fdb.auth.updateUser({password:pw});if(error)return say(authErr(error),1);await refreshMe();open("acct","i",ax().newpwOk)};
+      const {error}=await fdb.auth.updateUser({password:pw});if(error)return say(authErr(error),1);pwOkUntil=Date.now()+600000;await refreshMe();open("acct","i",ax().newpwOk)};
     panel.append(xBtn(),el("h2",{textContent:ax().newpwT}),f);return}
   if(!ME){
     if(mode==="reset"){const f=el("form",{className:"sform"},[inp("aem",ax().email,"email","email"),el("button",{className:"btn",textContent:ax().resetGo}),msg,el("div",{className:"slinks"},[link(ax().toLogin,()=>open("acct","login"))])]);
@@ -419,23 +420,35 @@ function drawAcct(mode,note){
       try{sessionStorage.removeItem("rif-fan-lock")}catch(_){}markSeen();await refreshMe();draw();open("acct")};
     panel.append(xBtn(),el("h2",{textContent:join?ax().join:ax().login}),f);return}
   /* 소셜로 가입했거나 정보가 빠진 회원: 이름 · 휴대폰부터 받아요 */
-  if(needFill()){/* 필수 정보나 동의가 빠진 회원(소셜 가입 등)은 이것부터 채워야 다른 화면을 쓸 수 있어요 */
+  if(mode==="fill"&&needFill()){/* 필수 정보나 동의가 빠진 회원(소셜 가입 등)이 마이페이지 안내를 눌렀을 때 */
     const ck2=(id,lab,req)=>el("label",{className:"sagree2"},[el("input",{type:"checkbox",id,required:!!req}),el("span",{textContent:lab})]);
     const f=el("form",{className:"sform"},[el("p",{className:"note",textContent:ax().fillNote}),...profileFields(ME,"f",1),
       ...(ME.agreed?[]:[ck2("fag",ax().agree,1),ck2("fage",ax().age,1),ck2("fmk",ax().mkt,0),el("details",{},[el("summary",{className:"note",textContent:ax().privT}),el("p",{className:"spriv",textContent:ax().priv}),el("a",{href:"/privacy/",target:"_blank",rel:"noopener",className:"note",textContent:"→ /privacy/"})])]),
-      el("button",{className:"btn",textContent:ax().save}),msg,el("div",{className:"slinks"},[link(ax().logout,async()=>{await fdb.auth.signOut({scope:"local"});ME=null;labels();draw();close()})])]);
+      el("button",{className:"btn",textContent:ax().save}),msg,el("div",{className:"slinks"},[link("← "+ax().my,()=>open("acct","o"))])]);
     f.onsubmit=async e=>{e.preventDefault();const pf=readProfile(f,"f"),pe=pfErr(pf);if(pe)return say(pe,1);const mkc=f.querySelector("#fmk");
       const {error}=await fdb.rpc("fan_save",{p:{...pf,agree:true,...(mkc?{marketing:mkc.checked}:{})}});if(error)return say(saveErr(error),1);await refreshMe();draw();open("acct","o")};
     panel.append(xBtn(),el("h2",{textContent:ax().fillT}),f);return}
   /* 마이페이지 */
-  const doLogout=async()=>{await fdb.auth.signOut({scope:"local"}).catch(()=>{});ME=null;labels();draw();close()};
+  const doLogout=async()=>{pwOkUntil=0;await fdb.auth.signOut({scope:"local"}).catch(()=>{});ME=null;labels();draw();close()};
   const body=el("div"),tabs=el("div",{className:"stabs"}),tab=mode==="p"||mode==="i"?mode:"o";
   [["o",ax().tabO],["p",ax().tabP],["i",ax().tabI]].forEach(([k,lab])=>{const b=el("button",{type:"button",textContent:lab});b.setAttribute("aria-pressed",String(k===tab));b.onclick=()=>open("acct",k);tabs.append(b)});
-  panel.append(xBtn(),el("p",{className:"tag",textContent:"MEMBER"}),el("div",{style:"display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap"},[el("h2",{style:"margin:0",textContent:ax().hi(ME.nick||ME.email)}),(()=>{const b=el("button",{type:"button",className:"btn ghost",style:"padding:7px 14px;font-size:13px",textContent:ax().logout});b.onclick=doLogout;return b})()]),el("div",{className:"sptbox",style:"margin-top:12px"},[el("span",{textContent:ax().ptHave}),el("b",{textContent:won(ME.points)})]),msg,tabs,body);
+  panel.append(xBtn(),el("p",{className:"tag",textContent:"MEMBER"}),el("div",{style:"display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap"},[el("h2",{style:"margin:0",textContent:ax().hi(ME.nick||ME.email)}),(()=>{const b=el("button",{type:"button",className:"btn ghost",style:"padding:7px 14px;font-size:13px",textContent:ax().logout});b.onclick=doLogout;return b})()]),el("div",{className:"sptbox",style:"margin-top:12px"},[el("span",{textContent:ax().ptHave}),el("b",{textContent:won(ME.points)})]),...(needFill()?[el("div",{className:"sguide",style:"margin:12px 0 0;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"},[el("span",{style:"flex:1;min-width:180px",textContent:ax().fillBan}),(()=>{const b=el("button",{type:"button",className:"btn",style:"padding:7px 14px;font-size:13px",textContent:ax().fillGo});b.onclick=()=>open("acct","fill");return b})()])]:[]),msg,tabs,body);
   if(tab==="o"){fdb.rpc("fan_orders").then(({data})=>{const rows=data||[];if(!rows.length){body.append(el("p",{className:"empty",textContent:ax().noOrders}));return}
       rows.forEach(o=>{const c=orderCard(o,o.email,o.name,()=>refreshMe().then(()=>open("acct","o")));c.addEventListener("click",()=>{lookName=o.name},true);/* 결제 때 이 주문의 주문자 이름을 써요 */body.append(c)})})}
   else if(tab==="p"){fdb.rpc("fan_points_log").then(({data})=>{const rows=data||[];if(!rows.length){body.append(el("p",{className:"empty",textContent:ax().noPts}));return}
       body.append(el("ul",{className:"sptl"},rows.map(r=>el("li",{},[el("div",{},[el("span",{textContent:ax().rs[r.reason]||r.reason}),el("small",{textContent:new Date(r.created_at).toLocaleDateString(L==="ko"?"ko-KR":L==="ja"?"ja-JP":"en-US")+(r.order_no?" · "+r.order_no:"")})]),el("b",{className:r.delta<0?"m":"",textContent:(r.delta>0?"+ ":"− ")+won(Math.abs(r.delta))})]))))})}
+  else if(needFill()){open("acct","fill")}
+  else if(Date.now()>pwOkUntil){/* 내 정보는 비밀번호를 한 번 더 확인하고 보여 줘요 */
+    fdb.auth.getSession().then(({data})=>{const u=data.session&&data.session.user,pv=(u&&u.app_metadata&&u.app_metadata.providers)||[];
+      if(!u)return open("acct","login");
+      if(!pv.includes("email")){pwOkUntil=Date.now()+600000;return open("acct","i")}/* 구글로만 가입한 계정은 비밀번호가 없어요 */
+      const pi=el("input",{type:"password",id:"ipw",autocomplete:"current-password",required:true});
+      const f=el("form",{className:"sform"},[el("p",{className:"note",textContent:ax().pwAsk}),el("label",{},[el("span",{textContent:ax().pw}),pi]),el("button",{className:"btn",textContent:ax().pwGo}),el("div",{className:"slinks"},[link(ax().forgot,async()=>{const {error}=await fdb.auth.resetPasswordForEmail(ME.email,{redirectTo:STORE_URL});error?say(authErr(error),1):say(ax().resetSent)})])]);
+      f.onsubmit=async e=>{e.preventDefault();const lk=lockLeft();if(lk)return say(ax().locked(lk),1);const b=f.querySelector(".btn");b.disabled=true;
+        const {error}=await fdb.auth.signInWithPassword({email:ME.email,password:pi.value});b.disabled=false;
+        if(error){lockFail();const l2=lockLeft();pi.value="";return say(l2?ax().locked(l2):authErr(error),1)}
+        pwOkUntil=Date.now()+600000;open("acct","i")};
+      body.append(f);pi.focus()})}
   else{const fl=(id,lab,v,ac)=>el("label",{},[el("span",{textContent:lab}),el("input",{id,value:v||"",autocomplete:ac||"off",maxLength:200})]);
     const mk=el("input",{type:"checkbox",id:"imk",checked:!!ME.marketing});
     const f=el("form",{className:"sform"},[el("label",{},[el("span",{textContent:ax().email}),el("input",{value:ME.email,disabled:true})]),...profileFields(ME,"i",1),
@@ -447,7 +460,7 @@ function drawAcct(mode,note){
 }
 acctBtn.onclick=()=>open("acct");
 /* 메일의 비밀번호 재설정 링크로 들어오면 새 비밀번호 화면을 열어요. 다른 탭에서 로그인/로그아웃해도 맞춰요 */
-fdb.auth.onAuthStateChange(ev=>{setTimeout(async()=>{if(ev==="PASSWORD_RECOVERY"){await refreshMe();open("acct","newpw")}else if(ev==="SIGNED_IN"||ev==="SIGNED_OUT"){const had=!!ME;await refreshMe();if(had!==!!ME)draw();if(ME)markSeen();if(!had&&needFill()&&sheet.hidden)open("acct")}},0)});
+fdb.auth.onAuthStateChange(ev=>{setTimeout(async()=>{if(ev==="PASSWORD_RECOVERY"){await refreshMe();open("acct","newpw")}else if(ev==="SIGNED_IN"||ev==="SIGNED_OUT"){const had=!!ME;await refreshMe();if(had!==!!ME)draw();if(ME)markSeen();if(!ME)pwOkUntil=0;if(!had&&needFill()&&sheet.hidden)open("acct","o")}},0)});
 cartBtn.onclick=()=>open("cart");lookBtn.onclick=()=>open("look");
 
 async function load(){
