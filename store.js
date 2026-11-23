@@ -155,9 +155,12 @@ const meter=p=>{const tot=p.pack.limit,left=p.stock;if(!tot||left==null)return n
 const packVis=p=>{const out=[];(p.pack.cover||[]).forEach(c=>{c=String(c);if(c.startsWith("yt:")){out.push(ytImg(c.slice(3)));return}if(c.includes("/")){out.push(c);return}
     const [pg,ix]=c.split(":"),a=IT[pg]||[],im=a.filter(x=>x.kind==="image"),yt=a.filter(x=>x.kind==="youtube"),i=+ix||0;if(im[i])out.push(im[i].url);else if(yt[i])out.push(ytImg(yt[i].url))});
   return (out.length?out:(p.images||[])).slice(0,3)};
+/* 그림이 없는 담당(음원만 있는 경우)은 이름과 파형으로 카드 그림을 대신해요 */
+const nameTile=p=>{const w=((p.pack.parts[0]||{}).who||[])[0],nm0=w?whoN(w):"RIF",hs=[38,64,90,52,76,100,60,84,46,70,94,56,80,42,66,88,50,72,36];
+  return el("div",{className:"pknm"},[el("small",{textContent:(T.en[p.kind]||"").toUpperCase()}),el("b",{textContent:nm0}),el("div",{className:"pkwv",ariaHidden:"true"},hs.map(h=>el("i",{style:"height:"+h+"%"})))])};
 function packCard(p){const pk=p.pack,so=p.status==="soldout",vis=packVis(p),m=meter(p);
   return el("a",{className:"scard pkc"+(so?" so":""),href:"?p="+p.id},[
-    el("div",{className:"pkv n"+vis.length},[...vis.map(u=>el("img",{src:u,alt:"",loading:"lazy",decoding:"async"})),...(vis.length?[]:[el("span",{className:"sno",textContent:"RIF"})]),...(so?[el("span",{className:"sbadge",textContent:t.soldout})]:[]),...(p.status==="draft"?[el("span",{className:"pkd",textContent:t.draft})]:[])]),
+    el("div",{className:"pkv n"+vis.length},[...vis.map(u=>el("img",{src:u,alt:"",loading:"lazy",decoding:"async"})),...(vis.length?[]:[nameTile(p)]),...(so?[el("span",{className:"sbadge",textContent:t.soldout})]:[]),...(p.status==="draft"?[el("span",{className:"pkd",textContent:t.draft})]:[])]),
     el("div",{className:"pkb"},[...(tx(pk.tag)?[el("p",{className:"tag",textContent:tx(pk.tag)})]:[]),el("h3",{textContent:nm(p)}),...(sm(p)?[el("p",{className:"ssum",textContent:sm(p)})]:[]),
       el("p",{className:"pkr",textContent:pk.parts.map(pt=>t.roles[pt.key]||pt.key).join(" / ")}),
       el("div",{className:"pkp"},[el("b",{textContent:won(unit(p))}),...(isOff(p)?[el("s",{textContent:won(p.price)}),el("em",{textContent:pct(p)})]:[])]),...(saleNote(p)?[saleNote(p)]:[]),
@@ -172,7 +175,7 @@ function sampleEls(ss){const im=ss.filter(i=>i.kind==="image"),yt=ss.filter(i=>i
   return out}
 function drawPack(p){const pk=p.pack,U=buyUI(p),off=isOff(p),picks=[];panel.classList.add("pack");
   const sec=(h,...k)=>el("section",{className:"pksec"},[el("h3",{textContent:h}),...k]);
-  const head=el("div",{className:"pkh"},[el("p",{className:"tag",textContent:[t.plan,tx(pk.tag)].filter(Boolean).join(" / ")}),el("h2",{textContent:nm(p)}),...(sm(p)?[el("p",{className:"pklead",textContent:sm(p)})]:[])]);
+  const head=el("div",{className:"pkh"},[el("p",{className:"tag",textContent:[t[p.kind]||t.plan,tx(pk.tag)].filter(Boolean).join(" / ")}),el("h2",{textContent:nm(p)}),...(sm(p)?[el("p",{className:"pklead",textContent:sm(p)})]:[])]);
   /* 구성: 파트마다 누가 맡는지 */
   const inc=el("ul",{className:"pkinc"},pk.parts.map(pt=>el("li",{},[el("b",{textContent:t.roles[pt.key]||pt.key}),el("span",{},(pt.who||[]).flatMap((w,i)=>[...(i?[el("i",{textContent:" / "})]:[]),whoN(w),...(tx(w.note)?[el("small",{textContent:" ("+tx(w.note)+")"})]:[])]))])));
   /* 만드는 사람들: 담당마다 작품 몇 점 + 고를 수 있으면 '선택' */

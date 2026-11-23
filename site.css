@@ -315,3 +315,9 @@ main:has(.sstore){max-width:1160px}
 .sbiz[hidden]{display:none}
 
 footer .pvlink{display:block;margin-top:6px;font-size:12px;color:inherit;opacity:.85;text-decoration:underline;text-underline-offset:3px}
+
+/* 스토어: 그림 없는 담당 카드 (이름 + 파형) */
+.pkv .pknm{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;height:100%;background:linear-gradient(135deg,#17161a,#2b2730);color:#fff;text-align:center}
+.pknm small{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.24em;opacity:.6}
+.pknm b{font-family:var(--disp);font-stretch:110%;font-weight:800;font-size:clamp(30px,5vw,46px);line-height:1;letter-spacing:.02em}
+.pkwv{display:flex;align-items:center;gap:4px;height:34px}.pkwv i{display:block;width:3px;border-radius:2px;background:var(--ac,#fff);opacity:.9}
