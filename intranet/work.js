@@ -47,7 +47,7 @@ async function load(){
   shell();
   const [a,b]=await Promise.all([db.rpc("pkg_view"),db.rpc("wo_list")]);
   if(a.error||b.error){$("wkbody").replaceChildren(el("p",{className:"note err",textContent:"불러오지 못했어요: "+((a.error||b.error).message)}));return}
-  pk=a.data;orders=b.data||[];badge();draw();
+  pk=a.data||{boss:false,plans:[]};orders=b.data||[];badge();draw();
 }
 function badge(){const n=orders.filter(o=>o.status==="offered"&&o.assignee_email.toLowerCase()===me()).length,bd=$("kb");if(bd){bd.hidden=!n;bd.textContent=n}}
 function draw(){
