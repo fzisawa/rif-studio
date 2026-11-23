@@ -88,7 +88,7 @@ li{border-color:var(--hair)}
 .tab{border:0;padding:12px 0;min-height:0;font-family:var(--disp);font-stretch:110%;font-weight:700;font-size:16px;color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-1px}
 .tab:hover{color:var(--fg)}.tab.on{background:none;color:var(--fg);border-bottom-color:var(--ac)}
 /* 작품 사진: 웹에서는 가로·세로 비율을 살린 채로 한 줄에 여러 장 (줄 높이를 맞춰 빈틈없이), 휴대폰은 2열 */
-.grid.imgs{--mat:transparent;--rh:clamp(170px,13vw,220px);display:flex;flex-wrap:wrap;gap:10px;padding:0 0 12px;justify-content:flex-start;align-items:stretch;width:100%;left:0;transform:none}
+.grid.imgs{--mat:transparent;--rh:clamp(200px,15.5vw,270px);display:flex;flex-wrap:wrap;gap:10px;padding:0 0 12px;justify-content:flex-start;align-items:stretch;width:100%;left:0;transform:none}
 .grid.imgs>.item{--r:1;flex:var(--r) 1 calc(var(--r) * var(--rh));min-width:0;max-width:100%;margin:0;display:block}
 .grid.imgs::after{content:"";flex:999 1 0}
 .grid.imgs>.item>img{display:block;width:100%;height:auto;aspect-ratio:var(--r);object-fit:cover;padding:0;border:0;box-shadow:none;background:#f4f3f1;transition:opacity .2s}
