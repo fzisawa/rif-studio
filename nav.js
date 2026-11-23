@@ -50,3 +50,12 @@ empt();
     a.href="/news/?id="+encodeURIComponent(p.id);t.dateTime=p.created_at;t.textContent=d.getFullYear()+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getDate()).padStart(2,"0");
     b.textContent=(L==="ja"&&p.title_ja)||(L==="en"&&p.title_en)||p.title||"";i.textContent="Read";a.append(t,b,i);li.append(a);return li}))};
   draw();document.addEventListener("rif:lang",()=>setTimeout(draw,0))}catch(_){}})();
+
+/* 휴대폰 메뉴 버튼 (site.css 를 쓰는 공개 페이지에서만) */
+(()=>{const h=document.querySelector("body>header"),nv=h&&h.querySelector("nav");if(!h||!nv||h.querySelector(".mb")||!document.querySelector('link[href*="site.css"]'))return;
+  const b=document.createElement("button");b.type="button";b.className="mb";b.setAttribute("aria-label","Menu");b.setAttribute("aria-expanded","false");b.append(document.createElement("span"),document.createElement("span"));
+  const set=o=>{h.classList.toggle("open",o);document.body.classList.toggle("navopen",o);b.setAttribute("aria-expanded",String(o))};
+  b.onclick=()=>set(!h.classList.contains("open"));h.append(b);
+  nv.addEventListener("click",e=>{if(e.target.closest("a"))set(false)});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")set(false)});
+  matchMedia("(min-width:761px)").addEventListener("change",e=>{if(e.matches)set(false)})})();
