@@ -139,7 +139,14 @@ function drawPlans(){
   const plans=pk.plans||[];if(!plans.length){b.replaceChildren(el("p",{className:"note",textContent:boss?"아직 게시된 단가표가 없어요.":"지금 게시된 패키지 중 내가 맡는 항목이 없어요."}));return}
   b.replaceChildren(el("div",{className:"pgrid"},plans.map(p=>{const cost=p.lines.reduce((s,l)=>s+(l.amount||0),0);
     const rows=p.lines.map(l=>el("tr",{className:l.assignee_email&&l.assignee_email.toLowerCase()===m?"mine":""},[el("td",{textContent:l.field}),el("td",{textContent:l.who}),el("td",{textContent:l.item}),el("td",{className:"a",textContent:won(l.amount)}),el("td",{className:"a net",textContent:"실수령 "+won(net(l.amount||0))})]));
-    const foot=boss?[el("div",{className:"pf"},[el("span",{textContent:"판매가 "+won(p.price)+" · 원가 "+won(cost)}),el("b",{className:(p.price-cost)>=p.price*0.13?"ok":"no",textContent:"몫 "+won(p.price-cost)+(p.price?" ("+((p.price-cost)/p.price*100).toFixed(1)+"%)":"")})])]:[];
+    /* 스토어 연결: 단가표 판매가와 스토어에서 지금 받는 값이 다르면 알려 주고, 한 번에 맞출 수 있어요 */
+    const st=p.store,sync=[];
+    if(boss&&st){const same=st.unit===p.price,ended=st.sale_price!=null&&st.unit!==st.sale_price;
+      const row=el("div",{className:"pf",style:"border-top:1px dashed var(--ln2);font-size:12.5px;align-items:center;gap:8px;flex-wrap:wrap"},[el("span",{textContent:"스토어 「"+st.name+"」 "+won(st.unit)+(st.sale_price!=null&&st.unit===st.sale_price?" (정가 "+won(st.price)+")":"")+(ended?" · 세일 기간 아님":"")+(st.sale_until&&!ended?" · "+new Date(st.sale_until).toLocaleDateString("ko-KR",{month:"numeric",day:"numeric"})+"까지":"")+(st.status==="draft"?" · 숨김":"")}),el("b",{className:same?"ok":"no",textContent:same?"✓ 단가표와 같아요":"≠ 단가표 "+won(p.price)})]);
+      if(!same){const bt=el("button",{type:"button",className:"mbtn",textContent:"스토어 판매가 맞추기"});bt.onclick=async()=>{if(!confirm("스토어 「"+st.name+"」의 판매가를 "+won(p.price)+"으로 바꿀까요?\n(정가 "+won(st.price)+"보다 낮으면 할인가로 들어가요)"))return;bt.disabled=true;const {error}=await db.rpc("pkg_push_price",{p_plan:p.id});if(error){bt.disabled=false;return alert("바꾸지 못했어요: "+error.message)}toast("스토어 판매가를 맞췄어요 ✓");load()};row.append(bt)}
+      sync.push(row)}
+    else if(boss)sync.push(el("div",{className:"pf",style:"border-top:1px dashed var(--ln2);font-size:12.5px;color:var(--mut)"},[el("span",{textContent:"스토어 상품과 연결되지 않았어요 (단가표 편집에서 연결)"})]));
+    const foot=boss?[el("div",{className:"pf"},[el("span",{textContent:"판매가 "+won(p.price)+" · 원가 "+won(cost)}),el("b",{className:(p.price-cost)>=p.price*0.13?"ok":"no",textContent:"몫 "+won(p.price-cost)+(p.price?" ("+((p.price-cost)/p.price*100).toFixed(1)+"%)":"")})]),...sync]:[];
     return el("div",{className:"pcard",style:p.active?"":"opacity:.55"},[el("h3",{textContent:p.name+(p.active?"":" (숨김)")}),el("p",{className:"pd",textContent:p.descr}),el("table",{},[el("tbody",{},rows)]),...foot])})));
 }
 function drawEditor(){
@@ -167,16 +174,17 @@ function drawEditor(){
     const act=el("input",{type:"checkbox",checked:p.active!==false});act.onchange=()=>{p.active=act.checked};
     const del=el("button",{type:"button",className:"mbtn",textContent:"플랜 삭제"});del.onclick=()=>{if(confirm(p.name+" 플랜을 지울까요? (게시해야 반영돼요)")){data.splice(pi,1);render()}};
     const fee=inp(p,"fee_pct","13",1);fee.step="0.5";fee.min="0";fee.max="100";
+    const lk=el("select",{},[el("option",{value:"",textContent:"연결 안 함"}),...(pk.products||[]).map(x=>el("option",{value:x.id,textContent:x.name}))]);lk.value=p.product_id||"";lk.onchange=()=>{p.product_id=lk.value||null};
     return el("div",{className:"pcard ped",style:"margin-bottom:14px"},[el("div",{className:"row4"},[
         el("label",{className:"lf"},[el("span",{textContent:"코드"}),inp(p,"code","예: BASIC")]),el("label",{className:"lf"},[el("span",{textContent:"이름"}),inp(p,"name","이름")]),
         el("label",{className:"lf"},[el("span",{textContent:"회사 몫 (%)"}),fee]),el("label",{className:"lf"},[el("span",{textContent:"판매가 = 파트 가격 합계 🔒"}),prO])]),
-      el("div",{style:"margin:6px 0"},[inp(p,"descr","설명")]),el("div",{className:"lrows"},rows),sum,el("div",{className:"wkbar",style:"margin:8px 0 0"},[add,el("label",{style:"display:flex;gap:6px;align-items:center;font-size:13px;white-space:nowrap"},[act,"게시"]),el("span",{className:"sp"}),del])])}));data.forEach(p=>p._calc&&p._calc())};
+      el("div",{style:"margin:6px 0;display:grid;grid-template-columns:1fr minmax(180px,260px);gap:8px;align-items:end"},[inp(p,"descr","설명"),el("label",{className:"lf"},[el("span",{textContent:"연결할 스토어 상품"}),lk])]),el("div",{className:"lrows"},rows),sum,el("div",{className:"wkbar",style:"margin:8px 0 0"},[add,el("label",{style:"display:flex;gap:6px;align-items:center;font-size:13px;white-space:nowrap"},[act,"게시"]),el("span",{className:"sp"}),del])])}));data.forEach(p=>p._calc&&p._calc())};
   render();
   const addp=el("button",{type:"button",className:"mbtn",textContent:"＋ 플랜 추가"});addp.onclick=()=>{data.push({code:"",name:"",descr:"",price:0,fee_pct:13,active:true,lines:[]});render()};
   const note=el("input",{placeholder:"이번 변경 메모 (예: 우듭 단가 반영)",style:"flex:1 1 240px"}),save=el("button",{type:"button",className:"btn",textContent:"새 버전으로 게시"});
   save.onclick=async()=>{if(data.some(p=>!String(p.code).trim()||!String(p.name).trim()))return alert("플랜마다 코드와 이름을 넣어 주세요.");
     if(!confirm("이 단가표를 새 버전으로 게시할까요?\n이미 동의한 작업 배정서에는 영향이 없어요."))return;save.disabled=true;
-    const body=data.map(({_calc,...p})=>p);
+    const body=data.map(({_calc,store,...p})=>p);
     const {data:v,error}=await db.rpc("pkg_save",{p_plans:body,p_note:note.value});save.disabled=false;if(error)return alert("게시하지 못했어요: "+error.message);edit=false;toast("단가표 v"+v+" 게시 ✓");load()};
   b.replaceChildren(wrap,el("div",{className:"wkbar"},[addp,note,save]));
 }

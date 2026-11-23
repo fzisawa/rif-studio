@@ -35,7 +35,21 @@ const sm=p=>(L==="ja"&&p.summary_ja)||(L==="en"&&p.summary_en)||p.summary||"";
 const oN=o=>(L!=="ko"&&o[L]&&o[L].name)||o.name,oV=(o,v)=>{const i=o.values.indexOf(v);return (L!=="ko"&&o[L]&&o[L].values&&o[L].values[i])||v};
 const oAdd=(p,sel)=>(p.options||[]).reduce((a,o)=>a+Math.max(0,Number((o.add||{})[(sel||{})[o.name]])||0),0);
 const oTxt=(p,sel)=>(p.options||[]).filter(o=>sel&&sel[o.name]).map(o=>oN(o)+": "+oV(o,sel[o.name])).join(" · ");
-const unit=p=>p.sale_price!=null&&p.sale_price<p.price?p.sale_price:p.price;
+/* 세일: 할인가가 있고 세일 기간(시작~종료) 안일 때만 할인가를 받아요. 서버(store_unit)도 같은 규칙으로 계산해요 */
+const saleOn=p=>p.sale_price!=null&&p.sale_price<p.price&&(!p.sale_from||Date.now()>=Date.parse(p.sale_from))&&(!p.sale_until||Date.now()<Date.parse(p.sale_until));
+const unit=p=>saleOn(p)?p.sale_price:p.price;
+const SX={ko:{until:d=>d+"까지",left:n=>n<=0?"오늘 마감":"D-"+n,cp:"쿠폰 코드",cpGo:"적용",cpOff:"쿠폰 할인",cpX:"빼기",
+  ce:{"bad coupon":"쿠폰 코드를 확인해 주세요.","coupon expired":"사용 기간이 아닌 쿠폰이에요.","coupon used up":"선착순이 끝난 쿠폰이에요.","coupon not for these items":"이 상품에는 쓸 수 없는 쿠폰이에요.","coupon min":"주문 금액이 쿠폰 최소 금액보다 적어요."}},
+ ja:{until:d=>d+"まで",left:n=>n<=0?"本日終了":"あと"+n+"日",cp:"クーポンコード",cpGo:"適用",cpOff:"クーポン割引",cpX:"外す",
+  ce:{"bad coupon":"クーポンコードをご確認ください。","coupon expired":"ご利用期間外のクーポンです。","coupon used up":"先着分が終了したクーポンです。","coupon not for these items":"この商品には使えないクーポンです。","coupon min":"ご注文金額がクーポンの最低金額に届いていません。"}},
+ en:{until:d=>"Until "+d,left:n=>n<=0?"Ends today":n+(n===1?" day left":" days left"),cp:"Coupon code",cpGo:"Apply",cpOff:"Coupon",cpX:"Remove",
+  ce:{"bad coupon":"Please check the coupon code.","coupon expired":"This coupon isn't valid right now.","coupon used up":"This coupon has been fully claimed.","coupon not for these items":"This coupon can't be used for these items.","coupon min":"Your order is below this coupon's minimum."}}};
+const sx=()=>SX[L]||SX.ko;
+/* 세일 안내 한 줄: 라벨(예: 런칭 특가) · 종료일 · 남은 날 */
+const saleNote=p=>{if(!saleOn(p))return null;const lb=p.sale_label?(typeof p.sale_label==="string"?p.sale_label:(p.sale_label[L]||p.sale_label.ko||"")):"",parts=[];if(lb)parts.push(lb);
+  if(p.sale_until){const d=new Date(p.sale_until),n=Math.floor((d-Date.now())/864e5);parts.push(sx().until(d.toLocaleDateString(L==="ko"?"ko-KR":L==="ja"?"ja-JP":"en-US",{month:"numeric",day:"numeric"})),sx().left(n))}
+  return parts.length?el("small",{className:"ssale",textContent:parts.join(" · ")}):null};
+document.head.append(Object.assign(document.createElement("style"),{textContent:".ssale{display:inline-block;margin-top:4px;padding:2px 9px;border-radius:99px;background:color-mix(in srgb,var(--ac) 16%,transparent);color:var(--ac);font-size:12px;font-weight:700;letter-spacing:0}.spr .ssale{flex-basis:100%;width:max-content}.scp{display:flex;gap:8px;align-items:center}.scp input{flex:1;min-width:0;text-transform:uppercase}.scp .btn{white-space:nowrap}.srow.off span,.srow.off b{color:var(--ac)}"}));
 const lines=s=>String(s||"").split("\n").flatMap((x,i)=>i?[el("br"),document.createTextNode(x)]:[document.createTextNode(x)]);
 const KEY="rif-cart";
 const getCart=()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(v)?v:[]}catch(_){return []}};
@@ -62,7 +76,7 @@ function open(kind,...a){lastFocus=document.activeElement;panel.className="spane
 function close(){sheet.hidden=true;panel.replaceChildren();/* 재생 중인 영상 · 음원도 같이 멈춰요 */document.documentElement.classList.remove("snoscroll");if(/[?&]p=/.test(location.search))history.replaceState(null,"",location.pathname+location.hash);if(lastFocus&&lastFocus.focus)lastFocus.focus({preventScroll:true})}
 sheet.onclick=e=>{if(e.target===sheet)close()};document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!lb.hidden)lb.click();else if(!sheet.hidden)close()});
 const xBtn=()=>{const b=el("button",{type:"button",className:"sx",textContent:"×",ariaLabel:"close"});b.onclick=close;return b};
-const priceEl=p=>{const u=unit(p),off=p.sale_price!=null&&p.sale_price<p.price;return el("div",{className:"spr"},[...(off?[el("em",{textContent:Math.round((1-p.sale_price/p.price)*100)+"%"}),el("s",{textContent:won(p.price)})]:[]),el("b",{textContent:won(u)+((p.options||[]).some(o=>o.add&&Object.values(o.add).some(Number))?" ~":"")})])};
+const priceEl=p=>{const u=unit(p),off=saleOn(p),sn=saleNote(p);return el("div",{className:"spr"},[...(off?[el("em",{textContent:Math.round((1-p.sale_price/p.price)*100)+"%"}),el("s",{textContent:won(p.price)})]:[]),el("b",{textContent:won(u)+((p.options||[]).some(o=>o.add&&Object.values(o.add).some(Number))?" ~":"")}),...(sn?[sn]:[])])};
 function cartBadge(){const n=getCart().reduce((a,c)=>a+c.qty,0);cartBtn.querySelector(".scn").textContent=String(n);cartBtn.classList.toggle("has",n>0);cartBtn.setAttribute("aria-label",t.cart+" "+n)}
 function labels(){lookBtn.textContent=t.look;cartBtn.title=t.cart;cartBadge()}
 
@@ -123,7 +137,7 @@ const isPack=p=>!!(p&&p.pack&&Array.isArray(p.pack.parts));
 const tx=o=>o==null?"":typeof o==="string"?o:(o[L]||o.ko||"");
 const whoN=w=>(L!=="ko"&&w.en)||w.name;
 const ytImg=id=>"https://i.ytimg.com/vi/"+id+"/hqdefault.jpg";
-const pct=p=>Math.round((1-p.sale_price/p.price)*100)+"%",isOff=p=>p.sale_price!=null&&p.sale_price<p.price;
+const pct=p=>Math.round((1-p.sale_price/p.price)*100)+"%",isOff=p=>saleOn(p);
 /* 담당의 작품 고르기: 최신 순. sec 를 여러 개 적으면 탭마다 번갈아 한 점씩, skip 에 적은 글자가 주소에 들어간 작품은 빼요 */
 const samples=w=>{if(!w.page||w.n===0)return [];let a=(IT[w.page]||[]).filter(i=>!(w.skip||[]).some(k=>String(i.url).includes(k)));
   if(w.sec){const g=[].concat(w.sec).map(k=>a.filter(i=>i.section===k));a=[];for(let i=0;g.some(x=>x[i]);i++)g.forEach(x=>{if(x[i])a.push(x[i])})}
@@ -140,7 +154,7 @@ function packCard(p){const pk=p.pack,so=p.status==="soldout",vis=packVis(p),m=me
     el("div",{className:"pkv n"+vis.length},[...vis.map(u=>el("img",{src:u,alt:"",loading:"lazy",decoding:"async"})),...(vis.length?[]:[el("span",{className:"sno",textContent:"RIF"})]),...(so?[el("span",{className:"sbadge",textContent:t.soldout})]:[]),...(p.status==="draft"?[el("span",{className:"pkd",textContent:t.draft})]:[])]),
     el("div",{className:"pkb"},[...(tx(pk.tag)?[el("p",{className:"tag",textContent:tx(pk.tag)})]:[]),el("h3",{textContent:nm(p)}),...(sm(p)?[el("p",{className:"ssum",textContent:sm(p)})]:[]),
       el("p",{className:"pkr",textContent:pk.parts.map(pt=>t.roles[pt.key]||pt.key).join(" / ")}),
-      el("div",{className:"pkp"},[el("b",{textContent:won(unit(p))}),...(isOff(p)?[el("s",{textContent:won(p.price)}),el("em",{textContent:pct(p)})]:[])]),
+      el("div",{className:"pkp"},[el("b",{textContent:won(unit(p))}),...(isOff(p)?[el("s",{textContent:won(p.price)}),el("em",{textContent:pct(p)})]:[])]),...(saleNote(p)?[saleNote(p)]:[]),
       ...(m?[m]:[]),el("span",{className:"btn",textContent:t.view})])])}
 function sampleEls(ss){const im=ss.filter(i=>i.kind==="image"),yt=ss.filter(i=>i.kind==="youtube"),au=ss.filter(i=>i.kind==="audio"),out=[];
   if(im.length)out.push(el("div",{className:"pks imgs"},im.map(i=>{const g=el("img",{alt:i.caption||"",loading:"lazy",decoding:"async"}),b=el("button",{type:"button",className:"pkim"},[g]);
@@ -166,7 +180,7 @@ function drawPack(p){const pk=p.pack,U=buyUI(p),off=isOff(p),picks=[];panel.clas
   U.sels.forEach(s=>s.addEventListener("change",sync));sync();
   const flow=el("ol",{className:"pkflow"},t.steps.map(([a,b])=>el("li",{},[el("b",{textContent:a}),el("span",{textContent:b})])));
   /* 구매 칸 */
-  const price=el("div",{className:"pkpr"},[...(off&&tx(pk.priceLabel)?[el("p",{textContent:tx(pk.priceLabel)})]:[]),el("b",{textContent:won(unit(p))}),...(off?[el("p",{className:"pkwas"},[t.listp+" ",el("s",{textContent:won(p.price)})," ",el("em",{textContent:pct(p)})])]:[])]);
+  const sN=saleNote(p),price=el("div",{className:"pkpr"},[...(off&&tx(pk.priceLabel)&&!(p.sale_label&&tx(p.sale_label))?[el("p",{textContent:tx(pk.priceLabel)})]:[]),el("b",{textContent:won(unit(p))}),...(off?[el("p",{className:"pkwas"},[t.listp+" ",el("s",{textContent:won(p.price)})," ",el("em",{textContent:pct(p)})]),...(sN?[sN]:[])]:[])]);
   const m=meter(p),hasAdd=(p.options||[]).some(o=>o.add&&Object.values(o.add).some(Number));
   const buy=el("div",{className:"pkbuy"},[price,...(m?[m]:[]),...(U.canOrder?[...U.sels.map(s=>el("label",{className:"pksel"},[el("span",{textContent:s.getAttribute("aria-label")}),s])),...(U.lim>1?[U.qty]:[]),...(U.lim>1||hasAdd?[U.tot]:[])]:[]),U.acts,
     ...(U.canOrder?[el("p",{className:"pklater",textContent:t.payLater})]:[]),...(!U.so&&!U.live&&p.buy_mode==="order"?[el("p",{className:"note",textContent:t.closed})]:[]),el("a",{className:"pkask",href:"../contact/",textContent:t.askPre})]);
@@ -203,16 +217,28 @@ function drawCheck(){
     ...(m.goods?[f("szip",t.zip,"text",1,"postal-code"),f("saddr",t.addr,"text",1,"street-address")]:[]),
     el("label",{},[el("span",{textContent:t.memo}),el("textarea",{id:"smemo",rows:2,maxLength:500})]),
     el("label",{className:"sagree"},[el("input",{type:"checkbox",id:"sagr",required:true}),el("span",{textContent:t.agree})]),
-    el("div",{className:"srow big"},[el("span",{textContent:t.pay}),el("b",{textContent:won(m.total)})]),
+    el("div",{className:"scp"},[el("input",{id:"scode",maxLength:24,placeholder:sx().cp,autocomplete:"off",ariaLabel:sx().cp}),el("button",{type:"button",className:"btn ghost",id:"scgo",textContent:sx().cpGo})]),
+    el("p",{className:"note",id:"scmsg",hidden:true}),
+    el("div",{className:"srow off",id:"scrow",hidden:true},[el("span",{textContent:sx().cpOff}),el("b",{id:"scamt"})]),
+    el("div",{className:"srow big"},[el("span",{textContent:t.pay}),el("b",{id:"stotal",textContent:won(m.total)})]),
     el("p",{className:"note err",id:"serr",hidden:true}),
     el("div",{className:"wr"},[el("button",{type:"button",className:"btn ghost",id:"sback",textContent:t.back}),el("button",{className:"btn",id:"sgo",textContent:t.place})])]);
   panel.append(xBtn(),el("h2",{textContent:t.ckTitle}),form);
   form.querySelector("#sback").onclick=()=>open("cart");
+  /* 쿠폰: 서버가 지금 가격으로 할인액을 계산해 줘요. 주문할 때 서버에서 한 번 더 확인해요 */
+  let coupon="";const q=i=>form.querySelector("#"+i),cpErr=m2=>{const k=Object.keys(sx().ce).find(k=>String(m2).includes(k));return k?sx().ce[k]:String(m2)};
+  const cpShow=d=>{q("scrow").hidden=!d;q("scamt").textContent=d?"− "+won(d):"";q("stotal").textContent=won(m.total-(d||0))};
+  q("scgo").onclick=async()=>{const msg=q("scmsg");if(coupon){coupon="";q("scode").value="";q("scode").disabled=false;q("scgo").textContent=sx().cpGo;msg.hidden=true;cpShow(0);return}
+    const code=q("scode").value.trim().toUpperCase();if(!code)return;q("scgo").disabled=true;
+    const {data,error}=await db.rpc("store_coupon_check",{p_code:code,p_items:its.map(x=>({id:x.p.id,qty:x.c.qty,opts:x.c.opts}))});q("scgo").disabled=false;
+    if(error){msg.className="note err";msg.textContent=cpErr(error.message);msg.hidden=false;cpShow(0);return}
+    coupon=data.code;q("scode").value=data.code;q("scode").disabled=true;q("scgo").textContent=sx().cpX;msg.hidden=true;cpShow(data.discount)};
+  q("scode").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();q("scgo").click()}});
   form.onsubmit=async e=>{e.preventDefault();const g=i=>{const x=form.querySelector("#"+i);return x?x.value.trim():""},er=form.querySelector("#serr"),b=form.querySelector("#sgo");
     b.disabled=true;er.hidden=true;
-    const cc=await myCC().catch(()=>"");const {data,error}=await db.rpc("store_order",{p:{cc,lang:L,name:g("sname"),email:g("semail"),phone:g("sphone"),zip:g("szip"),addr:g("saddr"),memo:g("smemo"),items:its.map(x=>({id:x.p.id,qty:x.c.qty,opts:x.c.opts}))}});
+    const cc=await myCC().catch(()=>"");const {data,error}=await db.rpc("store_order",{p:{cc,lang:L,name:g("sname"),email:g("semail"),phone:g("sphone"),zip:g("szip"),addr:g("saddr"),memo:g("smemo"),items:its.map(x=>({id:x.p.id,qty:x.c.qty,opts:x.c.opts})),...(coupon?{coupon}:{})}});
     b.disabled=false;
-    if(error){const m2=String(error.message||""),k=Object.keys(t.e).find(k=>m2.includes(k));er.textContent=t.err+(k?t.e[k]+(m2.includes(":")&&/stock|sale|option/.test(k)?" ("+m2.split(":").slice(1).join(":").trim()+")":""):m2);er.hidden=false;if(/stock|sale/.test(m2))load();return}
+    if(error){const m2=String(error.message||""),k=Object.keys(t.e).find(k=>m2.includes(k));er.textContent=t.err+(/coupon/.test(m2)?cpErr(m2):k?t.e[k]+(m2.includes(":")&&/stock|sale|option/.test(k)?" ("+m2.split(":").slice(1).join(":").trim()+")":""):m2);er.hidden=false;if(/stock|sale/.test(m2))load();return}
     setCart([]);lookName=g("sname");/* 주문 확인 메일 (주문번호 안내) */db.functions.invoke("store-order-mail",{body:{no:data.no,email:g("semail"),lang:L}}).catch(()=>{});open("done",data,g("semail"))}}
 
 /* 완료 · 조회 */
@@ -260,14 +286,14 @@ async function ppReturn(){const u=new URLSearchParams(location.search),r=u.get("
   try{await ppCall({action:"capture",no:s.no,email:s.email,id:u.get("token")||s.id});try{sessionStorage.removeItem("rif_pp")}catch(_){}say(t.ppOk)}catch(e){say(t.ppErr);ppLog("return capture: "+(e&&e.message))}
   open("look",{name:s.name||"",email:s.email})}
 function drawDone(d,mail){
-  panel.append(xBtn(),el("p",{className:"tag",textContent:"THANK YOU"}),el("h2",{textContent:t.doneT}),el("div",{className:"sno2"},[el("span",{textContent:t.doneNo}),el("b",{textContent:d.no})]),
+  panel.append(xBtn(),el("p",{className:"tag",textContent:"THANK YOU"}),el("h2",{textContent:t.doneT}),el("div",{className:"sno2"},[el("span",{textContent:t.doneNo}),el("b",{textContent:d.no})]),...(d.discount?[el("div",{className:"srow off"},[el("span",{textContent:sx().cpOff}),el("b",{textContent:"− "+won(d.discount)})])]:[]),
     el("div",{className:"srow big"},[el("span",{textContent:t.pay}),el("b",{textContent:won(d.total)})]),/* 후불: 주문 완료 때는 결제 안내만, 결제는 발송 후 주문 조회에서 */laterBox(),
     el("p",{className:"note",textContent:t.doneMail}),(()=>{const b=el("button",{type:"button",className:"btn",textContent:t.keep});b.onclick=close;return b})())}
 let lookName="";
 function orderCard(data,mail,name,refresh){const d=new Date(data.created_at);
   return el("div",{className:"slcard"},[el("div",{className:"slhd"},[el("b",{textContent:t.doneNo+" "+data.no}),el("span",{className:"note",textContent:isNaN(d)?"":d.toLocaleDateString(L==="ko"?"ko-KR":L==="ja"?"ja-JP":"en-US")})]),
     el("div",{className:"sstat "+data.status,textContent:t.st[data.status]||data.status}),
-    el("ul",{className:"slines sm"},(data.items||[]).map(i=>el("li",{},[el("div",{},[el("b",{textContent:i.name}),...(Object.keys(i.opts||{}).length?[el("small",{textContent:Object.entries(i.opts).map(([k,v])=>k+": "+v).join(" · ")})]:[]),el("small",{textContent:"× "+i.qty})]),el("b",{className:"slp",textContent:won(i.unit*i.qty)})]))),
+    el("ul",{className:"slines sm"},(data.items||[]).map(i=>el("li",{},[el("div",{},[el("b",{textContent:i.name}),...(Object.keys(i.opts||{}).length?[el("small",{textContent:Object.entries(i.opts).map(([k,v])=>k+": "+v).join(" · ")})]:[]),el("small",{textContent:"× "+i.qty})]),el("b",{className:"slp",textContent:won(i.unit*i.qty)})]))),...(data.discount?[el("div",{className:"srow off"},[el("span",{textContent:sx().cpOff}),el("b",{textContent:"− "+won(data.discount)})])]:[]),
     el("div",{className:"srow big"},[el("span",{textContent:t.pay}),el("b",{textContent:won(data.total)})]),...(data.status==="new"?[laterBox()]:[]),/* 후불: 발송한 주문만 결제 — 한국 IP는 계좌 입금, 해외 IP는 PayPal */...(data.status==="shipped"?[payArea(data.no,mail,data.pay_guide,refresh)]:[])])}
 /* 주문 조회: 주문자 이름 + 이메일 → 그 사람의 주문 전부 (최근 20건) */
 function drawLook(pre){

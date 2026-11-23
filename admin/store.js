@@ -2,11 +2,11 @@
 (()=>{const $=i=>document.getElementById(i);if(!$("p4"))return;
 const won=n=>"₩"+Number(n||0).toLocaleString("ko-KR"),ST={new:["접수 · 발송 준비","wt"],shipped:["발송함 · 입금 대기","wt"],paid:["입금 확인","on"],done:["완료","x"],cancel:["취소","x"]};
 const PS={draft:"숨김",sale:"판매 중",soldout:"품절"},BM={order:"사이트 주문",link:"외부 스토어",inquiry:"문의하기"};
-let prods=[],orders=[],set={},edit=null,imgs=[];const OPEN=new Set();
+let prods=[],orders=[],set={},edit=null,imgs=[],coups=[];const OPEN=new Set();
 const td=(t,c)=>el("td",{className:c||"",textContent:t==null?"":String(t),title:t==null?"":String(t)});
 async function load(){
   const [a,b,c]=await Promise.all([db.from("store_products").select("*").order("sort").order("created_at",{ascending:false}),db.from("store_orders").select("*").order("created_at",{ascending:false}).limit(500),db.from("store_settings").select("*").eq("id",1).maybeSingle()]);
-  prods=a.data||[];orders=b.data||[];set=(c&&c.data)||{};drawP();drawO();fillS()}
+  prods=a.data||[];orders=b.data||[];set=(c&&c.data)||{};const cq=await db.from("store_coupons").select("*").order("created_at",{ascending:false});coups=cq.data||[];drawP();drawO();fillS();drawC()}
 /* 요약 */
 function stat(){const n=orders.filter(o=>o.status==="new").length,p=orders.filter(o=>o.status==="shipped").length,sum=orders.filter(o=>o.status!=="cancel").reduce((a,o)=>a+o.total,0);
   $("sst").replaceChildren(...[[set.open?"주문 받는 중":"주문 꺼짐 (준비 중)",set.open?"on":"x"],["발송 준비 "+n+"건",n?"wt":"x"],["입금 대기 "+p+"건",p?"wt":"x"],["판매 중 상품 "+prods.filter(x=>x.status==="sale").length+"개","x"],["누적 주문 금액 "+won(sum),"x"]].map(([t,c])=>el("span",{className:"hs "+c,textContent:t})))}
@@ -20,19 +20,19 @@ function drawO(){const f=$("sof").value,tb=$("sotb");tb.replaceChildren();stat()
     const memo=el("textarea",{rows:2,maxLength:1000,value:o.admin_memo||"",placeholder:"관리 메모 (손님에게 안 보여요) · 송장번호 등"}),ms=el("button",{type:"button",className:"btn small",textContent:"메모 저장"});
     ms.onclick=async()=>{const {error}=await db.from("store_orders").update({admin_memo:memo.value}).eq("id",o.id);if(error)return alert(error.message);o.admin_memo=memo.value;ms.textContent="저장했어요 ✓";setTimeout(()=>ms.textContent="메모 저장",1500)};
     const kv=(k,v)=>el("div",{},[el("b",{textContent:k}),el("span",{textContent:v||"-"})]);
-    const d=el("tr",{className:"d",hidden:!OPEN.has(o.id)},[el("td",{colSpan:6},[el("div",{className:"dg"},[kv("이메일",o.email),kv("전화",o.phone),kv("우편번호",o.zip),kv("주소",o.addr),kv("요청 사항",o.memo),kv("상품 금액",won(o.subtotal)),kv("배송비",won(o.ship)),kv("결제 금액",won(o.total))]),
+    const d=el("tr",{className:"d",hidden:!OPEN.has(o.id)},[el("td",{colSpan:6},[el("div",{className:"dg"},[kv("이메일",o.email),kv("전화",o.phone),kv("우편번호",o.zip),kv("주소",o.addr),kv("요청 사항",o.memo),kv("상품 금액",won(o.subtotal)),...(o.discount?[kv("쿠폰 "+(o.coupon||""),"− "+won(o.discount))]:[]),kv("배송비",won(o.ship)),kv("결제 금액",won(o.total))]),
       el("ul",{className:"oit"},(o.items||[]).map(i=>el("li",{textContent:i.name+(Object.keys(i.opts||{}).length?" · "+Object.entries(i.opts).map(([k,v])=>k+": "+v).join(", "):"")+" × "+i.qty+" = "+won(i.unit*i.qty)}))),el("div",{className:"dact"},[memo,ms])])]);
     tr.onclick=()=>{d.hidden=!d.hidden;d.hidden?OPEN.delete(o.id):OPEN.add(o.id)};tb.append(tr,d)});
   if(!v.length)tb.append(el("tr",{},[el("td",{colSpan:6,textContent:orders.length?"이 상태의 주문이 없어요.":"아직 주문이 없어요."})]))}
 $("sof").onchange=drawO;
-$("socsv").onclick=()=>{if(!orders.length)return alert("내보낼 주문이 없어요.");const H=["주문번호","주문일","상태","이름","이메일","전화","우편번호","주소","상품","상품 금액","배송비","결제 금액","요청 사항","관리 메모"];
+$("socsv").onclick=()=>{if(!orders.length)return alert("내보낼 주문이 없어요.");const H=["주문번호","주문일","상태","이름","이메일","전화","우편번호","주소","상품","상품 금액","쿠폰","쿠폰 할인","배송비","결제 금액","요청 사항","관리 메모"];
   const cell=v=>{let s=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(s))s="'"+s;return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
-  const L=orders.map(o=>[o.no,new Date(o.created_at).toLocaleString("ko-KR"),ST[o.status][0],o.name,o.email,o.phone,o.zip,o.addr,(o.items||[]).map(i=>i.name+(Object.keys(i.opts||{}).length?"("+Object.values(i.opts).join("/")+")":"")+"×"+i.qty).join(" / "),o.subtotal,o.ship,o.total,o.memo,o.admin_memo]);
+  const L=orders.map(o=>[o.no,new Date(o.created_at).toLocaleString("ko-KR"),ST[o.status][0],o.name,o.email,o.phone,o.zip,o.addr,(o.items||[]).map(i=>i.name+(Object.keys(i.opts||{}).length?"("+Object.values(i.opts).join("/")+")":"")+"×"+i.qty).join(" / "),o.subtotal,o.coupon||"",o.discount||0,o.ship,o.total,o.memo,o.admin_memo]);
   const a=el("a",{href:URL.createObjectURL(new Blob(["﻿"+[H,...L].map(l=>l.map(cell).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"})),download:"RIF_스토어_주문.csv"});document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)};
 /* 상품 목록 */
 function drawP(){const tb=$("sptb");tb.replaceChildren();
   prods.forEach(p=>{const img=(p.images||[])[0],b=el("button",{type:"button",className:"btn small",textContent:"수정"});b.onclick=e=>{e.stopPropagation();openP(p)};
-    const pr=p.sale_price!=null&&p.sale_price<p.price?won(p.sale_price)+" (정가 "+won(p.price)+")":won(p.price);
+    const ss=saleState(p),pr=ss.has?(ss.on?won(p.sale_price)+" (정가 "+won(p.price)+")":won(p.price)+" · "+ss.txt+" "+won(p.sale_price))+(ss.on&&ss.txt?" · "+ss.txt:""):won(p.price);
     const tr=el("tr",{className:"r"},[el("td",{},[img?el("img",{className:"pth",src:img,alt:""}):el("span",{className:"pth"})]),td(p.name),td(p.kind==="plan"?"Plan":"Goods","hm"),td(pr),td(p.stock==null?"무제한":p.stock+"개","hm"),
       el("td",{},[el("span",{className:"hs "+(p.status==="sale"?"on":p.status==="soldout"?"wt":"x"),textContent:PS[p.status]})]),td(BM[p.buy_mode],"hm"),el("td",{className:"ac"},[b])]);
     tr.onclick=()=>openP(p);tb.append(tr)});
@@ -124,7 +124,7 @@ async function trP(){const nm=$("pn").value.trim();if(!nm)throw new Error("상�
   finally{$("ptrgo").disabled=false}}
 $("ptrgo").onclick=()=>trP().catch(e=>{$("ptrm").textContent=e.message||String(e)});
 /* 쓰다가 닫힐 때 내용 지키기 */
-const FIDS=["pk","pst","pn","pnj","pne","pp","psp","pstk","pmq","psu","psuj","psue","pd","pdj","pde","pbm","pbu","pso"];
+const FIDS=["pk","pst","pn","pnj","pne","pp","psp","psf","pse","psl","pslc","pstk","pmq","psu","psuj","psue","pd","pdj","pde","pbm","pbu","pso"];
 const snap=()=>JSON.stringify([...FIDS.map(i=>$(i).value),readOpts(false).map(({_c,...o})=>o),imgs]);let snap0="";
 const dirty=()=>!$("pmod").hidden&&snap()!==snap0;
 window.addEventListener("beforeunload",e=>{if(dirty()){e.preventDefault();e.returnValue=""}});
@@ -132,9 +132,28 @@ function drawImgs(){$("pim").replaceChildren(...imgs.map((u,i)=>{const mv=(d)=>{
   const l=el("button",{type:"button",textContent:"←",disabled:i===0}),r=el("button",{type:"button",textContent:"→",disabled:i===imgs.length-1}),x=el("button",{type:"button",textContent:"×"});
   l.onclick=()=>mv(-1);r.onclick=()=>mv(1);x.onclick=()=>{imgs.splice(i,1);drawImgs()};
   return el("div",{className:"pimg"},[el("img",{src:u,alt:""}),el("div",{},[l,r,x])])}))}
+/* 세일: 문구 프리셋(한·일·영), 기간, 할인율 계산 */
+const SL={launch:{ko:"런칭 특가",ja:"ローンチ特価",en:"Launch sale"},time:{ko:"기간 한정 세일",ja:"期間限定セール",en:"Limited-time sale"},open:{ko:"오픈 기념",ja:"オープン記念",en:"Grand opening sale"},season:{ko:"시즌 세일",ja:"シーズンセール",en:"Seasonal sale"},bf:{ko:"블랙프라이데이",ja:"ブラックフライデー",en:"Black Friday"},year:{ko:"연말 세일",ja:"年末セール",en:"Year-end sale"}};
+const toLocal=iso=>{if(!iso)return"";const d=new Date(iso);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)},fromLocal=v=>v?new Date(v).toISOString():null;
+const dShort=iso=>new Date(iso).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
+function saleState(p){const has=p.sale_price!=null&&p.sale_price<p.price,now=Date.now(),f=p.sale_from&&Date.parse(p.sale_from),u=p.sale_until&&Date.parse(p.sale_until);
+  if(!has)return {has:false,on:false,txt:""};if(f&&now<f)return {has,on:false,txt:"세일 예정 ("+dShort(p.sale_from)+"부터)"};if(u&&now>=u)return {has,on:false,txt:"세일 끝남"};
+  return {has,on:true,txt:u?dShort(p.sale_until)+"까지":""}}
+const saleLabel=()=>{const k=$("psl").value;if(!k)return null;if(k==="custom"){const c=$("pslc").value.trim();return c?{ko:c,ja:c,en:c}:null}return SL[k]};
+function salePrev(){const p=Math.round(Number($("pp").value)||0),s=$("psp").value===""?null:Math.round(Number($("psp").value));$("pslw").hidden=$("psl").value!=="custom";
+  if(s==null||!p){$("psv").textContent=p?"세일 없음 · 손님에게 "+won(p)+"으로 보여요.":"";return}
+  if(s>=p){$("psv").textContent="할인가가 정가보다 낮아야 해요.";return}
+  const st=saleState({price:p,sale_price:s,sale_from:fromLocal($("psf").value),sale_until:fromLocal($("pse").value)});
+  $("psv").textContent="할인가 "+won(s)+" ("+Math.round((1-s/p)*100)+"% · "+won(p-s)+" 할인) · "+(st.on?"지금 세일 중"+(st.txt?" · "+st.txt:""):st.txt+" · 지금은 정가 "+won(p)+"으로 보여요")}
+const setRate=r=>{const p=Math.round(Number($("pp").value)||0);if(!p)return alert("정가를 먼저 적어 주세요.");$("psp").value=Math.round(p*(1-r/100)/100)*100;salePrev()};
+$("psq").querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>setRate(Number(b.dataset.r)));
+$("psr").oninput=()=>{const r=Number($("psr").value);if(r>0&&r<100){$("psa").value="";setRate(r)}};
+$("psa").oninput=()=>{const p=Math.round(Number($("pp").value)||0),a=Math.round(Number($("psa").value)||0);if(p&&a>0&&a<p){$("psr").value="";$("psp").value=p-a;salePrev()}};
+$("psx").onclick=()=>{["psp","psf","pse","psr","psa","pslc"].forEach(i=>$(i).value="");$("psl").value="";salePrev()};
+["pp","psp","psf","pse","psl","pslc"].forEach(i=>$(i).addEventListener("input",salePrev));
 function openP(p){edit=p||null;$("pmt").textContent=p?"상품 수정":"새 상품";const g=(i,v)=>$(i).value=v==null?"":v;
   g("pk",p?p.kind:"goods");g("pst",p?p.status:"draft");g("pn",p&&p.name);g("pnj",p&&p.name_ja);g("pne",p&&p.name_en);g("pp",p?p.price:"");g("psp",p&&p.sale_price);g("pstk",p&&p.stock);g("pmq",p?p.max_qty:10);
-  g("psu",p&&p.summary);g("psuj",p&&p.summary_ja);g("psue",p&&p.summary_en);drawOpts(p?p.options:[]);g("pd",p&&p.detail);g("pdj",p&&p.detail_ja);g("pde",p&&p.detail_en);g("pbm",p?p.buy_mode:"order");g("pbu",p&&p.buy_url);g("pso",p?p.sort:0);
+  g("psu",p&&p.summary);g("psuj",p&&p.summary_ja);g("psue",p&&p.summary_en);g("psf",toLocal(p&&p.sale_from));g("pse",toLocal(p&&p.sale_until));g("psr","");g("psa","");{const lb=p&&p.sale_label&&p.sale_label.ko,k=lb?Object.keys(SL).find(k=>SL[k].ko===lb):"";g("psl",lb?(k||"custom"):"");g("pslc",lb&&!k?lb:"")}salePrev();drawOpts(p?p.options:[]);g("pd",p&&p.detail);g("pdj",p&&p.detail_ja);g("pde",p&&p.detail_en);g("pbm",p?p.buy_mode:"order");g("pbu",p&&p.buy_url);g("pso",p?p.sort:0);
   imgs=p?[...(p.images||[])]:[];drawImgs();$("pdel").hidden=!p;$("pmsg").textContent="";bmw();$("pmod").hidden=false;$("ptr").open=!!(p&&(p.name_ja||p.name_en));trFrom=p&&(p.name_ja||p.name_en)?koNow():"";$("ptrm").textContent="한국어를 다 쓴 뒤 눌러도 되고, 그냥 저장해도 자동으로 채워져요.";snap0=snap();$("pn").focus()}
 const bmw=()=>{$("pbuw").hidden=$("pbm").value!=="link"};$("pbm").onchange=bmw;
 /* 바깥(어두운 곳)을 눌러도 닫히지 않아요. × · 취소 · Esc 로만 닫고, 쓰던 내용이 있으면 한 번 물어봐요 */
@@ -157,15 +176,38 @@ $("pform").onsubmit=async e=>{e.preventDefault();const v=i=>$(i).value.trim(),nu
     try{await trP()}catch(er){if(!confirm((er.message||er)+"\n\n번역 없이 한국어로만 저장할까요? (일본어 · 영어 화면에는 한국어가 보여요)")){$("psave").disabled=false;$("pmsg").textContent="";return}}
     $("psave").disabled=false;$("pmsg").textContent=""}
   if(options.length){$("psave").disabled=true;$("pmsg").textContent="옵션 일본어 · 영어 표기 준비 중…";options=await optI18n(options);$("psave").disabled=false;$("pmsg").textContent=""}
-  const row={kind:v("pk"),status:v("pst"),name:v("pn"),name_ja:v("pnj")||null,name_en:v("pne")||null,price:num("pp")||0,sale_price:num("psp"),stock:num("pstk"),max_qty:num("pmq")||10,
+  const row={kind:v("pk"),status:v("pst"),name:v("pn"),name_ja:v("pnj")||null,name_en:v("pne")||null,price:num("pp")||0,sale_price:num("psp"),sale_from:fromLocal($("psf").value),sale_until:fromLocal($("pse").value),sale_label:saleLabel(),stock:num("pstk"),max_qty:num("pmq")||10,
     summary:v("psu")||null,summary_ja:v("psuj")||null,summary_en:v("psue")||null,options,detail:$("pd").value.trim()||null,detail_ja:$("pdj").value.trim()||null,detail_en:$("pde").value.trim()||null,images:imgs,buy_mode:v("pbm"),buy_url:v("pbu")||null,sort:num("pso")||0,updated_at:new Date().toISOString()};
   if(row.sale_price!=null&&row.sale_price>=row.price){$("pmsg").textContent="할인가는 정가보다 낮아야 해요 (할인이 없으면 비워 두세요).";return}
+  if(row.sale_from&&row.sale_until&&row.sale_until<=row.sale_from){$("pmsg").textContent="세일 종료가 시작보다 뒤여야 해요.";return}
+  if(row.sale_price==null){row.sale_from=row.sale_until=row.sale_label=null}
   if(row.buy_mode==="link"&&!/^https:\/\//.test(row.buy_url||"")){$("pmsg").textContent="외부 스토어 주소를 https:// 로 시작하게 적어 주세요.";return}
   if(row.status==="sale"&&!imgs.length&&!confirm("사진 없이 판매를 시작할까요?"))return;
   $("psave").disabled=true;const {error}=edit?await db.from("store_products").update(row).eq("id",edit.id):await db.from("store_products").insert(row);$("psave").disabled=false;
   if(error){$("pmsg").textContent="저장하지 못했어요: "+error.message;return}shutP();load()};
 $("pdel").onclick=async()=>{if(!edit)return;if(!confirm("'"+edit.name+"' 상품을 삭제할까요? 되돌릴 수 없어요.\n(이미 들어온 주문 기록은 그대로 남아요. 잠깐 내리려면 '숨김'을 쓰세요)"))return;
   const {error}=await db.from("store_products").delete().eq("id",edit.id);if(error)return alert("삭제하지 못했어요: "+error.message);shutP();load()};
+/* 쿠폰 */
+function drawC(){const tb=$("cptb");tb.replaceChildren();const now=Date.now();
+  coups.forEach(c=>{const pn=c.product_id?((prods.find(p=>p.id===c.product_id)||{}).name||"삭제된 상품"):"전체 상품";
+    const st=!c.active?["꺼짐","x"]:c.starts_at&&now<Date.parse(c.starts_at)?["예정","wt"]:c.ends_at&&now>=Date.parse(c.ends_at)?["기간 끝","x"]:c.max_uses!=null&&c.used>=c.max_uses?["소진","x"]:["사용 가능","on"];
+    const tg=el("button",{type:"button",className:"btn small ghost",textContent:c.active?"끄기":"켜기"}),dl=el("button",{type:"button",className:"btn small danger",textContent:"삭제"}),cp=el("button",{type:"button",className:"btn small ghost",textContent:"복사"});
+    tg.onclick=async()=>{const {error}=await db.from("store_coupons").update({active:!c.active}).eq("code",c.code);if(error)return alert(error.message);c.active=!c.active;drawC()};
+    dl.onclick=async()=>{if(!confirm("쿠폰 "+c.code+" 을(를) 삭제할까요?\n(이미 이 쿠폰을 쓴 주문의 할인은 그대로예요)"))return;const {error}=await db.from("store_coupons").delete().eq("code",c.code);if(error)return alert(error.message);coups=coups.filter(x=>x!==c);drawC()};
+    cp.onclick=()=>navigator.clipboard.writeText(c.code).then(()=>{cp.textContent="복사됨 ✓";setTimeout(()=>cp.textContent="복사",1200)});
+    tb.append(el("tr",{},[td(c.code,"en"),td(c.kind==="pct"?c.value+"%":won(c.value)),td(pn+(c.min_total?" · "+won(c.min_total)+" 이상":"")+(c.memo?" · "+c.memo:""),"hm wd"),td((c.starts_at?dShort(c.starts_at):"바로")+" ~ "+(c.ends_at?dShort(c.ends_at):"계속"),"hm sm"),td(c.used+(c.max_uses!=null?" / "+c.max_uses:"")+"회"),el("td",{},[el("span",{className:"hs "+st[1],textContent:st[0]})]),el("td",{className:"ac"},[cp,tg,dl])]))});
+  if(!coups.length)tb.append(el("tr",{},[el("td",{colSpan:7,textContent:"아직 쿠폰이 없어요."})]))}
+const rnd=()=>"RIF-"+Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b%32]).join("");
+$("cpnew").onclick=()=>{$("cpf").reset();$("cpp").replaceChildren(el("option",{value:"",textContent:"전체 상품"}),...prods.map(p=>el("option",{value:p.id,textContent:p.name})));$("cpc").value=rnd();$("cpmsg").textContent="";$("cpf").hidden=false;$("cpc").focus()};
+$("cprnd").onclick=()=>{$("cpc").value=rnd()};$("cpcancel").onclick=()=>{$("cpf").hidden=true};
+$("cpf").onsubmit=async e=>{e.preventDefault();const m=$("cpmsg"),code=$("cpc").value.trim().toUpperCase(),kind=$("cpk").value,value=Math.round(Number($("cpv").value)||0);
+  if(!/^[A-Z0-9_-]{3,24}$/.test(code)){m.textContent="코드는 영문 대문자 · 숫자 · - _ 로 3~24자예요.";return}
+  if(value<1||(kind==="pct"&&value>100)){m.textContent=kind==="pct"?"할인율은 1~100 사이로 적어 주세요.":"할인 금액을 적어 주세요.";return}
+  const row={code,kind,value,min_total:Math.max(0,Math.round(Number($("cpm").value)||0)),product_id:$("cpp").value||null,starts_at:fromLocal($("cps").value),ends_at:fromLocal($("cpe").value),max_uses:$("cpx").value===""?null:Math.max(1,Math.round(Number($("cpx").value))),memo:$("cpmm").value.trim()};
+  if(row.starts_at&&row.ends_at&&row.ends_at<=row.starts_at){m.textContent="종료가 시작보다 뒤여야 해요.";return}
+  $("cpsave").disabled=true;const {data,error}=await db.from("store_coupons").insert(row).select().single();$("cpsave").disabled=false;
+  if(error){m.textContent=/duplicate/.test(error.message)?"이미 있는 코드예요. 다른 코드를 써 주세요.":"저장하지 못했어요: "+error.message;return}
+  coups.unshift(data);$("cpf").hidden=true;drawC()};
 /* 설정 */
 const BZ=["name","ceo","reg","mail_order","addr","contact"];
 function fillS(){$("sopen").checked=!!set.open;$("sship").value=set.ship_fee??3000;$("sfree").value=set.free_over??"";$("sppon").checked=set.pp_on!==false;$("sprate").value=set.pp_rate??1450;$("spay").value=set.pay_guide||"";$("spol").value=set.policy||"";BZ.forEach(k=>$("sb_"+k).value=(set.biz||{})[k]||"")}
