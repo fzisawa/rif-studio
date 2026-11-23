@@ -62,7 +62,7 @@ function draw(){
   $("wkhint").textContent=view==="o"
     ?(boss?"구두로 정한 작업을 '＋ 작업 배정'으로 올리면 작업자에게 배정서가 가요. 작업자가 내용을 확인하고 이름을 넣어 동의하면 그때 계약이 성립하고, 이후에는 내용을 바꿀 수 없어요. 조건을 바꾸려면 새 배정서를 보내 주세요."
           :"대표와 이야기한 작업이 배정서로 올라와요. 내용(금액 · 마감 · 수정 횟수 · 공통 조건)을 확인하고 이름을 넣어 동의하면 서명한 계약서와 같은 효력이 생겨요. 다르면 동의하지 말고 '거절'하거나 대표에게 말해 주세요.")
-    :"현재 게시된 패키지 단가표예요"+(pk&&pk.ver?" (게시 v"+pk.ver+" · "+dt(pk.published_at)+")":"")+". 게시할 때마다 버전 기록이 남아요. 실제 작업 조건은 작업 배정서에 동의할 때 확정돼요."+(boss?"":" 내 몫은 굵게 표시돼요.");
+    :"현재 게시된 패키지 단가표예요"+(pk&&pk.ver?" (게시 v"+pk.ver+" · "+dt(pk.published_at)+")":"")+". 게시할 때마다 버전 기록이 남아요. 실제 작업 조건은 작업 배정서에 동의할 때 확정돼요."+(boss?" 크루에게는 각자 맡은 항목과 금액만 보여요 (판매가·다른 사람 몫은 안 보여요).":" 내가 맡는 항목과 내 몫만 보여요.");
   view==="o"?drawOrders():drawPlans();
 }
 /* ---------- 작업 배정서 ---------- */
@@ -132,7 +132,7 @@ async function offerForm(){
 function drawPlans(){
   const b=$("wkbody"),boss=pk.boss,m=me();
   if(edit&&boss)return drawEditor();
-  const plans=pk.plans||[];if(!plans.length){b.replaceChildren(el("p",{className:"note",textContent:"아직 게시된 단가표가 없어요."}));return}
+  const plans=pk.plans||[];if(!plans.length){b.replaceChildren(el("p",{className:"note",textContent:boss?"아직 게시된 단가표가 없어요.":"지금 게시된 패키지 중 내가 맡는 항목이 없어요."}));return}
   b.replaceChildren(el("div",{className:"pgrid"},plans.map(p=>{const cost=p.lines.reduce((s,l)=>s+(l.amount||0),0);
     const rows=p.lines.map(l=>el("tr",{className:l.assignee_email&&l.assignee_email.toLowerCase()===m?"mine":""},[el("td",{textContent:l.field}),el("td",{textContent:l.who}),el("td",{textContent:l.item}),el("td",{className:"a",textContent:won(l.amount)})]));
     const foot=boss?[el("div",{className:"pf"},[el("span",{textContent:"판매가 "+won(p.price)+" · 원가 "+won(cost)}),el("b",{className:(p.price-cost)>=p.price*0.13?"ok":"no",textContent:"몫 "+won(p.price-cost)+(p.price?" ("+((p.price-cost)/p.price*100).toFixed(1)+"%)":"")})])]:[];
