@@ -321,3 +321,25 @@ footer .pvlink{display:block;margin-top:6px;font-size:12px;color:inherit;opacity
 .pknm small{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.24em;opacity:.6}
 .pknm b{font-family:var(--disp);font-stretch:110%;font-weight:800;font-size:clamp(30px,5vw,46px);line-height:1;letter-spacing:.02em}
 .pkwv{display:flex;align-items:center;gap:4px;height:34px}.pkwv i{display:block;width:3px;border-radius:2px;background:var(--ac,#fff);opacity:.9}
+
+/* 주문서: 쿠폰 · 적립금 줄은 쓸 때만 보여요 (hidden 이 display:flex 에 덮이던 것) */
+.srow[hidden]{display:none}
+/* 스토어: 가격표 (pack.menu) — 줄을 누르면 옵션이 선택돼요 */
+.pkmenu h4{font-family:var(--disp);font-stretch:110%;font-size:14px;font-weight:700;color:var(--ac);margin:30px 0 0}
+.pkmenu h4:first-child{margin-top:18px}
+.pkmi{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 20px;align-items:baseline;width:calc(100% + 16px);margin:0 0 0 -16px;padding:15px 0 15px 16px;border:0;border-bottom:1px solid var(--hair);background:none;color:var(--fg);font:inherit;text-align:left}
+button.pkmi{cursor:pointer}
+button.pkmi:hover .pkmn b,.pkmi[aria-pressed=true] .pkmp{color:var(--ac)}
+.pkmi[aria-pressed=true]{box-shadow:inset 3px 0 0 var(--ac)}
+.pkmn{display:flex;flex-direction:column;gap:3px;min-width:0}
+.pkmn b{font-size:17px;font-weight:600;line-height:1.4;transition:color .15s}
+.pkmn small{font-size:14px;line-height:1.55;color:var(--mut)}
+.pkmp{font-family:var(--disp);font-stretch:112%;font-weight:800;font-size:20px;line-height:1.2;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pkmx{list-style:none;margin:0;padding:0}
+.pkmx li,.pkmx li:last-child{display:grid;grid-template-columns:minmax(0,10em) minmax(0,1fr);gap:4px 20px;align-items:baseline;padding:14px 0;border:0;border-bottom:1px solid var(--hair);font-size:15px}
+.pkmx b{font-weight:600}.pkmx span{line-height:1.6;color:var(--mut)}
+@media(max-width:900px){
+  .pkmi{width:calc(100% + 12px);margin-left:-12px;padding-left:12px;gap:4px 14px}
+  .pkmn b{font-size:16px}.pkmp{font-size:17px}
+  .pkmx li,.pkmx li:last-child{grid-template-columns:1fr;gap:2px}
+}
