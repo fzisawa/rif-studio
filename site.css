@@ -313,3 +313,5 @@ main:has(.sstore){max-width:1160px}
 }
 
 .sbiz[hidden]{display:none}
+
+footer .pvlink{display:block;margin-top:6px;font-size:12px;color:inherit;opacity:.85;text-decoration:underline;text-underline-offset:3px}

@@ -375,7 +375,7 @@ function drawAcct(mode,note){
       if(bs.length){oauth.append(el("p",{className:"sor",textContent:ax().or}),...bs);oauth.hidden=false}});
     const ck=(id,lab,req)=>el("label",{className:"sagree2"},[el("input",{type:"checkbox",id,required:!!req}),el("span",{textContent:lab})]);
     const f=el("form",{className:"sform"},[inp("aem",ax().email,"email","email"),inp("apw",join?ax().pw8:ax().pw,"password",join?"new-password":"current-password",join?8:0),
-      ...(join?[inp("ank",ax().nick,"text","nickname"),ck("aag",ax().agree,1),ck("aage",ax().age,1),ck("amk",ax().mkt,0),el("details",{},[el("summary",{className:"note",textContent:ax().privT}),el("p",{className:"spriv",textContent:ax().priv})])]:[]),
+      ...(join?[inp("ank",ax().nick,"text","nickname"),ck("aag",ax().agree,1),ck("aage",ax().age,1),ck("amk",ax().mkt,0),el("details",{},[el("summary",{className:"note",textContent:ax().privT}),el("p",{className:"spriv",textContent:ax().priv}),el("a",{href:"/privacy/",target:"_blank",rel:"noopener",className:"note",textContent:"→ "+(L==="ja"?"個人情報の取り扱い（全文）":L==="en"?"Full privacy policy":"개인정보처리방침 전문")})])]:[]),
       el("button",{className:"btn",textContent:join?ax().goJoin:ax().go}),msg,oauth,el("div",{className:"slinks"},join?[link(ax().toLogin,()=>open("acct"))]:[link(ax().toJoin,()=>open("acct","join")),link(ax().forgot,()=>open("acct","reset"))])]);
     f.onsubmit=async e=>{e.preventDefault();const g=i=>f.querySelector("#"+i),b=f.querySelector(".btn"),em=g("aem").value.trim(),pw=g("apw").value;b.disabled=true;msg.hidden=true;
       if(join){const {data,error}=await db.auth.signUp({email:em,password:pw,options:{data:{nick:g("ank").value.trim().slice(0,30),marketing:g("amk").checked},emailRedirectTo:STORE_URL}});b.disabled=false;
