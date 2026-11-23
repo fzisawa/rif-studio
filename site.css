@@ -60,6 +60,7 @@ nav a.on,nav a:hover,.ng>button:hover,.ng.on>button,.ng:focus-within>button{colo
 /* ── 본문 공통 ── */
 main{max-width:800px;padding:clamp(40px,7vh,84px) clamp(18px,4vw,56px) 96px}
 main:has(.gal),main:has(.tracks),main:has(.cv){max-width:1160px}
+main:has(.grid.imgs){max-width:1480px}
 .tag{font-family:var(--disp);font-stretch:110%;color:var(--ac);font-size:13px;font-weight:700;letter-spacing:.04em}
 h1{font-family:var(--disp);font-stretch:125%;font-weight:800;font-size:clamp(46px,9.4vw,124px);line-height:.94;letter-spacing:-.025em;margin:.16em 0 .34em}
 h2{font-family:var(--disp);font-stretch:112%;letter-spacing:-.01em}
@@ -86,8 +87,12 @@ li{border-color:var(--hair)}
 .tabs{gap:0 28px;border-bottom:1px solid var(--hair);margin-bottom:28px}
 .tab{border:0;padding:12px 0;min-height:0;font-family:var(--disp);font-stretch:110%;font-weight:700;font-size:16px;color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-1px}
 .tab:hover{color:var(--fg)}.tab.on{background:none;color:var(--fg);border-bottom-color:var(--ac)}
-.grid.imgs{--mat:transparent;gap:14px;padding:0 0 12px;justify-content:flex-start;align-items:flex-start;width:100%;left:0;transform:none}
-.grid.imgs>.item>img{padding:0;border:0;box-shadow:none;background:#f4f3f1;height:clamp(220px,26vw,340px);transition:opacity .2s}
+/* 작품 사진: 웹에서는 가로·세로 비율을 살린 채로 한 줄에 여러 장 (줄 높이를 맞춰 빈틈없이), 휴대폰은 2열 */
+.grid.imgs{--mat:transparent;--rh:clamp(170px,13vw,220px);display:flex;flex-wrap:wrap;gap:10px;padding:0 0 12px;justify-content:flex-start;align-items:stretch;width:100%;left:0;transform:none}
+.grid.imgs>.item{--r:1;flex:var(--r) 1 calc(var(--r) * var(--rh));min-width:0;max-width:100%;margin:0;display:block}
+.grid.imgs::after{content:"";flex:999 1 0}
+.grid.imgs>.item>img{display:block;width:100%;height:auto;aspect-ratio:var(--r);object-fit:cover;padding:0;border:0;box-shadow:none;background:#f4f3f1;transition:opacity .2s}
+.grid.imgs>.item>figcaption{font-size:13px}
 .grid.imgs>.item>img:hover{transform:none;box-shadow:none;opacity:.86}
 .grid.imgs>.item::after{content:none}
 figcaption{color:var(--mut);margin-top:8px}
@@ -96,7 +101,7 @@ figcaption{color:var(--mut);margin-top:8px}
 .pl{border:1.5px solid var(--fg)}.pl:hover{border-color:var(--ac);color:var(--ac)}
 .empty{color:var(--mut)}
 .lb img{background:#fff}
-@media(max-width:560px){.cv li,.cv li:last-child{grid-template-columns:minmax(0,1fr) auto}.grid.imgs{gap:10px}.grid.imgs>.item>img{height:clamp(160px,44vw,220px);padding:0}}
+@media(max-width:560px){.cv li,.cv li:last-child{grid-template-columns:minmax(0,1fr) auto}}
 
 /* ── 꼬리말 ── */
 footer{background:#121212;color:#fff;text-align:left;letter-spacing:0;font-size:13px;padding:56px clamp(18px,4vw,56px) 34px;display:grid;grid-template-columns:1fr auto;gap:28px 40px;align-items:start}
@@ -170,9 +175,10 @@ html[lang=en] .kv .vt span+span{padding-top:.5em}
   .sect,.tracks,.gal{margin-top:52px}.tabs.top{margin-top:52px}
   .tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:0 22px;margin-left:-18px;margin-right:-18px;padding:0 18px}.tabs::-webkit-scrollbar{display:none}
   .tab{flex:none;white-space:nowrap;padding:14px 0}
-  .grid.imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
-  .grid.imgs>.item{width:100%}
-  .grid.imgs>.item>img{width:100%;height:auto;max-height:none;object-fit:contain}
+  .grid.imgs{display:block;columns:2;column-gap:8px}
+  .grid.imgs::after{content:none}
+  .grid.imgs>.item{width:100%;flex:none;break-inside:avoid;margin:0 0 8px}
+  .grid.imgs>.item>img{width:100%;height:auto;aspect-ratio:auto;max-height:none;object-fit:contain}
   .cv li,.cv li:last-child{font-size:16px;padding:14px 0}
   .btn{min-height:48px;display:inline-flex;align-items:center;justify-content:center}
   input,textarea,select{font-size:16px}

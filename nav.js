@@ -59,3 +59,8 @@ empt();
   nv.addEventListener("click",e=>{if(e.target.closest("a"))set(false)});
   document.addEventListener("keydown",e=>{if(e.key==="Escape")set(false)});
   matchMedia("(min-width:761px)").addEventListener("change",e=>{if(e.matches)set(false)})})();
+
+/* 작품 사진 비율 알려 주기: 웹에서 사진마다 원래 가로·세로 비율대로 한 줄에 나란히 놓여요 */
+(()=>{const fit=img=>{const it=img.closest(".grid.imgs>.item");if(!it||!img.naturalWidth)return;it.style.setProperty("--r",(img.naturalWidth/img.naturalHeight).toFixed(4))};
+  const scan=root=>root.querySelectorAll&&root.querySelectorAll(".grid.imgs>.item>img").forEach(i=>{if(i.complete)fit(i);else i.addEventListener("load",()=>fit(i),{once:true})});
+  scan(document);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(scan))).observe(document.body,{childList:true,subtree:true})})();
