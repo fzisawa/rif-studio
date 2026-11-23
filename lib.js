@@ -1,4 +1,6 @@
-const db=supabase.createClient(RIF.URL,RIF.KEY),B="portfolio";
+/* 직원(인트라넷 · 어드민 · 메일) 로그인용. 공개 페이지에서는 주소에 붙어 온 로그인 토큰을 읽지 않아요 (팬 회원 로그인은 스토어가 따로 처리) */
+const RIF_STAFF_AREA=/^\/(intranet|admin|mail|joinadmin)(\/|$)/.test(location.pathname);
+const db=supabase.createClient(RIF.URL,RIF.KEY,{auth:{detectSessionInUrl:RIF_STAFF_AREA}}),B="portfolio";
 const el=(t,p={},k=[])=>{const e=Object.assign(document.createElement(t),p);k.forEach(c=>e.append(c));return e};
 const ytid=u=>(u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/)||[])[1];
 const shrink=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1600/Math.max(i.width,i.height)),c=el("canvas",{width:i.width*s,height:i.height*s});c.getContext("2d").drawImage(i,0,0,c.width,c.height);c.toBlob(r,"image/jpeg",.85)};i.src=URL.createObjectURL(f)});

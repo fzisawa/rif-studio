@@ -36,6 +36,8 @@ const oN=o=>(L!=="ko"&&o[L]&&o[L].name)||o.name,oV=(o,v)=>{const i=o.values.inde
 const oAdd=(p,sel)=>(p.options||[]).reduce((a,o)=>a+Math.max(0,Number((o.add||{})[(sel||{})[o.name]])||0),0);
 const oTxt=(p,sel)=>(p.options||[]).filter(o=>sel&&sel[o.name]).map(o=>oN(o)+": "+oV(o,sel[o.name])).join(" · ");
 /* 세일: 할인가가 있고 세일 기간(시작~종료) 안일 때만 할인가를 받아요. 서버(store_unit)도 같은 규칙으로 계산해요 */
+/* 팬 회원 로그인은 직원(인트라넷) 로그인과 저장소를 따로 써요. 스토어에서 로그인·로그아웃해도 인트라넷에는 영향이 없고, 그 반대도 같아요 */
+const fdb=supabase.createClient(RIF.URL,RIF.KEY,{auth:{storageKey:"rif-fan",detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
 let ME=null;/* 로그인한 회원 (fan_me 결과). 없으면 비회원 */
 const saleWin=p=>p.sale_price!=null&&p.sale_price<p.price&&(!p.sale_from||Date.now()>=Date.parse(p.sale_from))&&(!p.sale_until||Date.now()<Date.parse(p.sale_until));
 const saleOn=p=>saleWin(p)&&(!p.sale_members||!!ME),memberDeal=p=>!ME&&!!p.sale_members&&saleWin(p);
@@ -81,7 +83,7 @@ sheet.onclick=e=>{if(e.target===sheet)close()};document.addEventListener("keydow
 const xBtn=()=>{const b=el("button",{type:"button",className:"sx",textContent:"×",ariaLabel:"close"});b.onclick=close;return b};
 const priceEl=p=>{const u=unit(p),off=saleOn(p),sn=saleNote(p);return el("div",{className:"spr"},[...(off?[el("em",{textContent:Math.round((1-p.sale_price/p.price)*100)+"%"}),el("s",{textContent:won(p.price)})]:[]),el("b",{textContent:won(u)+((p.options||[]).some(o=>o.add&&Object.values(o.add).some(Number))?" ~":"")}),...(sn?[sn]:[])])};
 function cartBadge(){const n=getCart().reduce((a,c)=>a+c.qty,0);cartBtn.querySelector(".scn").textContent=String(n);cartBtn.classList.toggle("has",n>0);cartBtn.setAttribute("aria-label",t.cart+" "+n)}
-function labels(){acctBtn.textContent=ME?(ME.nick||ax().my):ax().login;lookBtn.textContent=t.look;cartBtn.title=t.cart;cartBadge()}
+function labels(){const nk=ME&&(ME.nick||ax().my);acctBtn.textContent=ME?(nk.length>12?nk.slice(0,11)+"…":nk):ax().joinLogin;lookBtn.textContent=t.look;cartBtn.title=t.cart;cartBadge()}
 
 /* 목록 */
 function draw(){
@@ -242,16 +244,16 @@ function drawCheck(){
   if(ME){[["sname",ME.name],["semail",ME.email],["sphone",ME.phone],["szip",ME.zip],["saddr",[ME.addr,ME.addr2].filter(Boolean).join(" ")]].forEach(([i,v])=>{if(q(i)&&v)q(i).value=v})}recalc();
   q("scgo").onclick=async()=>{const msg=q("scmsg");if(coupon){coupon="";q("scode").value="";q("scode").disabled=false;q("scgo").textContent=sx().cpGo;msg.hidden=true;cpShow(0);return}
     const code=q("scode").value.trim().toUpperCase();if(!code)return;q("scgo").disabled=true;
-    const {data,error}=await db.rpc("store_coupon_check",{p_code:code,p_items:its.map(x=>({id:x.p.id,qty:x.c.qty,opts:x.c.opts}))});q("scgo").disabled=false;
+    const {data,error}=await fdb.rpc("store_coupon_check",{p_code:code,p_items:its.map(x=>({id:x.p.id,qty:x.c.qty,opts:x.c.opts}))});q("scgo").disabled=false;
     if(error){msg.className="note err";msg.textContent=cpErr(error.message);msg.hidden=false;cpShow(0);return}
     coupon=data.code;q("scode").value=data.code;q("scode").disabled=true;q("scgo").textContent=sx().cpX;msg.hidden=true;cpShow(data.discount)};
   q("scode").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();q("scgo").click()}});
   form.onsubmit=async e=>{e.preventDefault();const g=i=>{const x=form.querySelector("#"+i);return x?x.value.trim():""},er=form.querySelector("#serr"),b=form.querySelector("#sgo");
     const pu=ptsNow();if(pu>0&&pu<(ME.point_min||0)){er.textContent=ax().ptMin(won(ME.point_min));er.hidden=false;return}
     b.disabled=true;er.hidden=true;
-    const cc=await myCC().catch(()=>"");const {data,error}=await db.rpc("store_order",{p:{cc,lang:L,name:g("sname"),email:g("semail"),phone:g("sphone"),zip:g("szip"),addr:g("saddr"),memo:g("smemo"),items:its.map(x=>({id:x.p.id,qty:x.c.qty,opts:x.c.opts})),...(coupon?{coupon}:{}),...(pu>0?{points:pu}:{})}});
+    const cc=await myCC().catch(()=>"");const {data,error}=await fdb.rpc("store_order",{p:{cc,lang:L,name:g("sname"),email:g("semail"),phone:g("sphone"),zip:g("szip"),addr:g("saddr"),memo:g("smemo"),items:its.map(x=>({id:x.p.id,qty:x.c.qty,opts:x.c.opts})),...(coupon?{coupon}:{}),...(pu>0?{points:pu}:{})}});
     b.disabled=false;
-    if(error){const m2=String(error.message||""),k=Object.keys(t.e).find(k=>m2.includes(k));er.textContent=t.err+(/coupon/.test(m2)?cpErr(m2):/points|login required/.test(m2)?ax().ptErr:k?t.e[k]+(m2.includes(":")&&/stock|sale|option/.test(k)?" ("+m2.split(":").slice(1).join(":").trim()+")":""):m2);er.hidden=false;if(/stock|sale/.test(m2))load();return}
+    if(error){const m2=String(error.message||""),k=Object.keys(t.e).find(k=>m2.includes(k));er.textContent=t.err+(/coupon/.test(m2)?cpErr(m2):/profile required/.test(m2)?ax().fillNote:/points|login required/.test(m2)?ax().ptErr:k?t.e[k]+(m2.includes(":")&&/stock|sale|option/.test(k)?" ("+m2.split(":").slice(1).join(":").trim()+")":""):m2);er.hidden=false;if(/stock|sale/.test(m2))load();return}
     setCart([]);lookName=g("sname");if(ME)refreshMe();/* 주문 확인 메일 (주문번호 안내) */db.functions.invoke("store-order-mail",{body:{no:data.no,email:g("semail"),lang:L}}).catch(()=>{});open("done",data,g("semail"))}}
 
 /* 완료 · 조회 */
@@ -322,7 +324,7 @@ function drawLook(pre){
 /* ===== 회원 (팬 계정) =====
    가입·로그인은 Supabase Auth. 직원 주소(@rif-studio.com)는 여기서 가입할 수 없어요 (서버에서 막아요).
    내 정보 · 주문 · 적립금은 서버 함수(fan_me · fan_save · fan_orders · fan_points_log · fan_withdraw)로만 읽고 써요. */
-const AX={ko:{login:"로그인",my:"내 계정",join:"회원가입",email:"이메일",pw:"비밀번호",pw8:"비밀번호 (8자 이상)",nick:"닉네임",go:"로그인",goJoin:"가입하기",toJoin:"처음이신가요? 회원가입",toLogin:"이미 회원이에요 · 로그인",forgot:"비밀번호를 잊었어요",
+const AX={ko:{joinLogin:"회원가입 · 로그인",pw2:"비밀번호 확인",pwRule:"영문과 숫자를 섞어 8자 이상",pwMis:"비밀번호가 서로 달라요.",pwWeak:"비밀번호는 영문과 숫자를 섞어 8자 이상으로 해 주세요. 이메일이나 너무 흔한 비밀번호는 쓸 수 없어요.",locked:n=>"여러 번 틀렸어요. "+n+"초 뒤에 다시 시도해 주세요.",staffNo:"직원 계정은 인트라넷에서 로그인해 주세요.",phTaken:"이미 다른 계정에 등록된 휴대폰 번호예요.",dcTaken:"이미 다른 계정에 등록된 디스코드 아이디예요.",slow:"조금 천천히 다시 눌러 주세요.",login:"로그인",my:"내 계정",join:"회원가입",email:"이메일",pw:"비밀번호",pw8:"비밀번호 (8자 이상)",nick:"닉네임",go:"로그인",goJoin:"가입하기",toJoin:"처음이신가요? 회원가입",toLogin:"이미 회원이에요 · 로그인",forgot:"비밀번호를 잊었어요",
   agree:"이용 안내와 개인정보 수집 · 이용에 동의해요. (필수)",age:"만 14세 이상이에요. (필수)",mkt:"세일 · 신상품 소식을 이메일로 받을게요. (선택)",privT:"개인정보 수집 · 이용 안내 보기",
   priv:"· 수집 항목: (필수) 이메일, 비밀번호, 닉네임, 이름, 휴대폰 번호, 디스코드 아이디 / (선택) 배송지 주소\n· 이용 목적: 회원 확인, 주문 연락 · 처리와 굿즈 배송, 디스코드 1:1 문의 응대, 적립금 관리, 문의 응대\n· 보관 기간: 탈퇴하면 바로 지워요. 다만 주문 기록은 전자상거래법에 따라 5년 동안 보관해요.\n· 동의하지 않을 수 있지만, 그러면 회원가입은 할 수 없어요. 비회원으로도 주문할 수 있어요.\n· 문의: rif@rif-studio.com",
   sent:m=>m+" 로 인증 메일을 보냈어요. 메일의 링크를 누르면 가입이 끝나요. (메일이 안 보이면 스팸함도 확인해 주세요)",exists:"이미 가입된 이메일이에요. 로그인하거나 비밀번호 찾기를 써 주세요.",badLogin:"이메일이나 비밀번호가 맞지 않아요.",notConf:"아직 이메일 인증이 안 됐어요. 받은 메일의 링크를 눌러 주세요.",weak:"비밀번호는 8자 이상으로 해 주세요.",fail:"잠시 뒤에 다시 시도해 주세요.",noJoin:"이 이메일로는 가입할 수 없어요.",
@@ -332,7 +334,7 @@ const AX={ko:{login:"로그인",my:"내 계정",join:"회원가입",email:"이�
   leaveQ:"정말 탈퇴할까요?\n계정과 적립금이 바로 지워지고 되돌릴 수 없어요. (주문 기록은 법에 따라 보관돼요)",left:"탈퇴했어요. 그동안 고마웠어요.",chpw:"비밀번호 바꾸기",
   ptUse:b=>"적립금 쓰기 (보유 "+b+")",ptAll:"모두 쓰기",ptMin:m=>"적립금은 "+m+"부터 쓸 수 있어요.",ptErr:"적립금을 쓸 수 없어요. 보유 적립금을 확인해 주세요.",earn:e=>"결제가 확인되면 약 "+e+" 적립돼요.",earned:"적립",
   ckHint:"로그인하면 적립금을 쓰고 쌓을 수 있어요 · 로그인 / 회원가입",monly:"회원가",mprice:pv=>"회원가 "+pv+" · 로그인하면 받아요",welcome:"가입이 끝났어요. 환영해요!"},
- ja:{login:"ログイン",my:"マイページ",join:"会員登録",email:"メールアドレス",pw:"パスワード",pw8:"パスワード（8文字以上）",nick:"ニックネーム",go:"ログイン",goJoin:"登録する",toJoin:"はじめての方 · 会員登録",toLogin:"会員の方 · ログイン",forgot:"パスワードをお忘れの方",
+ ja:{joinLogin:"会員登録 · ログイン",pw2:"パスワード（確認）",pwRule:"英字と数字を含む8文字以上",pwMis:"パスワードが一致しません。",pwWeak:"パスワードは英字と数字を含む8文字以上にしてください。メールアドレスやよくあるパスワードは使えません。",locked:n=>"何度か間違えました。"+n+"秒後にもう一度お試しください。",staffNo:"スタッフアカウントはイントラネットからログインしてください。",phTaken:"この電話番号はすでに別のアカウントで登録されています。",dcTaken:"このDiscord IDはすでに別のアカウントで登録されています。",slow:"少し時間をおいてもう一度お試しください。",login:"ログイン",my:"マイページ",join:"会員登録",email:"メールアドレス",pw:"パスワード",pw8:"パスワード（8文字以上）",nick:"ニックネーム",go:"ログイン",goJoin:"登録する",toJoin:"はじめての方 · 会員登録",toLogin:"会員の方 · ログイン",forgot:"パスワードをお忘れの方",
   agree:"ご利用案内と個人情報の収集・利用に同意します。（必須）",age:"14歳以上です。（必須）",mkt:"セール・新商品のお知らせをメールで受け取ります。（任意）",privT:"個人情報の収集・利用について",
   priv:"· 収集項目:（必須）メールアドレス、パスワード、ニックネーム、お名前、電話番号、Discord ID /（任意）お届け先住所\n· 利用目的: 会員確認、ご注文の処理と発送、ポイント管理、お問い合わせ対応\n· 保管期間: 退会後すぐに削除します。ただし注文記録は韓国の電子商取引法により5年間保管します。\n· 同意されない場合、会員登録はできませんが、非会員でもご注文いただけます。\n· お問い合わせ: rif@rif-studio.com",
   sent:m=>m+" に確認メールを送りました。メール内のリンクを押すと登録完了です。（届かない場合は迷惑メールもご確認ください）",exists:"すでに登録済みのメールアドレスです。ログインするか、パスワード再設定をご利用ください。",badLogin:"メールアドレスまたはパスワードが違います。",notConf:"メール認証がまだ完了していません。届いたメールのリンクを押してください。",weak:"パスワードは8文字以上にしてください。",fail:"しばらくしてからもう一度お試しください。",noJoin:"このメールアドレスでは登録できません。",
@@ -342,7 +344,7 @@ const AX={ko:{login:"로그인",my:"내 계정",join:"회원가입",email:"이�
   leaveQ:"本当に退会しますか？\nアカウントとポイントはすぐに削除され、元に戻せません。（注文記録は法令に基づき保管されます）",left:"退会しました。ありがとうございました。",chpw:"パスワード変更",
   ptUse:b=>"ポイントを使う（保有 "+b+"）",ptAll:"すべて使う",ptMin:m=>"ポイントは "+m+" からご利用いただけます。",ptErr:"ポイントを利用できません。保有ポイントをご確認ください。",earn:e=>"お支払い確認後、約 "+e+" 分のポイントが貯まります。",earned:"獲得ポイント",
   ckHint:"ログインするとポイントが使えて貯まります · ログイン / 会員登録",monly:"会員価格",mprice:pv=>"会員価格 "+pv+" · ログインで適用",welcome:"登録が完了しました。ようこそ！"},
- en:{login:"Log in",my:"My account",join:"Sign up",email:"Email",pw:"Password",pw8:"Password (8+ characters)",nick:"Nickname",go:"Log in",goJoin:"Create account",toJoin:"New here? Sign up",toLogin:"Already a member? Log in",forgot:"Forgot your password?",
+ en:{joinLogin:"Sign up · Log in",pw2:"Confirm password",pwRule:"8+ characters with letters and numbers",pwMis:"The passwords don't match.",pwWeak:"Use at least 8 characters with both letters and numbers. Your email or very common passwords aren't allowed.",locked:n=>"Too many attempts. Please try again in "+n+" seconds.",staffNo:"Staff accounts log in from the intranet.",phTaken:"This phone number is already registered to another account.",dcTaken:"This Discord ID is already registered to another account.",slow:"Please wait a moment and try again.",login:"Log in",my:"My account",join:"Sign up",email:"Email",pw:"Password",pw8:"Password (8+ characters)",nick:"Nickname",go:"Log in",goJoin:"Create account",toJoin:"New here? Sign up",toLogin:"Already a member? Log in",forgot:"Forgot your password?",
   agree:"I agree to the terms and to the collection and use of my personal information. (Required)",age:"I am 14 or older. (Required)",mkt:"Email me about sales and new items. (Optional)",privT:"How we use your information",
   priv:"· What we collect: (required) email, password, nickname, full name, phone, Discord ID / (optional) shipping address\n· Why: to identify members, process and ship orders, manage points and answer questions\n· How long: deleted as soon as you close your account. Order records are kept for 5 years under Korean e-commerce law.\n· You may decline, but then you can't create an account. You can still order as a guest.\n· Contact: rif@rif-studio.com",
   sent:m=>"We sent a confirmation email to "+m+". Open the link in it to finish signing up. (Check your spam folder if you don't see it.)",exists:"This email is already registered. Log in or reset your password.",badLogin:"The email or password is incorrect.",notConf:"Your email isn't confirmed yet. Please open the link we sent you.",weak:"Please use at least 8 characters.",fail:"Please try again in a moment.",noJoin:"You can't sign up with this email.",
@@ -354,10 +356,20 @@ const AX={ko:{login:"로그인",my:"내 계정",join:"회원가입",email:"이�
   ckHint:"Log in to use and earn points · Log in / Sign up",monly:"Member price",mprice:pv=>"Member price "+pv+" · log in to get it",welcome:"You're all set. Welcome!"}};
 const ax=()=>AX[L]||AX.ko;
 let EXT=null;const extProviders=async()=>{if(EXT)return EXT;try{EXT=(await fetch(RIF.URL+"/auth/v1/settings",{headers:{apikey:RIF.KEY}}).then(r=>r.json())).external||{}}catch(_){EXT={}}return EXT};
-async function refreshMe(){try{const s=(await db.auth.getSession()).data.session;if(!s)ME=null;else{const {data}=await db.rpc("fan_me");ME=data||null}}catch(_){ME=null}labels();return ME}
+async function refreshMe(){try{const s=(await fdb.auth.getSession()).data.session;if(!s)ME=null;else{const {data}=await fdb.rpc("fan_me");ME=data||null}}catch(_){ME=null}labels();return ME}
 const STORE_URL=location.origin+"/store/";
 const PHONE_RE=/^\+?[0-9][0-9\-\s()]{7,19}$/,DC_RE=/^@?[A-Za-z0-9_.]{2,32}(#[0-9]{4})?$/;
 /* 필수 항목 검사: 이름 · 휴대폰 · 디스코드. 문제가 있으면 안내 문구를, 없으면 "" */
+/* 비밀번호 규칙: 8자 이상, 영문+숫자, 이메일·닉네임·흔한 비밀번호 금지 */
+const COMMON_PW=["password","password1","passw0rd","12345678","123456789","1234567890","qwer1234","qwerty123","1q2w3e4r","1q2w3e4r5t","asdf1234","abcd1234","a1234567","a12345678","iloveyou1","admin1234","test1234","zxcv1234","q1w2e3r4","1234qwer","qwerasdf1","hello1234","rifstudio1","abc12345"];
+const pwErr=(pw,em,nk)=>{const l=pw.toLowerCase(),loc=String(em||"").split("@")[0].toLowerCase();
+  return pw.length<8||!/[A-Za-z]/.test(pw)||!/[0-9]/.test(pw)||COMMON_PW.includes(l)||(loc.length>=4&&l.includes(loc))||(nk&&nk.length>=4&&l.includes(nk.toLowerCase()))||/^(.)\1+$/.test(pw)?ax().pwWeak:""};
+const saveErr=e=>{const m=String((e&&e.message)||e);return /phone taken/.test(m)?ax().phTaken:/discord taken/.test(m)?ax().dcTaken:/bad phone/.test(m)?ax().badPhone:/bad discord/.test(m)?ax().badDc:/required/.test(m)?ax().need:ax().fail};
+/* 로그인 5번 틀리면 60초 잠금 (서버에도 횟수 제한이 따로 있어요) */
+const lockLeft=()=>{try{const o=JSON.parse(sessionStorage.getItem("rif-fan-lock")||"{}");return o.until&&o.until>Date.now()?Math.ceil((o.until-Date.now())/1000):0}catch(_){return 0}};
+const lockFail=()=>{try{const o=JSON.parse(sessionStorage.getItem("rif-fan-lock")||"{}");o.n=(o.n||0)+1;if(o.n>=5){o.until=Date.now()+60000;o.n=0}sessionStorage.setItem("rif-fan-lock",JSON.stringify(o))}catch(_){}};
+const seen=()=>{try{return localStorage.getItem("rif-fan-seen")==="1"}catch(_){return false}},markSeen=()=>{try{localStorage.setItem("rif-fan-seen","1")}catch(_){}};
+const needFill=()=>!!ME&&(!ME.name||!ME.phone||!ME.discord||!ME.agreed);
 const pfErr=pf=>!pf.name||!pf.phone||!pf.discord?ax().need:!PHONE_RE.test(pf.phone)?ax().badPhone:!DC_RE.test(pf.discord)?ax().badDc:"";
 /* 한국 주소 찾기 (카카오 우편번호 서비스, 무료). 해외 주소는 직접 입력 */
 let DAUM=null;const daum=()=>DAUM||(DAUM=new Promise((ok,no)=>{const sc=document.createElement("script");sc.src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";sc.onload=ok;sc.onerror=no;document.head.append(sc)}));
@@ -366,66 +378,81 @@ function addrBlock(v,prefix){v=v||{};const id=k=>prefix+k;
   const fb=el("button",{type:"button",className:"btn ghost",textContent:ax().findAddr});
   fb.onclick=async()=>{try{await daum();new daum.Postcode({oncomplete:d=>{zip.value=d.zonecode;a1.value=d.roadAddress||d.jibunAddress;a2.focus()}}).open()}catch(_){a1.focus()}};
   return el("div",{className:"saddrb"},[el("span",{className:"note",textContent:ax().addrOpt}),el("div",{className:"scp"},[zip,fb]),a1,a2])}
-const profileFields=(v,prefix,withNick)=>{v=v||{};const f=(k,lab,val,ac,req,type)=>el("label",{},[el("span",{textContent:lab+(req?" *":"")}),el("input",{id:prefix+k,value:val||"",autocomplete:ac||"off",maxLength:k==="ph"?20:k==="dc"?40:60,required:!!req,type:type||"text"})]);
+const profileFields=(v,prefix,withNick)=>{v=v||{};const f=(k,lab,val,ac,req,type)=>el("label",{},[el("span",{textContent:lab+(req?" *":"")}),el("input",{id:prefix+k,value:val||"",autocomplete:ac||"off",maxLength:k==="ph"?20:k==="dc"?40:k==="nk"?30:40,required:!!req,type:type||"text"})]);
   return [...(withNick?[f("nk",ax().nick,v.nick,"nickname",1)]:[]),f("nm",ax().name,v.name,"name",1),f("ph",ax().phone,v.phone,"tel",1,"tel"),f("dc",ax().discord,v.discord,"off",1),addrBlock(v,prefix)]};
 const readProfile=(root,prefix)=>{const g=k=>{const x=root.querySelector("#"+prefix+k);return x?x.value.trim():""};return {nick:g("nk"),name:g("nm"),phone:g("ph"),discord:g("dc"),zip:g("zp"),addr:g("ad"),addr2:g("a2")}};
 function drawAcct(mode,note){
-  panel.classList.add("sacct");
+  panel.classList.add("sacct");const t0=Date.now();
+  if(!ME&&!mode)mode=seen()?"login":"join";/* 처음 온 손님에게는 가입 화면부터 */
   const msg=el("p",{className:"note",hidden:!note,textContent:note||""}),say=(m,bad)=>{msg.textContent=m;msg.className="note"+(bad?" err":"");msg.hidden=false};
   const inp=(id,lab,type,ac,min)=>el("label",{},[el("span",{textContent:lab}),el("input",{id,type:type||"text",required:true,autocomplete:ac||"off",maxLength:type==="email"?120:72,...(min?{minLength:min}:{})})]);
   const link=(tx2,fn)=>{const b=el("button",{type:"button",textContent:tx2});b.onclick=fn;return b};
   const authErr=e=>{const m=String((e&&e.message)||e);return /Invalid login/i.test(m)?ax().badLogin:/not confirmed/i.test(m)?ax().notConf:/at least|weak|short/i.test(m)?ax().weak:/Database error|signup disabled|not allowed/i.test(m)?ax().noJoin:ax().fail};
   /* 새 비밀번호 (메일의 재설정 링크로 들어왔을 때) */
-  if(mode==="newpw"){const f=el("form",{className:"sform"},[inp("apw",ax().pw8,"password","new-password",8),el("button",{className:"btn",textContent:ax().newpwGo}),msg]);
-    f.onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.updateUser({password:f.querySelector("#apw").value});if(error)return say(authErr(error),1);await refreshMe();open("acct","",ax().newpwOk)};
+  if(mode==="newpw"){const f=el("form",{className:"sform"},[inp("apw",ax().pw8,"password","new-password",8),inp("apw2",ax().pw2,"password","new-password",8),el("p",{className:"note",textContent:ax().pwRule}),el("button",{className:"btn",textContent:ax().newpwGo}),msg]);
+    f.onsubmit=async e=>{e.preventDefault();const pw=f.querySelector("#apw").value;if(pw!==f.querySelector("#apw2").value)return say(ax().pwMis,1);const pe=pwErr(pw,ME&&ME.email,ME&&ME.nick);if(pe)return say(pe,1);
+      const {error}=await fdb.auth.updateUser({password:pw});if(error)return say(authErr(error),1);await refreshMe();open("acct","i",ax().newpwOk)};
     panel.append(xBtn(),el("h2",{textContent:ax().newpwT}),f);return}
   if(!ME){
-    if(mode==="reset"){const f=el("form",{className:"sform"},[inp("aem",ax().email,"email","email"),el("button",{className:"btn",textContent:ax().resetGo}),msg,el("div",{className:"slinks"},[link(ax().toLogin,()=>open("acct"))])]);
-      f.onsubmit=async e=>{e.preventDefault();const b=f.querySelector(".btn");b.disabled=true;const {error}=await db.auth.resetPasswordForEmail(f.querySelector("#aem").value.trim(),{redirectTo:STORE_URL});b.disabled=false;error?say(authErr(error),1):say(ax().resetSent)};
+    if(mode==="reset"){const f=el("form",{className:"sform"},[inp("aem",ax().email,"email","email"),el("button",{className:"btn",textContent:ax().resetGo}),msg,el("div",{className:"slinks"},[link(ax().toLogin,()=>open("acct","login"))])]);
+      f.onsubmit=async e=>{e.preventDefault();const b=f.querySelector(".btn");b.disabled=true;const {error}=await fdb.auth.resetPasswordForEmail(f.querySelector("#aem").value.trim(),{redirectTo:STORE_URL});b.disabled=false;error?say(authErr(error),1):say(ax().resetSent)};
       panel.append(xBtn(),el("h2",{textContent:ax().resetT}),f);return}
     const join=mode==="join",oauth=el("div",{className:"soauth",hidden:true});
-    extProviders().then(x=>{const bs=[["google",ax().withG],["twitter",ax().withX]].filter(([k])=>x[k]).map(([k,lab])=>{const b=el("button",{type:"button",className:"btn ghost wide",textContent:lab});b.onclick=()=>db.auth.signInWithOAuth({provider:k,options:{redirectTo:STORE_URL}});return b});
+    extProviders().then(x=>{const bs=[["google",ax().withG],["twitter",ax().withX]].filter(([k])=>x[k]).map(([k,lab])=>{const b=el("button",{type:"button",className:"btn ghost wide",textContent:lab});b.onclick=()=>fdb.auth.signInWithOAuth({provider:k,options:{redirectTo:STORE_URL}});return b});
       if(bs.length){oauth.append(el("p",{className:"sor",textContent:ax().or}),...bs);oauth.hidden=false}});
     const ck=(id,lab,req)=>el("label",{className:"sagree2"},[el("input",{type:"checkbox",id,required:!!req}),el("span",{textContent:lab})]);
+    const hp=el("input",{name:"website",tabIndex:-1,autocomplete:"off",ariaHidden:"true",style:"position:absolute;left:-9999px;width:1px;height:1px;opacity:0"});/* 봇 걸러내기용 숨은 칸 */
     const f=el("form",{className:"sform"},[inp("aem",ax().email,"email","email"),inp("apw",join?ax().pw8:ax().pw,"password",join?"new-password":"current-password",join?8:0),
-      ...(join?[...profileFields({},"j",1),ck("aag",ax().agree,1),ck("aage",ax().age,1),ck("amk",ax().mkt,0),el("details",{},[el("summary",{className:"note",textContent:ax().privT}),el("p",{className:"spriv",textContent:ax().priv}),el("a",{href:"/privacy/",target:"_blank",rel:"noopener",className:"note",textContent:"→ "+(L==="ja"?"個人情報の取り扱い（全文）":L==="en"?"Full privacy policy":"개인정보처리방침 전문")})])]:[]),
-      el("button",{className:"btn",textContent:join?ax().goJoin:ax().go}),msg,oauth,el("div",{className:"slinks"},join?[link(ax().toLogin,()=>open("acct"))]:[link(ax().toJoin,()=>open("acct","join")),link(ax().forgot,()=>open("acct","reset"))])]);
-    f.onsubmit=async e=>{e.preventDefault();const g=i=>f.querySelector("#"+i),b=f.querySelector(".btn"),em=g("aem").value.trim(),pw=g("apw").value;b.disabled=true;msg.hidden=true;
-      if(join){const pf=readProfile(f,"j"),pe=pfErr(pf);if(pe){b.disabled=false;return say(pe,1)}
-        const {data,error}=await db.auth.signUp({email:em,password:pw,options:{data:{nick:pf.nick.slice(0,30),real_name:pf.name,phone:pf.phone,discord:pf.discord,zip:pf.zip,addr:pf.addr,addr2:pf.addr2,marketing:g("amk").checked},emailRedirectTo:STORE_URL}});b.disabled=false;
+      ...(join?[inp("apw2",ax().pw2,"password","new-password",8),el("p",{className:"note",style:"margin:-6px 0 0",textContent:ax().pwRule}),hp,...profileFields({},"j",1),ck("aag",ax().agree,1),ck("aage",ax().age,1),ck("amk",ax().mkt,0),el("details",{},[el("summary",{className:"note",textContent:ax().privT}),el("p",{className:"spriv",textContent:ax().priv}),el("a",{href:"/privacy/",target:"_blank",rel:"noopener",className:"note",textContent:"→ "+(L==="ja"?"個人情報の取り扱い（全文）":L==="en"?"Full privacy policy":"개인정보처리방침 전문")})])]:[]),
+      el("button",{className:"btn",textContent:join?ax().goJoin:ax().go}),msg,oauth,el("div",{className:"slinks"},join?[link(ax().toLogin,()=>open("acct","login"))]:[link(ax().toJoin,()=>open("acct","join")),link(ax().forgot,()=>open("acct","reset"))])]);
+    f.onsubmit=async e=>{e.preventDefault();const g=i=>f.querySelector("#"+i),b=f.querySelector(".btn"),em=g("aem").value.trim(),pw=g("apw").value;msg.hidden=true;
+      if(/@rif-studio\.com$/i.test(em))return say(ax().staffNo,1);
+      if(!join){const lk=lockLeft();if(lk)return say(ax().locked(lk),1)}
+      b.disabled=true;
+      if(join){const pf=readProfile(f,"j"),pe=pfErr(pf)||(pw!==g("apw2").value?ax().pwMis:"")||pwErr(pw,em,pf.nick);if(pe){b.disabled=false;return say(pe,1)}
+        if(hp.value){b.disabled=false;f.replaceChildren(el("p",{className:"sguide",textContent:ax().sent(em)}));return}/* 숨은 칸을 채운 건 봇 */
+        if(Date.now()-t0<2500){b.disabled=false;return say(ax().slow,1)}
+        const {data,error}=await fdb.auth.signUp({email:em,password:pw,options:{data:{nick:pf.nick.slice(0,30),real_name:pf.name,phone:pf.phone,discord:pf.discord,zip:pf.zip,addr:pf.addr,addr2:pf.addr2,marketing:g("amk").checked,agreed:true},emailRedirectTo:STORE_URL}});b.disabled=false;markSeen();
         if(error)return say(authErr(error),1);if(data.user&&data.user.identities&&!data.user.identities.length)return say(ax().exists,1);
-        if(data.session){await refreshMe();draw();return open("acct","",ax().welcome)}f.replaceChildren(el("p",{className:"sguide",textContent:ax().sent(em)}));return}
-      const {error}=await db.auth.signInWithPassword({email:em,password:pw});b.disabled=false;if(error)return say(authErr(error),1);await refreshMe();draw();open("acct")};
+        if(data.session){await refreshMe();draw();return open("acct","o",ax().welcome)}f.replaceChildren(el("p",{className:"sguide",textContent:ax().sent(em)}));return}
+      const {error}=await fdb.auth.signInWithPassword({email:em,password:pw});b.disabled=false;if(error){lockFail();const lk=lockLeft();return say(lk?ax().locked(lk):authErr(error),1)}
+      try{sessionStorage.removeItem("rif-fan-lock")}catch(_){}markSeen();await refreshMe();draw();open("acct")};
     panel.append(xBtn(),el("h2",{textContent:join?ax().join:ax().login}),f);return}
   /* 소셜로 가입했거나 정보가 빠진 회원: 이름 · 휴대폰부터 받아요 */
-  if(mode==="fill"||((!ME.name||!ME.phone||!ME.discord)&&mode!=="i"&&mode!=="o"&&mode!=="p")){
-    const f=el("form",{className:"sform"},[el("p",{className:"note",textContent:ax().fillNote}),...profileFields(ME,"f",1),el("button",{className:"btn",textContent:ax().save}),msg]);
-    f.onsubmit=async e=>{e.preventDefault();const pf=readProfile(f,"f"),pe=pfErr(pf);if(pe)return say(pe,1);
-      const {error}=await db.rpc("fan_save",{p:pf});if(error)return say(ax().fail,1);await refreshMe();open("acct","o")};
+  if(needFill()){/* 필수 정보나 동의가 빠진 회원(소셜 가입 등)은 이것부터 채워야 다른 화면을 쓸 수 있어요 */
+    const ck2=(id,lab,req)=>el("label",{className:"sagree2"},[el("input",{type:"checkbox",id,required:!!req}),el("span",{textContent:lab})]);
+    const f=el("form",{className:"sform"},[el("p",{className:"note",textContent:ax().fillNote}),...profileFields(ME,"f",1),
+      ...(ME.agreed?[]:[ck2("fag",ax().agree,1),ck2("fage",ax().age,1),ck2("fmk",ax().mkt,0),el("details",{},[el("summary",{className:"note",textContent:ax().privT}),el("p",{className:"spriv",textContent:ax().priv}),el("a",{href:"/privacy/",target:"_blank",rel:"noopener",className:"note",textContent:"→ /privacy/"})])]),
+      el("button",{className:"btn",textContent:ax().save}),msg,el("div",{className:"slinks"},[link(ax().logout,async()=>{await fdb.auth.signOut({scope:"local"});ME=null;labels();draw();close()})])]);
+    f.onsubmit=async e=>{e.preventDefault();const pf=readProfile(f,"f"),pe=pfErr(pf);if(pe)return say(pe,1);const mkc=f.querySelector("#fmk");
+      const {error}=await fdb.rpc("fan_save",{p:{...pf,agree:true,...(mkc?{marketing:mkc.checked}:{})}});if(error)return say(saveErr(error),1);await refreshMe();draw();open("acct","o")};
     panel.append(xBtn(),el("h2",{textContent:ax().fillT}),f);return}
   /* 마이페이지 */
+  const doLogout=async()=>{await fdb.auth.signOut({scope:"local"}).catch(()=>{});ME=null;labels();draw();close()};
   const body=el("div"),tabs=el("div",{className:"stabs"}),tab=mode==="p"||mode==="i"?mode:"o";
   [["o",ax().tabO],["p",ax().tabP],["i",ax().tabI]].forEach(([k,lab])=>{const b=el("button",{type:"button",textContent:lab});b.setAttribute("aria-pressed",String(k===tab));b.onclick=()=>open("acct",k);tabs.append(b)});
-  panel.append(xBtn(),el("p",{className:"tag",textContent:"MEMBER"}),el("h2",{textContent:ax().hi(ME.nick||ME.email)}),el("div",{className:"sptbox"},[el("span",{textContent:ax().ptHave}),el("b",{textContent:won(ME.points)})]),msg,tabs,body);
-  if(tab==="o"){db.rpc("fan_orders").then(({data})=>{const rows=data||[];if(!rows.length){body.append(el("p",{className:"empty",textContent:ax().noOrders}));return}
-      rows.forEach(o=>{lookName=o.name;body.append(orderCard(o,o.email,o.name,()=>refreshMe().then(()=>open("acct","o"))))})})}
-  else if(tab==="p"){db.rpc("fan_points_log").then(({data})=>{const rows=data||[];if(!rows.length){body.append(el("p",{className:"empty",textContent:ax().noPts}));return}
+  panel.append(xBtn(),el("p",{className:"tag",textContent:"MEMBER"}),el("div",{style:"display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap"},[el("h2",{style:"margin:0",textContent:ax().hi(ME.nick||ME.email)}),(()=>{const b=el("button",{type:"button",className:"btn ghost",style:"padding:7px 14px;font-size:13px",textContent:ax().logout});b.onclick=doLogout;return b})()]),el("div",{className:"sptbox",style:"margin-top:12px"},[el("span",{textContent:ax().ptHave}),el("b",{textContent:won(ME.points)})]),msg,tabs,body);
+  if(tab==="o"){fdb.rpc("fan_orders").then(({data})=>{const rows=data||[];if(!rows.length){body.append(el("p",{className:"empty",textContent:ax().noOrders}));return}
+      rows.forEach(o=>{const c=orderCard(o,o.email,o.name,()=>refreshMe().then(()=>open("acct","o")));c.addEventListener("click",()=>{lookName=o.name},true);/* 결제 때 이 주문의 주문자 이름을 써요 */body.append(c)})})}
+  else if(tab==="p"){fdb.rpc("fan_points_log").then(({data})=>{const rows=data||[];if(!rows.length){body.append(el("p",{className:"empty",textContent:ax().noPts}));return}
       body.append(el("ul",{className:"sptl"},rows.map(r=>el("li",{},[el("div",{},[el("span",{textContent:ax().rs[r.reason]||r.reason}),el("small",{textContent:new Date(r.created_at).toLocaleDateString(L==="ko"?"ko-KR":L==="ja"?"ja-JP":"en-US")+(r.order_no?" · "+r.order_no:"")})]),el("b",{className:r.delta<0?"m":"",textContent:(r.delta>0?"+ ":"− ")+won(Math.abs(r.delta))})]))))})}
   else{const fl=(id,lab,v,ac)=>el("label",{},[el("span",{textContent:lab}),el("input",{id,value:v||"",autocomplete:ac||"off",maxLength:200})]);
     const mk=el("input",{type:"checkbox",id:"imk",checked:!!ME.marketing});
     const f=el("form",{className:"sform"},[el("label",{},[el("span",{textContent:ax().email}),el("input",{value:ME.email,disabled:true})]),...profileFields(ME,"i",1),
       el("label",{className:"sagree2"},[mk,el("span",{textContent:ax().mkt})]),el("button",{className:"btn",textContent:ax().save})]);
-    f.onsubmit=async e=>{e.preventDefault();const pf=readProfile(f,"i"),pe=pfErr(pf);if(pe)return say(pe,1);const {error}=await db.rpc("fan_save",{p:{...pf,marketing:mk.checked}});if(error)return say(ax().fail,1);await refreshMe();say(ax().saved)};
-    const out=link(ax().logout,async()=>{await db.auth.signOut();ME=null;labels();draw();close()}),pw=link(ax().chpw,()=>open("acct","newpw"));
-    const lv=link(ax().leave,async()=>{if(!confirm(ax().leaveQ))return;const {error}=await db.rpc("fan_withdraw");if(error)return say(ax().fail,1);await db.auth.signOut().catch(()=>{});ME=null;labels();draw();close();alert(ax().left)});
-    body.append(f,el("div",{className:"slinks",style:"margin-top:18px"},[out,pw,...(ME.staff?[]:[lv])]))}
+    f.onsubmit=async e=>{e.preventDefault();const pf=readProfile(f,"i"),pe=pfErr(pf);if(pe)return say(pe,1);const {error}=await fdb.rpc("fan_save",{p:{...pf,marketing:mk.checked}});if(error)return say(saveErr(error),1);await refreshMe();say(ax().saved)};
+    const out=link(ax().logout,doLogout),pw=link(ax().chpw,()=>open("acct","newpw"));
+    const lv=link(ax().leave,async()=>{if(!confirm(ax().leaveQ))return;const {error}=await fdb.rpc("fan_withdraw");if(error)return say(ax().fail,1);await fdb.auth.signOut({scope:"local"}).catch(()=>{});ME=null;labels();draw();close();alert(ax().left)});
+    body.append(f,el("div",{className:"slinks",style:"margin-top:18px"},[out,pw,lv]))}
 }
 acctBtn.onclick=()=>open("acct");
 /* 메일의 비밀번호 재설정 링크로 들어오면 새 비밀번호 화면을 열어요. 다른 탭에서 로그인/로그아웃해도 맞춰요 */
-db.auth.onAuthStateChange(ev=>{setTimeout(async()=>{if(ev==="PASSWORD_RECOVERY"){await refreshMe();open("acct","newpw")}else if(ev==="SIGNED_IN"||ev==="SIGNED_OUT"){const had=!!ME;await refreshMe();if(had!==!!ME)draw();if(!had&&ME&&(!ME.name||!ME.phone||!ME.discord)&&sheet.hidden)open("acct","fill")}},0)});
+fdb.auth.onAuthStateChange(ev=>{setTimeout(async()=>{if(ev==="PASSWORD_RECOVERY"){await refreshMe();open("acct","newpw")}else if(ev==="SIGNED_IN"||ev==="SIGNED_OUT"){const had=!!ME;await refreshMe();if(had!==!!ME)draw();if(ME)markSeen();if(!had&&needFill()&&sheet.hidden)open("acct")}},0)});
 cartBtn.onclick=()=>open("cart");lookBtn.onclick=()=>open("look");
 
 async function load(){
+  /* 예전에 직원 저장소로 로그인된 팬 계정이 남아 있으면 이 브라우저에서만 지워요 */
+  try{const ss=(await db.auth.getSession()).data.session;if(ss&&!/@rif-studio\.com$/i.test(ss.user.email||""))await db.auth.signOut({scope:"local"})}catch(_){}
   const adm=await isAdmin().catch(()=>false);await refreshMe();let pq=db.from("store_products").select("*");if(!adm)pq=pq.neq("status","draft");
   const [a,b]=await Promise.all([pq.order("sort").order("created_at",{ascending:false}),db.from("store_settings").select("*").eq("id",1).maybeSingle()]);
   P=(a.data||[]).filter(p=>adm||p.status!=="draft");S=(b&&b.data)||{};PREV=adm&&P.some(p=>p.status==="draft");
