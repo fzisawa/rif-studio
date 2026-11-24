@@ -11,7 +11,7 @@ let mySig={html:"",text:""};
 async function render(){
   const {data}=await db.auth.getSession(),s=data.session;
   $("login").hidden=!!s;$("sg").hidden=!!s;$("app").hidden=!s;
-  if(!s){RIFMAIL.reset();return}
+  if(!s){me="";stopLive();RIFMAIL.reset();return}
   me=(s.user.email||"").toLowerCase();uid=s.user.id;ceo=me===CEO;$("who").textContent=s.user.email;
   const {data:st}=await db.from("mail_staff").select("email,name,send_as,aliases,signature,signature_html").maybeSingle();
   $("box").hidden=!st;$("nomail").hidden=!!st;if(!st)return;
@@ -328,8 +328,11 @@ function roomDlg(rm){
     const {data,error}=await db.rpc("chat_room_save",{p_id:rm?rm.id:null,p_name:n,p_members:[...sel]});ok.disabled=false;
     if(error){msgx.textContent="저장하지 못했어요 (권한을 확인해 주세요)";return}wrap.remove();await loadRooms();if(!rm)chatTo="room:"+data;drawPeople();await loadChat(true)};
   document.body.append(wrap);nm.focus()}
-async function loadChat(stick){await Promise.all([loadRooms(),loadSeen()]);const {data}=await db.from("chat_messages").select("id,author_email,author_name,body,created_at,to_email,room_id").order("id",{ascending:false}).limit(500);
+async function loadChat(stick){if(!chatStarted||!me)return;await Promise.all([loadRooms(),loadSeen()]);const {data}=await db.from("chat_messages").select("id,author_email,author_name,body,created_at,to_email,room_id").order("id",{ascending:false}).limit(500);
   if(!data)return;chatMsgs=data.reverse();if(chatOpen)markSeen();drawPeople();drawChat(stick)}
+/* 로그아웃 · 로그인 만료 때: 8초마다 돌던 채팅 새로 고침, 실시간 구독, 음성 연결을 모두 멈춰요
+   (안 멈추면 로그인 화면에서도 계속 서버에 실패하는 요청을 보내요) */
+function stopLive(){clearInterval(chatTimer);chatTimer=null;try{chatSub&&db.removeChannel(chatSub)}catch(_){}chatSub=null;chatStarted=false;chatOpen=false;try{window.RIFVOICE&&RIFVOICE.stop()}catch(_){}}
 function startChat(){if(chatStarted)return;chatStarted=true;loadChat(true);try{window.RIFVOICE&&RIFVOICE.start()}catch(_){}
   try{chatSub=db.channel("chat-room").on("postgres_changes",{event:"*",schema:"public",table:"chat_messages"},()=>loadChat(false)).subscribe()}catch(_){}
   chatTimer=setInterval(()=>loadChat(false),8000)}
@@ -353,7 +356,11 @@ document.querySelectorAll("#sub button").forEach(b=>b.onclick=()=>{document.quer
 /* 로그인·가입 */
 $("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:toEmail($("em").value),password:$("pw").value});
   $("lmsg").textContent=error?"로그인 실패 — 이메일과 비밀번호를 확인해 주세요":"";$("pw").value="";render()};
-$("out").onclick=async e=>{e.preventDefault();try{window.RIFVOICE&&await RIFVOICE.stop()}catch(_){}await db.auth.signOut();render()};
+/* 로그아웃은 이 기기에서만 해요 (scope:"local"). 예전에는 한 곳에서 로그아웃하면 폰 · 데스크톱 앱까지 전부 풀렸어요 */
+let leaving=false;
+$("out").onclick=async e=>{e.preventDefault();leaving=true;try{window.RIFVOICE&&await RIFVOICE.stop()}catch(_){}try{await db.auth.signOut({scope:"local"})}catch(_){}leaving=false;render()};
+/* 로그인이 저절로 풀리면(기간 만료 · 비밀번호 변경 등) 바로 로그인 화면으로 돌아가고 이유를 알려 줘요 */
+db.auth.onAuthStateChange(ev=>{if(ev!=="SIGNED_OUT"||leaving||!me)return;setTimeout(()=>{render().then(()=>{$("lmsg").textContent="로그인이 풀렸어요. 다시 로그인해 주세요."})},0)});
 $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
   if($("spw").value!==$("spw2").value){m.textContent="비밀번호 확인이 달라요";return}
   const b=$("sgo");b.disabled=true;m.className="note";m.textContent="가입 중…";

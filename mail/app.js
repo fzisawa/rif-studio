@@ -95,7 +95,9 @@ $("signup").onsubmit=async e=>{e.preventDefault();const m=$("smsg");
   if(!ok){m.className="note err";m.textContent=msg;return}
   const {error}=await db.auth.signInWithPassword({email:toEmail($("sid").value),password:$("spw").value});
   $("spw").value="";$("spw2").value="";m.textContent=error?"가입은 됐어요. 위에서 로그인해 주세요.":"";render()};
-$("out").onclick=async e=>{e.preventDefault();await db.auth.signOut();render()};
+$("out").onclick=async e=>{e.preventDefault();try{await db.auth.signOut({scope:"local"})}catch(_){}render()};
+/* 로그인이 풀리면(기간 만료 · 다른 탭에서 로그아웃) 바로 로그인 화면으로 돌아가요 */
+db.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_OUT")setTimeout(render,0)});
 const qn=new URLSearchParams(location.search).get("n");if(qn&&/^\S{1,20}$/.test(qn)){$("sn").value=qn;$("sg").open=true}
 render();
 })();

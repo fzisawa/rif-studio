@@ -29,7 +29,9 @@ async function render(){
     box.append(g)})}
 $("login").onsubmit=async e=>{e.preventDefault();const {error}=await db.auth.signInWithPassword({email:$("em").value,password:$("pw").value});
   $("lmsg").textContent=error?"로그인 실패":"";if(!error)$("pw").value="";render()};
-$("out").onclick=async e=>{e.preventDefault();await db.auth.signOut();render()};
+$("out").onclick=async e=>{e.preventDefault();try{await db.auth.signOut({scope:"local"})}catch(_){}render()};
+/* 로그인이 풀리면(기간 만료 · 다른 탭에서 로그아웃) 바로 로그인 화면으로 돌아가요 */
+db.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_OUT")setTimeout(render,0)});
 /* 채널이 추가·삭제되면 올릴 페이지 목록도 다시 맞춰요 */
 document.addEventListener("rif-channels",()=>{[...sel.options].forEach(o=>{if(CH[o.value]){delete L[o.value];delete CH[o.value];o.remove()}});syncPages().then(()=>{form.fill();render()})});
 render();syncPages().then(()=>{form.fill();render()},()=>{});

@@ -343,3 +343,6 @@ button.pkmi:hover .pkmn b,.pkmi[aria-pressed=true] .pkmp{color:var(--ac)}
   .pkmn b{font-size:16px}.pkmp{font-size:17px}
   .pkmx li,.pkmx li:last-child{grid-template-columns:1fr;gap:2px}
 }
+
+/* 스토어 분류 탭: 휴대폰에서 다섯 개(영어 · 일본어 포함)가 한 줄에 다 보이게 */
+@media(max-width:760px){.stop .tabs{gap:0 12px}.stop .tab{font-size:clamp(13px,3.9vw,15px)}}
