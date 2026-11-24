@@ -179,3 +179,13 @@ try{const ap=$("app");new MutationObserver(()=>{if(ap.hidden&&PIN)lock()}).obser
 })();
 
 bindPhone($("hph"));
+
+/* 사번 직접 발급 (지원서 · 채용 메일 없이). 메일 체크 시 한/일/영 사번 안내 메일도 보내요 */
+$("hiform").onsubmit=async e=>{e.preventDefault();if(!PIN)return;const em=$("hiem").value.trim(),send=$("himail").checked,b=$("hibtn"),out=$("hiout");
+  if(send&&!em)return alert("안내 메일을 보내려면 이메일을 입력해 주세요.");
+  if(!confirm((em?em+" 에게 ":"")+"사번을 발급할까요?"+(send?"\n사번 안내 메일(한/일/영)도 함께 보내요.":"")))return;
+  b.disabled=true;const {data,error}=await db.rpc("hr_issue",{p_pin:PIN,p_invite:em});
+  if(error){b.disabled=false;return alert("발급하지 못했어요: "+err(error))}
+  const row=(data||[])[0]||{};let note="";
+  if(send&&row.id){const m=await sendMail({id:row.id});note=m?"  · 안내 메일을 보내지 못했어요: "+m:"  · 안내 메일을 보냈어요."}
+  b.disabled=false;$("hiem").value="";$("himail").checked=false;out.hidden=false;out.textContent="발급한 사번: "+row.emp_no+note;load()};
