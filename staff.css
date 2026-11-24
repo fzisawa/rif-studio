@@ -189,3 +189,8 @@ details.pnl>summary,.sgmk summary,.igrp>summary{cursor:pointer;font-weight:700}
   html.ash-in .nlist{border:0;border-top:2px solid var(--rule);border-bottom:1px solid var(--ln2)}
   html.ash-in .ofi{border-color:var(--ln2)}html.ash-in .ofi.on{background:var(--fg);border-color:var(--fg);color:var(--bg);box-shadow:none}html.ash-in .ofi.on .c{color:var(--bg)}
 }
+
+/* 업무 · 작업 탭의 작은 버튼(.mbtn — mgmt.js 가 나중에 넣는 스타일이라 한 단계 더 구체적으로 덮어써요) */
+body .mbtn{border-color:var(--ln2)}body .mbtn:hover{border-color:var(--fg);color:var(--fg);background:var(--hv)}
+body .mbtn.p{background:var(--fg);border-color:var(--fg);color:var(--bg);font-weight:600}body .mbtn.p:hover{background:var(--ac);border-color:var(--ac);color:var(--onac);filter:none}
+body .mbtn:disabled,body .mbtn.p:disabled{opacity:.45}

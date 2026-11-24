@@ -50,7 +50,10 @@
 .lrow span{min-width:0;overflow-wrap:anywhere}
 
 /* 포트폴리오 관리 */
-#chtb td.oc{white-space:normal;max-width:420px}
+#chtb td.oc{white-space:normal;max-width:420px}#chtb td.oc .ownc{white-space:normal;overflow-wrap:anywhere}
+#chtb tr.r td:first-child{white-space:normal}
+/* 화면이 좁아지면(태블릿 · 작은 창) 메뉴 · 최근 수정 칸은 줄을 눌러 펼친 곳에서 봐요 */
+@media(max-width:1000px){#chtbl .hl{display:none}#chtb .dg .mo{display:grid}}
 #chtb td.sm{color:var(--mut);font-size:13px}
 #chtb td.ac{width:1%;text-align:right}
 #chtb tr.hid td:first-child b{opacity:.55}
@@ -65,13 +68,37 @@
 .chow{margin:0 0 14px}.chow .note{margin:0}
 .chadd{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
 main.wide .chadd select,main.wide .chadd input{padding:6px 12px;font-size:13px}
+/* 채널 표: 주소 · 손볼 곳 · 현황 · 번역 고치기 */
+#chtb .chsub{display:block;margin-top:1px;font-size:12px;font-weight:400;color:var(--mut)}
+#chtb .lnk{background:none;border:0;padding:0;margin-left:4px;font:inherit;font-size:13px;color:var(--mut);text-decoration:underline;text-underline-offset:3px;cursor:pointer;white-space:nowrap}#chtb .lnk:hover{color:var(--ac)}
+#chtb td.ci{white-space:normal;max-width:300px}
+.chi{display:inline-block;margin:2px 6px 2px 0;padding:1px 8px;font-size:12px;font-weight:700;line-height:1.6;white-space:nowrap;background:#e8a33a26;color:#8a560b;border:1px solid #b8741a59}
+#chtb .chtodo{list-style:none;margin:0 0 18px;padding:10px 14px;border-left:3px solid #b8741a;background:#e8a33a14;font-size:14px;line-height:1.7}
+#chtb .chtodo li{padding:2px 0;border:0}#chtb .chtodo strong{font-weight:700}
+#chtb .chd .dg{margin-bottom:16px}
+#chtb .chtr{margin:0 0 14px;padding:14px 16px;border:1px solid var(--ln2);background:var(--bg)}
+#chtb .chtr>.note{margin:0}
+#chtb .trg{display:grid;grid-template-columns:118px repeat(3,minmax(0,1fr));gap:8px 12px;align-items:start;margin:12px 0}
+#chtb .trg>b{display:block;font-size:12px;letter-spacing:0;color:var(--mut)}
+#chtb .trg .trl{font-size:13px;color:var(--mut);padding-top:8px}
+#chtb .trg .trk{margin:0;padding:8px 0;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+#chtb .trg input,#chtb .trg textarea{width:100%;font-size:14px;line-height:1.5;padding:7px 10px}
+#chtb .trg .trnew{background:var(--soft)}
+#chtb .trg .trko{border-left:3px solid #b8741a}
+/* 채널 표 아래 알림: 표가 길어도 화면 아래쪽에 붙어서 보여요 (잠시 뒤 사라져요) */
+#chmsg:not(:empty){position:sticky;bottom:14px;z-index:6;width:fit-content;max-width:100%;margin-left:auto;cursor:pointer;padding:10px 16px;background:var(--fg);color:var(--bg);font-weight:600;line-height:1.5;box-shadow:6px 6px 0 var(--shade,#0002)}
+#chmsg.err:not(:empty){background:var(--bad);color:var(--onac,#fff)}
+#chtb .chtr .dact{align-items:center}
+html[data-theme=dark] .chi{color:#f0b458;border-color:#f0b45866}
+@media(max-width:800px){#chtb .trg{grid-template-columns:minmax(0,1fr)}#chtb .trg>b{display:none}#chtb .trg .trl{padding-top:12px;font-weight:700;color:var(--fg)}#chtb .trg .trk{padding:0 0 2px}}
 #upbox>summary{cursor:pointer;font-weight:700}
 .igrp{border-top:1px solid var(--ln);padding:10px 0}.igrp>summary{cursor:pointer;font-weight:700;padding:2px 0}.igrp[open]>summary{margin-bottom:8px}
 
 /* 폰: 표가 화면 밖으로 나가지 않게 (사번·수정·열기는 줄을 눌러 펼친 곳에서) */
 @media(max-width:700px){.orow{grid-template-columns:1fr}.lrow{flex-wrap:wrap}.hsum .sep{display:none}.dact .mo{display:inline-flex}
   #hrtb td.pn,#chtb tr.r td:first-child{white-space:normal;overflow-wrap:anywhere}#hrtb td.kc{white-space:normal}.dd{margin:4px 0 0}
-  #chtb td.oc{max-width:none}#chtb td.oc .ownc{white-space:normal;overflow-wrap:anywhere;margin-right:0}.ownc.big{flex-wrap:wrap}.jt tr.d td{padding:14px 12px}}
+  #chtb td.oc{max-width:none}#chtb td.oc .ownc{white-space:normal;overflow-wrap:anywhere;margin-right:0}.ownc.big{flex-wrap:wrap}.jt tr.d td{padding:14px 12px}
+  #chtbl th,#chtb tr.r td{padding-left:8px;padding-right:8px}#chtb td.ci{max-width:none}#chtb .chi{font-size:11px;padding:0 6px;margin-right:0}#chtb tr.r td:first-child .hs{margin-left:0;margin-right:4px}}
 @media(max-width:700px){#tw2 .jt th,#tw2 .jt td{padding-left:8px;padding-right:8px}#hrtb td.en{letter-spacing:0}.hm{display:none}.dg .mo{display:grid}#hrcnt{flex:1 1 100%}.tbar .sp{display:none}.tbar input[type=search]{min-width:0;flex:1 1 100%}}
 /* 스토어 */
 .sstat0{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
