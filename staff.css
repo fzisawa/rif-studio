@@ -1,0 +1,191 @@
+/* RIF STUDIO 사내 화면(인트라넷 · 어드민 · 서명 설정) 디자인 — 2026-11 홈페이지 개편과 같은 모습
+   - style.css → app.css → 화면별 css 뒤에 "맨 마지막"으로 불러와요. 공개 페이지는 site.css, 사내 화면은 이 파일을 써요.
+   - 색: 종이 흰색 + 먹색 + 등꽃 보라 하나. 글꼴: 영문 제목 Archivo(넓은 폭 · 굵게), 본문 Pretendard. 모서리는 각지게.
+   - 기본은 홈페이지와 같은 밝은 화면이에요. 어두운 화면은 <html data-theme="dark"> 일 때만 (staff-theme.js 가 기억해요).
+   - 여기서는 "색 · 글꼴 · 모양"만 바꿔요. 어디에 놓이는지(배치)는 app.css · intranet.css · shell.css · admin.css 그대로예요. */
+@font-face{font-family:"Archivo";src:url(/fonts/archivo.woff2) format("woff2");font-weight:100 900;font-stretch:62% 125%;font-display:swap}
+:root,:root:root{color-scheme:light;--bg:#fff;--fg:#121212;--mut:#5e5b68;--ac:#5a3fd0;--wash:#f2effc;--rule:#121212;--hair:#12121222;--twig:#6b4a38;
+  --ok:#1f8a5b;--bad:#c93a3a;--ln:#12121222;--ln2:#12121266;--hv:#f6f4fd;--soft:#ece7fb;--soft2:#d5cbf6;--shade:#1212121a;--onac:#fff;
+  --disp:"Archivo","Pretendard Variable",Pretendard,"Hiragino Sans","Noto Sans JP",sans-serif;--text:"Pretendard Variable",Pretendard,-apple-system,"Hiragino Sans","Noto Sans JP","Noto Sans KR",system-ui,sans-serif}
+:root[data-theme=dark],:root:root[data-theme=dark]{color-scheme:dark;--bg:#131316;--fg:#f1eff6;--mut:#a9a5b8;--ac:#a793ff;--wash:#1f1c2e;--rule:#f1eff6;--hair:#ffffff26;--twig:#7a5a48;
+  --ok:#4cc38a;--bad:#ff7070;--ln:#ffffff24;--ln2:#ffffff5c;--hv:#ffffff0d;--soft:#a793ff29;--soft2:#a793ff52;--shade:#00000080;--onac:#131316}
+*,*::before,*::after{border-radius:0!important}
+.av,.avs,.ash-av,.orp .ci,.ritem .x,.lkico,.vp i,.del,.pl,.spin,.mchk,.tdel2,.ownc.big button,.ochip button{border-radius:50%!important}
+body{font-family:var(--text);background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased}
+::selection{background:var(--ac);color:var(--onac)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+a{color:inherit}
+
+/* ── 머리말: 홈페이지와 같은 모양 + 사내 화면 표시 ── */
+header{position:sticky;top:0;z-index:45;background:var(--bg);padding:0 clamp(18px,4vw,56px);min-height:68px;gap:8px 20px;border-bottom:1px solid var(--hair)}
+.logo{font-family:var(--disp);font-stretch:125%;font-weight:800;font-size:17px;letter-spacing:.01em;color:var(--fg);white-space:nowrap}
+.logo span{font-weight:800;color:var(--fg);margin-left:.32em}
+header .logo::after,html.appmode header .logo::after{content:"Staff";display:inline-block;margin-left:12px;padding:3px 7px;border:1px solid var(--ac);background:none;color:var(--ac);font-family:var(--disp);font-stretch:100%;font-size:11px;font-weight:700;line-height:1;letter-spacing:.02em;vertical-align:2px}
+html.appmode header .logo::after{content:"Intranet"}
+nav{gap:4px 26px}
+nav a,.ng>button{font-family:var(--disp);font-stretch:110%;font-weight:600;font-size:14px;letter-spacing:.01em;color:var(--fg);padding:8px 0;line-height:1;position:relative}
+nav a.nl::after,.ng>button::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--ac);transform:scaleX(0);transform-origin:left;transition:transform .2s}
+nav a.nl:hover::after,nav a.nl.on::after,.ng:hover>button::after,.ng.on>button::after{transform:scaleX(1)}
+nav a.on,nav a:hover,.ng>button:hover,.ng.on>button,.ng:focus-within>button{color:var(--fg)}
+.mark{margin-left:6px}.mark img{height:44px}.mark .ml{display:none}.mark .md{display:block}
+:root[data-theme=dark] .mark .ml{display:block}:root[data-theme=dark] .mark .md{display:none}
+.nm,.nm.nmg{border:1px solid var(--rule);box-shadow:8px 8px 0 var(--shade);padding:6px 14px;background:var(--bg)}
+.nm .nrow{grid-template-columns:84px 1fr;padding:9px 0}
+.nm .nrow+.nrow{border-top:1px solid var(--hair)}
+.nm .nh{font-family:var(--disp);font-size:12px;letter-spacing:.02em;text-transform:none;color:var(--ac);font-weight:700}
+.nm a,.nm .nps a{font-family:var(--text);font-weight:500;font-size:14px;padding:6px 10px}
+.nm a:hover{background:var(--wash)}
+@media(max-width:1020px){header{flex-wrap:nowrap}nav{gap:4px 18px;flex-wrap:nowrap}.mark{display:none}}
+@media(max-width:760px){header{min-height:56px;padding:0 16px}header nav{display:none}.mark{display:block;margin-left:auto;order:2}.mark img{height:38px}}
+
+/* ── 제목 · 글 ── */
+main.wide{max-width:1480px;padding:clamp(28px,5vh,52px) clamp(18px,4vw,56px) 72px}
+.tag,main.wide .tag{font-family:var(--disp);font-stretch:110%;color:var(--ac);font-size:13px;font-weight:700;letter-spacing:.04em}
+main.wide h1{font-family:var(--disp);font-stretch:125%;font-weight:800;font-size:clamp(32px,3.6vw,46px);line-height:1;letter-spacing:-.025em;margin:.14em 0 .5em}
+main.wide h2,#app h2,.mbox h2,.jdh h2{font-family:var(--disp);font-stretch:112%;font-weight:800;letter-spacing:-.01em}
+main.wide .lead{color:var(--mut)}main.wide .lead a{color:var(--fg);text-underline-offset:3px}
+.note{color:var(--mut)}.note.err,.err{color:var(--bad)}
+.inst summary{color:var(--fg);font-weight:600;text-decoration:underline;text-underline-offset:3px}.inst summary:hover{color:var(--ac)}
+.instb{background:var(--wash);border-color:var(--ln)}
+
+/* ── 버튼: 먹색 네모, 올리면 보라 ── */
+.btn{background:var(--fg);border:1px solid var(--fg);color:var(--bg);font-weight:600;padding:10px 20px;transition:background .15s,border-color .15s,color .15s}
+.btn:hover{background:var(--ac);border-color:var(--ac);color:var(--onac);filter:none}
+.btn:disabled{opacity:.45;background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.btn.small{background:transparent;color:var(--fg);border-color:var(--ln2);padding:6px 14px;font-weight:600}
+.btn.small:hover{background:var(--hv);border-color:var(--fg);color:var(--fg)}
+.btn.small:disabled{background:transparent;color:var(--fg);border-color:var(--ln2)}
+.btn.small.p{background:var(--fg);border-color:var(--fg);color:var(--bg)}.btn.small.p:hover{background:var(--ac);border-color:var(--ac);color:var(--onac);filter:none}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--fg)}.btn.ghost:hover{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.btn.ghost:disabled{background:transparent;color:var(--fg)}
+.btn.danger,.btn.small.danger{background:transparent;color:var(--bad);border-color:var(--bad)}.btn.danger:hover,.btn.small.danger:hover{background:var(--bad);border-color:var(--bad);color:#fff}
+.lnk:hover,.mx:hover{color:var(--ac)}
+
+/* ── 입력칸 ── */
+main.wide input,main.wide select,main.wide textarea,.mod input,.mod select,.mod textarea{border:1px solid var(--ln2);background:var(--bg);color:var(--fg)}
+main.wide input[type=checkbox],main.wide input[type=radio],.mod input[type=checkbox],.mod input[type=radio],main.wide input[type=file],.mod input[type=file],main.wide input[type=color],.mod input[type=color]{border:0;background:none}
+main.wide input:focus,main.wide select:focus,main.wide textarea:focus,.mod input:focus,.mod select:focus,.mod textarea:focus,.rte:focus,.ed:focus{outline:2px solid var(--ac);outline-offset:0;border-color:var(--ac)}
+main.wide input[type=checkbox]:focus,main.wide input[type=radio]:focus,.mod input[type=checkbox]:focus{outline:2px solid var(--ac);outline-offset:2px}
+input::placeholder,textarea::placeholder{color:var(--mut);opacity:.75}
+
+/* ── 메뉴(왼쪽) · 소메뉴(밑줄 탭) · 칩 ── */
+.shell{grid-template-columns:188px minmax(0,1fr);gap:34px}
+.tabs2{gap:0;border-top:2px solid var(--rule)}
+.tabs2 button{padding:13px 12px;border:0;border-bottom:1px solid var(--ln);font-size:15px;font-weight:500}
+.tabs2 button:hover{background:var(--hv)}
+.tabs2 button[aria-pressed="true"]{background:var(--wash);color:var(--fg);font-weight:800;box-shadow:inset 3px 0 0 var(--ac)}
+.tabs2 button[aria-pressed="true"] .bd{background:var(--ac);color:var(--onac)}
+.tabs,.sub,.msub{gap:0 26px;border-bottom:1px solid var(--ln);margin-bottom:20px}
+.tabs button,.sub button,.msub button{padding:11px 0;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;background:none;color:var(--mut);font-family:var(--disp);font-stretch:108%;font-weight:700;font-size:15px}
+.tabs button:hover,.sub button:hover,.msub button:hover{color:var(--fg);border-color:transparent}
+.tabs button[aria-pressed="true"],.sub button[aria-pressed="true"],.msub button[aria-pressed="true"]{background:none;color:var(--fg);border-bottom-color:var(--ac);font-weight:700}
+#app .msub button[aria-pressed="true"] .bd,.sub button[aria-pressed="true"] .bd{background:var(--ac);color:var(--onac)}
+.chip{padding:6px 14px;border:1px solid var(--ln2);background:none;color:var(--fg);font-size:13.5px}
+.chip:hover{border-color:var(--fg);color:var(--fg)}
+.chip.on{background:var(--fg);border-color:var(--fg);color:var(--bg);font-weight:700}
+@media(max-width:800px){.shell{grid-template-columns:1fr;gap:18px}.tabs2{border-top:0;border-bottom:1px solid var(--ln);gap:0 22px}
+  .tabs2 button{padding:11px 0;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;font-weight:600}.tabs2 button:hover{background:none}
+  .tabs2 button[aria-pressed="true"]{background:none;box-shadow:none;border-bottom-color:var(--ac)}}
+
+/* 작업·단가의 보기 전환(작업 배정서 | 패키지 단가표)도 같은 밑줄 탭으로 */
+#app #pk .seg{display:flex;gap:0 26px;border-bottom:1px solid var(--ln);flex:1 1 100%;margin-bottom:6px}
+#app #pk .seg button{padding:11px 0;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;background:none;color:var(--mut);font-family:var(--disp);font-stretch:108%;font-weight:700;font-size:15px}
+#app #pk .seg button:hover{color:var(--fg)}
+#app #pk .seg button[aria-pressed=true]{background:none;color:var(--fg);border-bottom-color:var(--ac)}
+#app #pk .wkhint{border:0;border-left:3px solid var(--ac);background:var(--wash);color:var(--fg)}
+#app #pk .pcard{border-color:var(--ln2)}#app #pk .pcard tr.mine td{background:var(--soft)}
+#app #pk .lk{background:var(--hv)}
+/* ── 배지 ── */
+.bd,.new,.cbd{background:var(--ac);color:var(--onac);font-weight:800}
+.rb.on,.hs.on{background:var(--ok);color:#fff}.rb.off,.hs.x{background:var(--hv);color:var(--mut);box-shadow:inset 0 0 0 1px var(--ln)}
+.cp.as{background:var(--soft);color:var(--ac)}
+
+/* ── 표 · 목록: 위에 굵은 줄, 줄 사이는 가는 줄 (홈페이지 Career · 소식 목록과 같은 모양) ── */
+.jt th,.mt th{background:var(--bg);border-bottom:1px solid var(--ln2);color:var(--mut)}
+.jt td,.mt td{border-bottom-color:var(--ln)}
+.jt tr.r:hover td,.mt tr.r:hover td,.jt tr.d td{background:var(--hv)}
+.jt tr.d b{color:var(--ac)}
+.pnl{border:1px solid var(--ln);background:var(--bg)}
+@media(min-width:761px){
+  .tbw,#app .mtw{border:0;border-top:2px solid var(--rule);border-bottom:1px solid var(--ln2);background:var(--bg)}
+  .jt tbody tr:last-child td,.mt tbody tr:last-child td{border-bottom:0}
+  .nlist{border:0;border-top:2px solid var(--rule);border-bottom:1px solid var(--ln2)}
+}
+.nrow.pin .nh{background:var(--wash)}.nh:hover,.nrow.open .nh{background:var(--hv)}
+.nb{border-top:1px solid var(--ln)}
+
+/* ── 사원 정보 · 채팅 · 메일 ── */
+.otree,.cside,.chat,.ol{border-color:var(--ln2)}
+.otree button.on{background:var(--wash);color:var(--fg);font-weight:800;box-shadow:inset 3px 0 0 var(--ac)}.otree button.on .oc{color:var(--mut)}
+.otree .o0{font-family:var(--disp);font-stretch:112%;letter-spacing:.01em}
+.cpi.on{background:var(--wash)}
+#cl{background:var(--hv)}
+.cm .cb2{border-color:var(--ln)}.cm.me .cb2{background:var(--soft);border-color:var(--soft2)}
+.ob2,.vb,.orp .bk,.atb,.tb button,.tb .cl{border-color:var(--ln2)}
+.ob2:hover,.vb:hover,.orp .bk:hover,button.atb:hover,.tb button:hover{border-color:var(--fg);color:var(--fg);background:var(--hv)}
+.of{background:var(--hv)}
+.onew{background:var(--fg);color:var(--bg);font-weight:600}.onew:hover{background:var(--ac);color:var(--onac);filter:none}
+.ofi:hover{background:var(--soft)}
+.ofi.on{background:var(--bg);color:var(--fg);font-weight:800;box-shadow:inset 3px 0 0 var(--ac)}.ofi.on .c{color:var(--ac)}
+.ofh,.csh{font-family:var(--disp);letter-spacing:.02em}
+.ousg .ub{background:var(--ln)}
+.selbar,.omi.pk{background:var(--soft)}
+.orp .ci{background:var(--fg);color:var(--bg)}
+.nt,.mrep{background:var(--wash)}
+.mfrm2,.sgp iframe,.mfr{background:#fff}
+.sgl{border-color:var(--rule);box-shadow:8px 8px 0 var(--shade)}
+.vbar,.vring{border-color:var(--rule);box-shadow:8px 8px 0 var(--shade)}
+.vb.end{background:var(--bad);border-color:var(--bad);color:#fff}.vb.end:hover{background:var(--bad);color:#fff;filter:brightness(1.08)}
+.vb.on{background:var(--soft);border-color:var(--ac);color:var(--ac)}
+.msend{border-color:var(--ac);background:var(--wash);color:var(--ac)}.msend:hover{background:var(--ac);color:var(--onac)}
+.lkt[aria-selected="true"]{box-shadow:inset 0 0 0 1px var(--ln2)}
+.dropok{outline-color:var(--ac)!important}.droptip{background:var(--fg)!important;color:var(--bg)!important;box-shadow:6px 6px 0 var(--shade)!important}
+
+/* ── 창 · 알림 ── */
+.mod{background:#121212a6}
+.mbox{border:1px solid var(--rule);box-shadow:10px 10px 0 var(--shade)}
+.jdp{border-left:1px solid var(--rule);box-shadow:-10px 0 0 var(--shade)}
+#toast{background:var(--fg);color:var(--bg);font-weight:600;box-shadow:6px 6px 0 var(--shade)}
+.lb img{background:#fff}
+
+/* ── 꼬리말: 홈페이지와 같은 먹색 띠 (사내 화면은 사업자 정보만 간단히) ── */
+footer{background:#121212;color:#ffffffb3;text-align:left;letter-spacing:.02em;font-size:12px;line-height:1.8;padding:26px clamp(18px,4vw,56px) 30px}
+footer a{color:#fff}
+footer .biz{display:block;margin-top:8px;font-size:12px;letter-spacing:0;line-height:1.7;opacity:1;color:#ffffff80}
+footer .adm,footer .adm.admr{left:auto;right:clamp(18px,4vw,56px);bottom:26px;opacity:.6}footer .adm:hover{opacity:1}
+
+/* ── 어드민 ── */
+.hsum .chip.w{border-color:var(--bad);color:var(--bad)}.hsum .chip.w:hover{border-color:var(--bad);color:var(--bad)}.hsum .chip.w.on{background:var(--bad);border-color:var(--bad);color:#fff}
+#hrtb select.kd{border-color:var(--ln)}
+#hrtb select.kd.reg{background-color:var(--soft);border-color:var(--soft2);color:var(--ac)}
+.ownc{background:var(--soft)}
+details.pnl>summary,.sgmk summary,.igrp>summary{cursor:pointer;font-weight:700}
+
+/* ── 서명 설정 ── */
+.ed{background:#fff;color:#1d1b22;border-color:var(--ln2)}
+.mkg{align-items:end}.sgmk{border-color:var(--ln)}
+
+/* ── 휴대폰 앱 화면 (shell.css) ── */
+.ash-logo,html.ash-sa:not(.ash-in) #mn .hero::before{background-image:url(/img/logo-mark-light.png)!important}
+:root[data-theme=dark] .ash-logo,html[data-theme=dark].ash-sa:not(.ash-in) #mn .hero::before{background-image:url(/img/logo-mark-dark.png)!important}
+.ash-sbox{border-top:2px solid var(--rule);box-shadow:none}
+.ash-grip{background:var(--ln2)}
+.ash-row:active{background:var(--hv)}
+.ash-av{background-color:var(--soft);color:var(--ac)}
+@media(max-width:760px){
+  html.ash-in .ash-bar{border-bottom:1px solid var(--hair)}
+  .ash-ttl{font-family:var(--disp);font-stretch:112%;font-weight:800;letter-spacing:-.01em}
+  html.ash-in .tabs2{border-top:1px solid var(--ln2);border-bottom:0;padding-top:0;gap:0}
+  html.ash-in .tabs2 button{height:56px;padding-top:6px;border:0;border-top:3px solid transparent;margin:0;box-shadow:none}
+  html.ash-in .tabs2 button::before{background:none!important}
+  html.ash-in .tabs2 button::after{top:9px}
+  html.ash-in .tabs2 button[aria-pressed="true"]{color:var(--fg);border-top-color:var(--ac);box-shadow:none}
+  html.ash-in .tabs2 .bd,html.ash-in .tabs2 button[aria-pressed="true"] .bd{top:5px;background:var(--ac);color:var(--onac);border-color:var(--bg)}
+  html.ash-in #tadd,html.ash-in #nw,html.ash-in #dw,html.ash-in .onew{box-shadow:5px 5px 0 var(--shade);font-weight:600}
+  html.ash-in .jt tbody tr,html.ash-in .mt tbody tr{border-color:var(--ln2)}
+  html.ash .mbox,html.ash .mbox.wd{border:0;border-top:2px solid var(--rule);box-shadow:none}
+  html.ash-in .sub,html.ash-in .msub{gap:0 22px;border-bottom:1px solid var(--ln)}
+  html.ash-in .sub button,html.ash-in .msub button{padding:10px 0}
+  html.ash-in .nlist{border:0;border-top:2px solid var(--rule);border-bottom:1px solid var(--ln2)}
+  html.ash-in .ofi{border-color:var(--ln2)}html.ash-in .ofi.on{background:var(--fg);border-color:var(--fg);color:var(--bg);box-shadow:none}html.ash-in .ofi.on .c{color:var(--bg)}
+}

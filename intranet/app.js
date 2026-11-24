@@ -44,7 +44,7 @@ function drawNotices(byN){
   const list=el("div",{className:"nlist"});box.append(list);
   notices.forEach(n=>{
     const isNew=!reads.has(n.id),cr=el("span",{className:"cr",textContent:"▸"});
-    const h=el("button",{type:"button",className:"nh"},[cr,el("span",{className:"ntx",textContent:(n.pinned?"📌 ":"")+n.title,title:n.title}),...(isNew?[el("span",{className:"new",textContent:"NEW"})]:[]),el("span",{className:"nm",textContent:n.author_name||""}),...(ceo?[el("span",{className:"nr",textContent:"읽음 "+((byN[n.id]||[]).length)+"/"+staff.length})]:[]),el("span",{className:"nd",textContent:fd(n.created_at)})]);
+    const h=el("button",{type:"button",className:"nh"},[cr,el("span",{className:"ntx",textContent:(n.pinned?"📌 ":"")+n.title,title:n.title}),...(isNew?[el("span",{className:"new",textContent:"NEW"})]:[]),el("span",{className:"nwho",textContent:n.author_name||""}),...(ceo?[el("span",{className:"nr",textContent:"읽음 "+((byN[n.id]||[]).length)+"/"+staff.length})]:[]),el("span",{className:"nd",textContent:fd(n.created_at)})]);
     const body=el("div",{className:"nb",hidden:true},[el("div",{className:"bodyx",textContent:n.body||"(내용 없음)"})]);
     if(ceo||(exec&&(n.author_email||"").toLowerCase()===me)){
       body.append(el("div",{className:"meta",textContent:"읽은 사람: "+((byN[n.id]||[]).map(nameOf).join(", ")||"아직 없음")}));

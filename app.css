@@ -1,5 +1,6 @@
 /* ===== RIF app UI · intranet / mail / admin 공통 디자인 =====
-   사이트와 같은 색(--ac 핑크)·같은 모양(알약 버튼 · 둥근 카드)을 쓰고,
+   여기에는 크기 · 배치 같은 뼈대가 있어요. 색 · 글꼴 · 모서리 모양은 맨 마지막에 불러오는 /staff.css 가
+   홈페이지와 같은 모습(흰 바탕 · 먹색 · 등꽃 보라 · 각진 모서리)으로 덮어써요. 모양을 바꿀 때는 staff.css 를 고쳐 주세요.
    빨강(--bad)은 오류·마감 지남·삭제처럼 "위험"일 때만 씁니다. */
 :root{--ok:#2fa36b;--bad:#d64545;--ln:#7773;--ln2:#7775;--hv:#7771;--soft:color-mix(in srgb,var(--ac) 12%,transparent);--soft2:color-mix(in srgb,var(--ac) 20%,transparent)}
 main.wide{max-width:1480px;padding:4vh 3vw 6vh}

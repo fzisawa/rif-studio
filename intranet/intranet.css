@@ -15,7 +15,7 @@
 .nh .cr{flex:none;width:12px;color:var(--mut);font-size:11px}
 .nh .ntx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nrow.unread .ntx{font-weight:800}.nrow.pin .nh{background:var(--soft)}
-.nh .nm,.nh .nd,.nh .nr{flex:none;color:var(--mut);font-size:13px;white-space:nowrap}
+.nh .nwho,.nh .nd,.nh .nr{flex:none;color:var(--mut);font-size:13px;white-space:nowrap}
 .nh .nr{min-width:64px;text-align:right}
 .nb{padding:6px 18px 18px 38px;border-top:1px dashed var(--ln)}
 .nb .bodyx{white-space:pre-wrap;word-break:break-word;line-height:1.75;font-size:15px;margin:12px 0}
@@ -144,7 +144,7 @@ main.wide select.stsel.doing{border-color:var(--ac);color:var(--ac)}main.wide se
   .chat2{grid-template-columns:1fr}.cside{height:220px}.chat{height:520px}
   .crow{grid-template-columns:70px minmax(0,1fr)}.crow .ctg{grid-column:2}
   .rel{grid-template-columns:auto minmax(0,1fr) 54px}.rel .rpv{display:none}
-  .nh .nm{display:none}
+  .nh .nwho{display:none}
 }
 
 /* 업무 레퍼런스 */
