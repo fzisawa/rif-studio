@@ -3,7 +3,10 @@ const RIF_STAFF_AREA=/^\/(intranet|admin|mail|joinadmin)(\/|$)/.test(location.pa
 const db=supabase.createClient(RIF.URL,RIF.KEY,{auth:{detectSessionInUrl:RIF_STAFF_AREA}}),B="portfolio";
 const el=(t,p={},k=[])=>{const e=Object.assign(document.createElement(t),p);k.forEach(c=>e.append(c));return e};
 const ytid=u=>(u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/)||[])[1];
-const shrink=f=>new Promise(r=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1600/Math.max(i.width,i.height)),c=el("canvas",{width:i.width*s,height:i.height*s});c.getContext("2d").drawImage(i,0,0,c.width,c.height);c.toBlob(r,"image/jpeg",.85)};i.src=URL.createObjectURL(f)});
+/* 사진을 1600px JPG 로 줄여요. 브라우저가 못 여는 형식(아이폰 HEIC · PSD 등)이면 멈추지 않고 바로 알려 줘요 */
+const shrink=f=>new Promise((ok,no)=>{const u=URL.createObjectURL(f),i=new Image(),bad=()=>{URL.revokeObjectURL(u);no(new Error("이 사진은 브라우저에서 열 수 없는 형식이에요"+(/hei[cf]/i.test(f.type+f.name)?" (아이폰 HEIC)":"")+". JPG나 PNG로 바꿔서 다시 올려 주세요."))};
+  i.onerror=bad;i.onload=()=>{try{const s=Math.min(1,1600/Math.max(i.width,i.height)),c=el("canvas",{width:Math.max(1,Math.round(i.width*s)),height:Math.max(1,Math.round(i.height*s))}),x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(i,0,0,c.width,c.height);
+    c.toBlob(bl=>{URL.revokeObjectURL(u);bl?ok(bl):bad()},"image/jpeg",.85)}catch(_){bad()}};i.src=u});
 const isStaffUser=async()=>{const s=(await db.auth.getSession()).data.session;if(!s)return false;try{const {data}=await db.rpc("is_staff");return data===true}catch(_){return false}};
 const isAdmin=async()=>{const s=(await db.auth.getSession()).data.session;return !!s&&(s.user.email||"").toLowerCase()==="takanashi@rif-studio.com"};
 const MAXMB=50,isAud=f=>/\.(mp3|wav)$/i.test(f.name)||/^audio\//.test(f.type);
@@ -16,7 +19,7 @@ async function addItem(page,file,ytUrl,cap,section){
     const {error}=await db.storage.from(B).upload(path,file,{contentType:ext==="wav"?"audio/wav":"audio/mpeg"});if(error)throw error;
     row={kind:"audio",url:db.storage.from(B).getPublicUrl(path).data.publicUrl,path};
     cap=cap||file.name.replace(/\.[^.]+$/,"");
-  }else if(file){const path=page+"/"+Date.now()+".jpg";const {error}=await db.storage.from(B).upload(path,await shrink(file),{contentType:"image/jpeg"});if(error)throw error;
+  }else if(file){if(!/^image\//.test(file.type)&&!/\.(jpe?g|png|webp|gif|heic|heif|bmp|avif)$/i.test(file.name))throw new Error("사진(JPG · PNG) 또는 음원(mp3 · wav)만 올릴 수 있어요");const path=page+"/"+Date.now()+".jpg";const {error}=await db.storage.from(B).upload(path,await shrink(file),{contentType:"image/jpeg"});if(error)throw error;
     row={kind:"image",url:db.storage.from(B).getPublicUrl(path).data.publicUrl,path}}
   else row={kind:"youtube",url:v};
   row.page=page;row.caption=cap||null;row.section=section||null;
