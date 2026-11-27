@@ -146,7 +146,7 @@ input::placeholder,textarea::placeholder{color:var(--mut);opacity:.75}
 .mbox{border:1px solid var(--rule);box-shadow:10px 10px 0 var(--shade)}
 .jdp{border-left:1px solid var(--rule);box-shadow:-10px 0 0 var(--shade)}
 #toast{background:var(--fg);color:var(--bg);font-weight:600;box-shadow:6px 6px 0 var(--shade)}
-.lb img{background:#fff}
+.lb img{background:#fff;width:auto;height:auto;max-width:calc(100vw - 8vmin);max-height:calc(100vh - 8vmin);max-height:calc(100dvh - 8vmin);object-fit:contain;display:block}
 
 /* ── 꼬리말: 홈페이지와 같은 먹색 띠 (사내 화면은 사업자 정보만 간단히) ── */
 footer{background:#121212;color:#ffffffb3;text-align:left;letter-spacing:.02em;font-size:12px;line-height:1.8;padding:26px clamp(18px,4vw,56px) 30px}

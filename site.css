@@ -100,7 +100,7 @@ figcaption{color:var(--mut);margin-top:8px}
 .tracks li{border-color:var(--hair)}.tracks ol{border-top:2px solid var(--rule)}
 .pl{border:1.5px solid var(--fg)}.pl:hover{border-color:var(--ac);color:var(--ac)}
 .empty{color:var(--mut)}
-.lb img{background:#fff}
+.lb img{background:#fff;width:auto;height:auto;max-width:calc(100vw - 8vmin);max-height:calc(100vh - 8vmin);max-height:calc(100dvh - 8vmin);object-fit:contain;display:block}
 @media(max-width:560px){.cv li,.cv li:last-child{grid-template-columns:minmax(0,1fr) auto}}
 
 /* ── 꼬리말 ── */
